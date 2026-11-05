@@ -576,15 +576,15 @@ function AdvancedSettings({
 }) {
   return (
     <div className="space-y-3">
-      <div className="grid grid-cols-2 gap-2.5">
+      <div className="space-y-3">
         <div>
           <span className="eo-ao-sub mb-1.5">If a run is in progress</span>
           <Segmented
             label="Overlap policy"
             fill
-            options={["Skip", "Queue one"]}
-            value={draft.overlap === "skip" ? "Skip" : "Queue one"}
-            onChange={(v) => patch({ overlap: v === "Skip" ? "skip" : "queue" })}
+            options={["Skip next run", "Queue one run"]}
+            value={draft.overlap === "skip" ? "Skip next run" : "Queue one run"}
+            onChange={(v) => patch({ overlap: v === "Skip next run" ? "skip" : "queue" })}
           />
         </div>
         <div>
