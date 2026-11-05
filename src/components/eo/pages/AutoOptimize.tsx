@@ -193,7 +193,7 @@ export function AutoOptimizePage() {
             </div>
             <div>
               <dt>Next run</dt>
-              <dd className="font-mono">{nextRun}</dd>
+              <dd>{nextRun}</dd>
             </div>
             <div>
               <dt>Last run</dt>
