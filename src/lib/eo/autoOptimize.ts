@@ -167,7 +167,7 @@ export function validateCustomInterval(raw: string | number, unit: IntervalUnit)
   if (!Number.isFinite(n)) return { ok: false, error: "Enter a number." };
   if (n <= 0) return { ok: false, error: "The interval must be greater than zero." };
   const minutes = unit === "hours" ? n * 60 : n;
-  if (!Number.isInteger(Math.round(minutes * 1000) / 1000) || Math.abs(minutes - Math.round(minutes)) > 1e-9)
+  if (Math.abs(minutes - Math.round(minutes)) > 1e-9)
     return { ok: false, error: "Use whole minutes (for example 1.5 hours = 90 minutes)." };
   if (minutes < 1) return { ok: false, error: "The shortest interval is 1 minute." };
   if (minutes > MAX_INTERVAL_MIN) return { ok: false, error: "The longest interval is 24 hours." };
