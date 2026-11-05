@@ -70,7 +70,7 @@ export function AutoOptimizePage() {
   const s = useAutoOptimize();
   const now = useNow();
   const navigate = useNavigate();
-  const [draft, setDraft] = useState<AutoConfig>(() => pendingDraft ?? s.config);
+  const [draft, setDraft] = useState<AutoConfig>(() => { console.log('AO-DBG init', !!pendingDraft); return pendingDraft ?? s.config; });
   const dirty = comparable(draft) !== comparable(s.config);
   const dirtyRef = useRef(dirty);
   dirtyRef.current = dirty;
@@ -83,6 +83,7 @@ export function AutoOptimizePage() {
   useEffect(
     () => () => {
       pendingDraft = dirtyRef.current ? draftRef.current : null;
+      console.log('AO-DBG unmount', dirtyRef.current);
     },
     [],
   );
