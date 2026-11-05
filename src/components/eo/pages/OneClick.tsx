@@ -75,6 +75,7 @@ const STEPS = ["Analyze", "Review", "Confirm", "Simulated result"];
 export function OneClickPage() {
   const wf = useOptimizeWorkflow(1400);
   const { scan, analyzed, sel, setSel, summary, selectedItems, lastRun, toggle } = wf;
+  const navigate = useNavigate();
   const [query, setQuery] = useState("");
   const [area, setArea] = useState<string | null>(null);
   const [filterOpen, setFilterOpen] = useState(false);
@@ -125,38 +126,38 @@ export function OneClickPage() {
         badges={<Badge tone="warning">SIMULATED</Badge>}
         sub="Analyze sample recommendations, review your choices, confirm a simulated run."
         actions={
-        <div className="flex gap-2">
-          <Btn
-            variant="ghost"
-            onClick={() => setGuide(true)}
-            title="How 1-Click Optimization works"
-          >
-            Guide
-          </Btn>
-          <Btn disabled={scan.running} onClick={analyze} title="Analyze sample recommendations">
-            {scan.running ? (
-              <>Analyzing…</>
-            ) : analyzed ? (
-              <>
-                <RotateCcw aria-hidden="true" className="h-3.5 w-3.5" />
-                Rescan
-              </>
-            ) : (
-              <>
-                <ScanSearch aria-hidden="true" className="h-3.5 w-3.5" />
-                Analyze
-              </>
-            )}
-          </Btn>
-          <Btn
-            variant="primary"
-            size="lg"
-            disabled={scan.running || !analyzed || !sel.size}
-            onClick={() => setReview(true)}
-          >
-            Review selection
-          </Btn>
-        </div>
+          <div className="flex gap-2">
+            <Btn
+              variant="ghost"
+              onClick={() => setGuide(true)}
+              title="How 1-Click Optimization works"
+            >
+              Guide
+            </Btn>
+            <Btn disabled={scan.running} onClick={analyze} title="Analyze sample recommendations">
+              {scan.running ? (
+                <>Analyzing…</>
+              ) : analyzed ? (
+                <>
+                  <RotateCcw aria-hidden="true" className="h-3.5 w-3.5" />
+                  Rescan
+                </>
+              ) : (
+                <>
+                  <ScanSearch aria-hidden="true" className="h-3.5 w-3.5" />
+                  Analyze
+                </>
+              )}
+            </Btn>
+            <Btn
+              variant="primary"
+              size="lg"
+              disabled={scan.running || !analyzed || !sel.size}
+              onClick={() => setReview(true)}
+            >
+              Review selection
+            </Btn>
+          </div>
         }
       />
 
