@@ -77,9 +77,13 @@ export function AutoOptimizePage() {
   const draftRef = useRef(draft);
   draftRef.current = draft;
   // Adopt the stored configuration when it loads or changes elsewhere, unless you are editing.
+  const loadedRef = useRef(s.loaded);
   useEffect(() => {
-    if (!dirtyRef.current) setDraft(s.config);
-  }, [s.config]);
+    const justLoaded = s.loaded && !loadedRef.current;
+    loadedRef.current = s.loaded;
+    // Stored settings arriving after the first render always replace the defaults.
+    if ((justLoaded && !pendingDraft) || !dirtyRef.current) setDraft(s.config);
+  }, [s.config, s.loaded]);
   useEffect(
     () => () => {
       // Only a dirty instance records its draft; clean instances never clear it (save and
@@ -103,7 +107,7 @@ export function AutoOptimizePage() {
     ),
   );
   useEffect(() => {
-    if (dirtyRef.current) return;
+    if (pendingDraft) return;
     const m = s.config.intervalMin;
     if (PRESET_INTERVALS.indexOf(m as (typeof PRESET_INTERVALS)[number]) === -1) {
       setCustom(true);
