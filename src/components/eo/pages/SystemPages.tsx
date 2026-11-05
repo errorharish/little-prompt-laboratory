@@ -803,6 +803,34 @@ export function RegistryValuesRamPage() {
   );
 }
 
+const GPU_GROUPS = [
+  {
+    name: "UNIVERSAL GPU",
+    tag: "SYSTEM-WIDE",
+    detected: true,
+    items: [
+      "Hardware-Accelerated GPU Scheduling (HAGS)",
+      "GPU priority for games (MMCSS)",
+      "TDR delay calibration",
+    ],
+  },
+  {
+    name: "NVIDIA GPU",
+    tag: "GEFORCE / RTX",
+    detected: true,
+    items: ["NVIDIA PowerMizer Maximum Performance Mode", "Disable NVIDIA telemetry container"],
+  },
+  {
+    name: "AMD GPU",
+    tag: "RADEON / ADRENALIN",
+    detected: false,
+    items: ["AMD Radeon ULPS Disable", "AMD shader cache mode"],
+  },
+];
+const GPU_ITEMS = GPU_GROUPS.flatMap((g) =>
+  g.items.map((id) => ({ id, risk: "MEDIUM" as const, unsupported: !g.detected })),
+);
+
 export function GpuRegistryValuesPage() {
   const [policy, setPolicy] = useState("Recommended");
   // Each profile policy keeps its own selection; undetected vendors are never selectable.
@@ -810,32 +838,6 @@ export function GpuRegistryValuesPage() {
   const { sel, setSel } = gpu;
   const [detail, setDetail] = useState<string | null>(null);
   const groups = GPU_GROUPS;
-  void groups;
-}
-const GPU_GROUPS_DEF = [
-    {
-      name: "UNIVERSAL GPU",
-      tag: "SYSTEM-WIDE",
-      detected: true,
-      items: [
-        "Hardware-Accelerated GPU Scheduling (HAGS)",
-        "GPU priority for games (MMCSS)",
-        "TDR delay calibration",
-      ],
-    },
-    {
-      name: "NVIDIA GPU",
-      tag: "GEFORCE / RTX",
-      detected: true,
-      items: ["NVIDIA PowerMizer Maximum Performance Mode", "Disable NVIDIA telemetry container"],
-    },
-    {
-      name: "AMD GPU",
-      tag: "RADEON / ADRENALIN",
-      detected: false,
-      items: ["AMD Radeon ULPS Disable", "AMD shader cache mode"],
-    },
-  ];
   return (
     <div className="space-y-4">
       <PageHeader
@@ -893,9 +895,7 @@ const GPU_GROUPS_DEF = [
           <>
             <Btn
               size="sm"
-              onClick={() =>
-                setSel(new Set(groups.filter((g) => g.detected).flatMap((g) => g.items)))
-              }
+              onClick={gpu.selectAll}
             >
               Select all applicable
             </Btn>
