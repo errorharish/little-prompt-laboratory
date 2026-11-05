@@ -1,292 +1,261 @@
-// Dashboard Auto Optimize panel — the central action area of the Dashboard.
-// It drives the SAME workflow as the 1-Click page (useOptimizeWorkflow + ReviewSelectionModal +
-// RunModal): Analyze → Review → Confirm → Simulated result. Protected items are never
-// pre-selected, and the result always reports 0 changes on this PC.
+// Dashboard Auto Optimize panel — control centre for the recurring maintenance engine.
+// State comes from the shared simulated scheduler (autoOptimizeStore); configuration lives on
+// the Auto Optimize page. Nothing on the real computer is changed.
 import { Link } from "@tanstack/react-router";
-import {
-  ArrowUpRight,
-  Cpu,
-  MemoryStick,
-  MonitorCog,
-  ScanSearch,
-  ShieldCheck,
-  Sparkles,
-  RotateCcw,
-} from "lucide-react";
-import { useState } from "react";
-import { Badge, Bar, Btn, Card, Check, Label, RiskBadge, Stepper } from "./kit";
-import { Segmented } from "./controls";
-import { RunModal } from "./RunModal";
-import { ReviewSelectionModal } from "./ReviewSelectionModal";
-import { useOptimizeWorkflow } from "./useOptimizeWorkflow";
-import { HW, ONE_CLICK_ACTIONS, ONE_CLICK_GROUPS } from "@/lib/eo/data";
-import { cn } from "@/lib/utils";
+import { CalendarClock, Pause, Play, Settings2, Square, Zap } from "lucide-react";
+import type { CSSProperties } from "react";
+import { Badge, Btn, Card, Label } from "./kit";
+import { autoOptimize, useAutoOptimize, useNow, type AutoState } from "./autoOptimizeStore";
+import { MAINT_TASKS, formatCountdown, formatInterval } from "@/lib/eo/autoOptimize";
 
-export const OPTIMIZATION_MODES = ["NORMAL", "ADVANCED", "CONSERVATIVE GAMING"];
-export const MODE_TEXT: Record<string, string> = {
-  NORMAL:
-    "Normal optimization applies conservative timing adjustments, DPC interrupt balancing and safe scheduler defaults.",
-  ADVANCED: "Advanced applies deeper scheduler and timer tuning for power users.",
-  "CONSERVATIVE GAMING":
-    "Conservative gaming keeps anti-cheat-sensitive settings untouched while biasing foreground latency.",
-};
-const STEPS = ["Analyze", "Review", "Confirm", "Simulated result"];
+export const clockTime = (t: number | null) =>
+  t ? new Date(t).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit", hour12: false }) : "—";
 
-export function AutoOptimizePanel({ mode, onMode }: { mode: string; onMode: (m: string) => void }) {
-  const wf = useOptimizeWorkflow(1600);
-  const [review, setReview] = useState(false);
-  const [run, setRun] = useState(false);
-  const { scan, analyzed, sel, summary, selectedItems, lastRun } = wf;
-  const phase = scan.running ? "scanning" : lastRun ? "done" : analyzed ? "review" : "overview";
-  const step = lastRun ? 4 : run || review ? 2 : analyzed ? 1 : 0;
-  const progress = scan.progress ?? 0;
-  const protectedSelected = summary.byRisk.PROTECTED;
+export function relTime(t: number | null, now: number) {
+  if (!t) return "Never";
+  if (!now) return clockTime(t);
+  const s = Math.max(0, Math.round((now - t) / 1000));
+  if (s < 45) return "Just now";
+  const m = Math.round(s / 60);
+  if (m < 60) return `${m} min ago`;
+  const h = Math.round(m / 60);
+  return h < 24 ? `${h} h ago` : new Date(t).toLocaleDateString();
+}
+
+export type EngineStatus = "Running" | "Enabled" | "Paused" | "Disabled" | "Suspended";
+export function engineStatus(s: AutoState): EngineStatus {
+  if (s.run) return "Running";
+  if (!s.config.enabled) return "Disabled";
+  if (s.config.paused) return "Paused";
+  if (s.power === "app-closed" || s.power === "pc-off") return "Suspended";
+  return "Enabled";
+}
+export const STATUS_TONE = {
+  Running: "cyan",
+  Enabled: "success",
+  Paused: "warning",
+  Disabled: "muted",
+  Suspended: "warning",
+} as const;
+
+export function StatusPill({ status }: { status: EngineStatus }) {
+  return (
+    <span className="eo-status-pill" data-tone={STATUS_TONE[status]} role="status">
+      <span aria-hidden="true" className="eo-status-dot" />
+      {status}
+    </span>
+  );
+}
+
+/** Countdown block — the only part of the panel that re-renders every second. */
+function Countdown({ s }: { s: AutoState }) {
+  const now = useNow();
+  const status = engineStatus(s);
+  const total = s.config.intervalMin * 60_000;
+  const remaining =
+    s.nextAt !== null && now ? Math.max(0, s.nextAt - now) : (s.pausedRemaining ?? null);
+  const frac = remaining === null ? 0 : 1 - Math.min(1, remaining / total);
+  return (
+    <div className="eo-countdown" data-state={status}>
+      <Label className="text-[9.5px]">
+        {status === "Running"
+          ? "MAINTENANCE IN PROGRESS"
+          : status === "Paused"
+            ? "PAUSED · TIME LEFT"
+            : status === "Disabled"
+              ? "NOT SCHEDULED"
+              : status === "Suspended"
+                ? "SUSPENDED (SIMULATED)"
+                : "NEXT MAINTENANCE IN"}
+      </Label>
+      <div className="mt-1 flex items-baseline gap-2">
+        <span className="eo-countdown-value font-mono tabular-nums">
+          {status === "Disabled" || remaining === null || status === "Suspended"
+            ? "--:--"
+            : formatCountdown(remaining)}
+        </span>
+        {s.nextAt !== null && status === "Enabled" && (
+          <span className="text-[11px] font-semibold text-muted-foreground">
+            at {clockTime(s.nextAt)}
+          </span>
+        )}
+      </div>
+      <div
+        className="eo-interval-track mt-2"
+        role="progressbar"
+        aria-label="Time elapsed in the current interval"
+        aria-valuemin={0}
+        aria-valuemax={100}
+        aria-valuenow={Math.round(frac * 100)}
+      >
+        <span style={{ "--v": frac } as CSSProperties} />
+      </div>
+      <div className="mt-1.5 text-[11px] font-semibold">{formatInterval(s.config.intervalMin)}</div>
+    </div>
+  );
+}
+
+function RunProgress({ s }: { s: AutoState }) {
+  const run = s.run;
+  if (!run) return null;
+  const done = run.items.filter((i) => i.state !== "Pending" && i.state !== "Running").length;
+  return (
+    <div className="eo-swap">
+      <div className="mb-1.5 flex items-center justify-between text-[10.5px] font-bold">
+        <span className="text-cyan">
+          {run.trigger.toUpperCase()} RUN · {done}/{run.items.length}
+        </span>
+        <Btn size="sm" variant="ghost" onClick={autoOptimize.cancel}>
+          <Square aria-hidden="true" className="h-3 w-3" /> Cancel
+        </Btn>
+      </div>
+      <ul className="space-y-1" aria-live="polite">
+        {run.items.map((i) => (
+          <li key={i.taskId} className="eo-run-row" data-state={i.state}>
+            <span aria-hidden="true" className="eo-run-dot" />
+            <span className="min-w-0 flex-1 truncate">{i.name}</span>
+            <span className="eo-run-state">{i.state === "Running" ? "Working…" : i.state}</span>
+          </li>
+        ))}
+      </ul>
+    </div>
+  );
+}
+
+export function AutoOptimizePanel() {
+  const s = useAutoOptimize();
+  const now = useNow();
+  const status = engineStatus(s);
+  const c = s.config;
+  const runs = s.history.filter((h) => h.kind === "run").slice(0, 3);
+  const noTasks = !c.tasks.length;
 
   return (
     <Card className="eo-hero eo-auto flex flex-col">
-      {/* Header: identity + profile */}
       <div className="flex flex-wrap items-start justify-between gap-3">
         <div className="flex items-start gap-3">
           <span className="eo-auto-mark" aria-hidden="true">
-            <Sparkles className="h-4 w-4" />
+            <CalendarClock className="h-4 w-4" />
           </span>
           <div>
             <div className="flex flex-wrap items-center gap-2">
               <h2 className="text-[15px] font-black uppercase">Auto Optimize</h2>
-              <Badge tone="cyan">V3 ENGINE</Badge>
+              <StatusPill status={status} />
               <Badge tone="warning">SIMULATED</Badge>
             </div>
             <p className="mt-0.5 text-[11.5px] text-muted-foreground">
-              Adaptive, hardware-aware recommendations from the 1-Click engine (sample data).
+              Recurring maintenance engine · runs the tasks you choose on your schedule.
             </p>
           </div>
         </div>
-        <Segmented
-          label="Optimization profile"
-          options={OPTIMIZATION_MODES}
-          value={mode}
-          onChange={onMode}
-        />
+        <Link to="/$page" params={{ page: "auto-optimize" }}>
+          <Btn size="sm">
+            <Settings2 aria-hidden="true" className="h-3.5 w-3.5" /> Configure
+          </Btn>
+        </Link>
       </div>
 
-      <div className="mt-3 flex flex-wrap items-center justify-between gap-2">
-        <Stepper steps={STEPS} current={step} label="Auto Optimize workflow" />
-        <span className="text-[10px] font-bold text-subtle">
-          {mode} PROFILE · {ONE_CLICK_ACTIONS.length} SAMPLE RECOMMENDATIONS
-        </span>
-      </div>
-
-      {/* Body: fixed height so phases swap without moving the page */}
-      <div className="eo-auto-body mt-3" aria-live="polite">
-        {(phase === "overview" || phase === "scanning") && (
-          <div
-            key="overview"
-            className="eo-swap grid h-full gap-3"
-            style={{ gridTemplateColumns: "minmax(0,1.25fr) minmax(0,1fr)" }}
-          >
-            <div className={cn("eo-auto-cats relative", phase === "scanning" && "eo-scan")}>
-              <Label as="h3" className="mb-1.5 text-[9.5px]">
-                OPTIMIZATION CATEGORIES
-              </Label>
-              <ul className="space-y-1.5">
-                {ONE_CLICK_GROUPS.map((g, i) => {
-                  const count = ONE_CLICK_ACTIONS.filter((a) => a.group === g.key).length;
-                  const checked =
-                    phase === "scanning" &&
-                    progress >= ((i + 1) / ONE_CLICK_GROUPS.length) * 100 - 2;
-                  const checking =
-                    phase === "scanning" &&
-                    !checked &&
-                    progress >= (i / ONE_CLICK_GROUPS.length) * 100;
-                  return (
-                    <li
-                      key={g.key}
-                      className="eo-auto-row"
-                      data-state={checked ? "done" : checking ? "active" : undefined}
-                    >
-                      <span className="min-w-0 flex-1 truncate text-[11.5px] font-bold">
-                        {g.key}
-                      </span>
-                      <span className="text-[10px] font-bold text-subtle">{count} REC.</span>
-                      <span className="w-20 text-right text-[9.5px] font-bold">
-                        {checked ? (
-                          <span className="text-success">CHECKED</span>
-                        ) : checking ? (
-                          <span className="text-cyan">CHECKING…</span>
-                        ) : (
-                          <span className="text-subtle">AWAITING</span>
-                        )}
-                      </span>
-                    </li>
-                  );
-                })}
-              </ul>
-              {phase === "scanning" && (
-                <div role="status" className="mt-2.5">
-                  <div className="mb-1 flex justify-between text-[10px] font-bold text-cyan">
-                    <span>ANALYZING SAMPLE DATA · NOTHING ON THIS PC IS SCANNED</span>
-                    <span className="font-mono">{Math.round(progress)}%</span>
-                  </div>
-                  <Bar value={progress} active />
-                </div>
-              )}
-            </div>
-            <div className="eo-auto-profile">
-              <Label as="h3" className="mb-1.5 text-[9.5px]">
-                HARDWARE PROFILE · SAMPLE
-              </Label>
-              <ul className="space-y-1.5 text-[11.5px]">
-                {(
-                  [
-                    [Cpu, HW.cpu],
-                    [MonitorCog, HW.gpu],
-                    [MemoryStick, HW.ram],
-                  ] as const
-                ).map(([Icon, v]) => (
-                  <li key={v} className="flex items-center gap-2">
-                    <Icon aria-hidden="true" className="h-3.5 w-3.5 shrink-0 text-cyan" />
-                    <span className="truncate font-semibold">{v}</span>
-                  </li>
-                ))}
-              </ul>
-              <p className="mt-2.5 text-[11px] leading-snug text-muted-foreground">
-                {MODE_TEXT[mode]}
-              </p>
-            </div>
-          </div>
-        )}
-
-        {phase === "review" && (
-          <div key="review" className="eo-swap flex h-full flex-col">
-            <div className="mb-1.5 flex flex-wrap items-center justify-between gap-2">
-              <span className="text-[11px] text-muted-foreground">
-                <b className="text-foreground">{sel.size}</b> of {ONE_CLICK_ACTIONS.length} selected
-                {summary.restart ? ` · ${summary.restart} needs a restart` : ""}
-              </span>
-              <span className="flex gap-1.5">
-                <Btn size="sm" variant="ghost" onClick={wf.selectRecommended}>
-                  Select recommended
-                </Btn>
-                <Btn size="sm" variant="ghost" disabled={!sel.size} onClick={wf.clear}>
-                  Clear
-                </Btn>
-              </span>
-            </div>
-            <ul
-              aria-label="Sample recommendations"
-              className="eo-auto-list min-h-0 flex-1 space-y-1 overflow-y-auto pr-1"
-            >
-              {ONE_CLICK_ACTIONS.map((a) => (
-                <li
-                  key={a.id}
-                  className="eo-auto-rec"
-                  data-selected={sel.has(a.id) ? "true" : undefined}
-                >
-                  <Check
-                    label={`Select ${a.title}`}
-                    on={sel.has(a.id)}
-                    onChange={() => wf.toggle(a.id)}
-                  />
-                  <span className="min-w-0 flex-1 truncate text-[11.5px] font-bold">{a.title}</span>
-                  <RiskBadge risk={a.risk} />
-                  {a.restart && <Badge tone="warning">RESTART</Badge>}
-                </li>
-              ))}
-            </ul>
-          </div>
-        )}
-
-        {phase === "done" && lastRun && (
-          <div
-            key="done"
-            className="eo-swap eo-result flex h-full flex-col justify-center rounded-lg border p-3"
-          >
-            <Label as="h3" className="text-success">
-              SIMULATED RUN COMPLETE · {lastRun.at}
-            </Label>
-            <div className="mt-2 grid grid-cols-4 gap-2">
-              {(
+      <div
+        className="eo-auto-grid mt-3 grid flex-1 gap-3"
+        style={{ gridTemplateColumns: "minmax(0,1.05fr) minmax(0,1fr)" }}
+      >
+        <div className="flex flex-col gap-2.5">
+          {s.run ? <RunProgress s={s} /> : <Countdown s={s} />}
+          <dl className="eo-auto-facts">
+            {(
+              [
+                ["Last run", relTime(s.lastRunAt, now)],
+                ["Tasks", `${c.tasks.length} of ${MAINT_TASKS.length} selected`],
+                ["Profile", c.profile],
                 [
-                  ["SELECTED", lastRun.selected],
-                  ["SIMULATED STEPS", lastRun.simulatedSteps],
-                  ["RESTART NOTED", lastRun.restartNoted],
-                  ["CHANGES ON THIS PC", lastRun.realChanges],
-                ] as const
-              ).map(([k, v]) => (
-                <div key={k} className="rounded-lg border border-border bg-window p-2 text-center">
-                  <div className="text-lg font-bold tabular-nums">{v}</div>
-                  <div className="text-[8.5px] font-bold text-muted-foreground">{k}</div>
-                </div>
-              ))}
-            </div>
-            <p className="mt-2 text-[11px] text-muted-foreground">
-              Demonstration only — no Windows setting, file or service was read or changed. The
-              score is unaffected.
+                  "Lifecycle",
+                  [c.runOnLaunch && "On launch", c.runOnWindowsStartup && "Windows startup"]
+                    .filter(Boolean)
+                    .join(" · ") || "Schedule only",
+                ],
+              ] as const
+            ).map(([k, v]) => (
+              <div key={k}>
+                <dt>{k}</dt>
+                <dd>{v}</dd>
+              </div>
+            ))}
+          </dl>
+        </div>
+
+        <section aria-labelledby="eo-recent-maint" className="eo-auto-recent">
+          <Label as="h3" id="eo-recent-maint" className="mb-1.5 text-[9.5px]">
+            RECENT MAINTENANCE
+          </Label>
+          {!runs.length ? (
+            <p className="text-[11.5px] text-muted-foreground">
+              No maintenance has run yet. Enable Auto Optimize or use Run now.
             </p>
-          </div>
-        )}
+          ) : (
+            <ul className="space-y-1.5">
+              {runs.map(
+                (r) =>
+                  r.kind === "run" && (
+                    <li key={r.id} className="eo-recent-row">
+                      <div className="flex items-center justify-between gap-2">
+                        <span className="truncate text-[11.5px] font-bold">{r.trigger} run</span>
+                        <Badge
+                          tone={
+                            r.summary.status === "Completed"
+                              ? "success"
+                              : r.summary.status === "Cancelled"
+                                ? "danger"
+                                : "warning"
+                          }
+                        >
+                          {r.summary.status}
+                        </Badge>
+                      </div>
+                      <div className="text-[10.5px] text-muted-foreground">
+                        {clockTime(r.at)} · {r.summary.completed} completed · {r.summary.skipped}{" "}
+                        skipped
+                      </div>
+                    </li>
+                  ),
+              )}
+            </ul>
+          )}
+          <Link
+            to="/$page"
+            params={{ page: "auto-optimize" }}
+            hash="history"
+            className="eo-link mt-2 inline-block text-[10.5px] font-bold"
+          >
+            View full history →
+          </Link>
+        </section>
       </div>
 
-      {/* Footer: safety + actions */}
       <div className="mt-3 flex flex-wrap items-center justify-between gap-3 border-t border-border pt-3">
-        <span className="flex items-center gap-2 text-[10.5px] font-bold text-success">
-          <ShieldCheck aria-hidden="true" className="h-4 w-4" />
-          PROTECTED ITEMS NEVER AUTO-SELECTED
-          {analyzed && (
-            <span className="text-subtle">· {protectedSelected} PROTECTED IN SELECTION</span>
-          )}
+        <span className="text-[10.5px] text-subtle">
+          {noTasks
+            ? "Select at least one maintenance task to enable Auto Optimize."
+            : "Runs only while this tab is open · native background agent documented in Blueprint."}
         </span>
         <div className="flex flex-wrap gap-2">
-          <Link to="/$page" params={{ page: "one-click" }} title="Open the full 1-Click workflow">
-            <Btn variant="ghost">
-              Review recommendations
-              <ArrowUpRight aria-hidden="true" className="h-3.5 w-3.5" />
+          <Btn variant="ghost" disabled={!!s.run || noTasks} onClick={autoOptimize.runNow}>
+            <Zap aria-hidden="true" className="h-3.5 w-3.5" /> Run now
+          </Btn>
+          {!c.enabled ? (
+            <Btn variant="primary" size="lg" disabled={noTasks} onClick={autoOptimize.enable}>
+              <Play aria-hidden="true" className="h-4 w-4" /> Enable Auto Optimize
             </Btn>
-          </Link>
-          {phase === "overview" || phase === "scanning" ? (
-            <Btn variant="primary" size="lg" loading={scan.running} onClick={() => wf.analyze()}>
-              {!scan.running && <ScanSearch aria-hidden="true" className="h-4 w-4" />}
-              {scan.running ? "Analyzing…" : "Auto Optimize"}
-            </Btn>
-          ) : phase === "review" ? (
-            <Btn variant="primary" size="lg" disabled={!sel.size} onClick={() => setReview(true)}>
-              Review & confirm ({sel.size})
+          ) : c.paused ? (
+            <Btn variant="primary" size="lg" onClick={autoOptimize.resume}>
+              <Play aria-hidden="true" className="h-4 w-4" /> Resume
             </Btn>
           ) : (
-            <Btn
-              variant="primary"
-              size="lg"
-              onClick={() => {
-                wf.dismissRun();
-                wf.analyze();
-              }}
-            >
-              <RotateCcw aria-hidden="true" className="h-4 w-4" />
-              Analyze again
+            <Btn size="lg" onClick={autoOptimize.pause}>
+              <Pause aria-hidden="true" className="h-4 w-4" /> Pause
             </Btn>
           )}
         </div>
       </div>
-
-      <ReviewSelectionModal
-        open={review}
-        onClose={() => setReview(false)}
-        onConfirm={() => {
-          setReview(false);
-          setRun(true);
-        }}
-        items={selectedItems}
-        summary={summary}
-        onRemove={wf.toggle}
-      />
-      <RunModal
-        open={run}
-        onClose={() => setRun(false)}
-        profile="Auto Optimize"
-        count={sel.size}
-        items={selectedItems}
-        onComplete={wf.complete}
-      />
     </Card>
   );
 }
