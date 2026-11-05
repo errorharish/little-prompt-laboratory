@@ -992,3 +992,38 @@ button.eo-check-row:active { transform: translateY(0); box-shadow: var(--shadow-
 .eo-guide-steps p { margin-top: 2px; font-size: 12px; line-height: 1.5; color: var(--muted-foreground); }
 .eo-guide-note { margin-top: 14px; border-top: 1px solid var(--border); padding-top: 10px; font-size: 11px; color: var(--success); }
 .eo-guide-num-sm { height: 22px; width: 22px; flex-shrink: 0; font-size: 10.5px; }
+
+/* ── Dashboard navigation shortcuts (open a page; never run anything) ── */
+.eo-shortcut { display: flex; min-width: 0; align-items: center; gap: 10px; padding: 10px 12px; border-radius: 12px; border: 1px solid var(--border); background: var(--gradient-card); box-shadow: var(--shadow-card); transition: border-color var(--duration-control), transform var(--duration-control) var(--ease-out), box-shadow var(--duration-control), background-color var(--duration-fast); }
+.eo-shortcut:hover { border-color: color-mix(in oklab, var(--cyan) 45%, var(--border)); transform: translateY(-2px); box-shadow: var(--shadow-elevated); }
+.eo-shortcut:active { transform: translateY(0); box-shadow: var(--shadow-pressed); }
+.eo-shortcut:focus-visible { outline: 2px solid var(--cyan); outline-offset: 2px; }
+.eo-shortcut[data-primary] { border-color: color-mix(in oklab, var(--primary) 55%, var(--border)); background: linear-gradient(140deg, color-mix(in oklab, var(--primary) 16%, transparent), transparent 70%), var(--gradient-card); }
+.eo-shortcut:hover .eo-quick-icon { transform: translateY(-1px) scale(1.06); }
+.eo-shortcut:hover .eo-quick-arrow { transform: translate(2px, -2px); }
+.eo-quick-grid .eo-quick { min-height: 128px; }
+@container (max-width: 1050px) {
+  .eo-page-content .eo-quick-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+  .eo-page-content .eo-shortcut-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+
+/* ── Restore point workflow (System Protection check) ── */
+.eo-rp-alert { display: flex; gap: 12px; padding: 12px 14px; border-radius: 10px; border: 1px solid var(--border); background: var(--window); font-size: 12px; line-height: 1.5; color: var(--muted-foreground); animation: eo-section-in var(--duration-standard) var(--ease-out) both; }
+.eo-rp-alert-icon { display: inline-flex; height: 34px; width: 34px; flex-shrink: 0; align-items: center; justify-content: center; border-radius: 9px; color: var(--cyan); background: color-mix(in oklab, var(--cyan) 12%, transparent); box-shadow: inset 0 0 0 1px color-mix(in oklab, var(--cyan) 24%, transparent); }
+.eo-rp-alert-icon svg { height: 17px; width: 17px; }
+.eo-rp-alert-title { margin-bottom: 2px; font-size: 13px; font-weight: 800; color: var(--foreground); }
+.eo-rp-alert[data-tone="warning"] { border-color: color-mix(in oklab, var(--warning) 35%, var(--border)); background: color-mix(in oklab, var(--warning) 6%, var(--window)); }
+.eo-rp-alert[data-tone="warning"] .eo-rp-alert-icon { color: var(--warning); background: color-mix(in oklab, var(--warning) 14%, transparent); box-shadow: inset 0 0 0 1px color-mix(in oklab, var(--warning) 30%, transparent); }
+.eo-rp-alert[data-tone="danger"] { border-color: color-mix(in oklab, var(--destructive) 35%, var(--border)); background: color-mix(in oklab, var(--destructive) 6%, var(--window)); }
+.eo-rp-alert[data-tone="danger"] .eo-rp-alert-icon { color: var(--destructive); background: color-mix(in oklab, var(--destructive) 14%, transparent); box-shadow: inset 0 0 0 1px color-mix(in oklab, var(--destructive) 30%, transparent); }
+.eo-rp-alert[data-tone="success"] { border-color: color-mix(in oklab, var(--success) 35%, var(--border)); background: color-mix(in oklab, var(--success) 6%, var(--window)); }
+.eo-rp-alert[data-tone="success"] .eo-rp-alert-icon { color: var(--success); background: color-mix(in oklab, var(--success) 14%, transparent); box-shadow: inset 0 0 0 1px color-mix(in oklab, var(--success) 30%, transparent); }
+.eo-rp-alert[data-tone="muted"] .eo-rp-alert-icon { color: var(--muted-foreground); background: var(--elevated); box-shadow: none; }
+.eo-rp-drive { display: inline-flex; flex-wrap: wrap; align-items: center; gap: 8px; margin-top: 8px; padding: 6px 10px; border-radius: 8px; border: 1px solid var(--border); background: var(--elevated); font-size: 12px; color: var(--foreground); }
+.eo-rp-drive svg { height: 14px; width: 14px; color: var(--cyan); }
+.eo-rp-confirm { padding: 10px 14px; border-radius: 10px; border: 1px solid color-mix(in oklab, var(--cyan) 30%, var(--border)); background: color-mix(in oklab, var(--cyan) 5%, var(--window)); animation: eo-section-in var(--duration-standard) var(--ease-out) both; }
+.eo-rp-confirm ul, .eo-rp-steps { margin-top: 6px; display: grid; gap: 3px; padding-left: 18px; font-size: 11.5px; color: var(--muted-foreground); }
+.eo-rp-confirm ul { list-style: disc; }
+.eo-rp-steps { list-style: decimal; }
+.eo-rp-device { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 10px; }
+.eo-rp-device .eo-rp-drive { margin-top: 0; }
