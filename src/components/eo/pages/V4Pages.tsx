@@ -262,12 +262,9 @@ export function V4MaxPerformancePage() {
         <aside aria-label="Engine status" className="eo-stagger space-y-3">
           <Card className="eo-v4-rail">
             <div className="flex items-center justify-between gap-2">
-              <span className="flex items-center gap-1.5">
-                <Label as="h2" className="text-foreground">
-                  ENGINE
-                </Label>
-                <GuideTip id="emu.engines" />
-              </span>
+              <Label as="h2" className="text-foreground">
+                ENGINE
+              </Label>
               <Btn size="sm" variant="ghost" onClick={() => simulate("Retry service")}>
                 Retry service
               </Btn>
@@ -682,7 +679,10 @@ export function EmulatorOptimizationPage() {
               ))}
             </div>
             <div className="eo-rail-sep" />
-            <Label className="mb-1.5 text-[10px]">RECOMMENDED SEQUENCE</Label>
+            <span className="mb-1.5 flex items-center gap-1.5">
+              <Label className="text-[10px]">RECOMMENDED SEQUENCE</Label>
+              <GuideTip id="emu.engines" />
+            </span>
             <ol className="eo-v4-seq space-y-1.5 text-[11.5px]">
               {sequence.map((s, i) => (
                 <li key={s.t} data-done={s.done ? "true" : undefined}>
