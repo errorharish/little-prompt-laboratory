@@ -24,6 +24,7 @@ import {
   useSimRun,
 } from "../kit";
 import { toggleInSet } from "@/lib/eo/selection";
+import { usePersistedSelection } from "../useSelection";
 
 /* ───────── STARTUP MANAGER ───────── */
 const STARTUP = [
@@ -591,11 +592,11 @@ const CLEAN_CATS = [
   ["Delivery Optimization cache", "210 MB", "LOW"],
   ["Browser caches (logins preserved)", "—", "PROTECTED"],
 ] as const;
+const CLEAN_ITEMS = CLEAN_CATS.map(([id, , risk]) => ({ id: id as string, risk }));
 export function StoragePage() {
   const [fileSel, setFileSel] = useState<Set<string>>(new Set());
-  const [cleanSel, setCleanSel] = useState<Set<string>>(
-    new Set(CLEAN_CATS.filter((c) => c[2] === "SAFE").map((c) => c[0])),
-  );
+  const clean = usePersistedSelection("storage-clean", CLEAN_ITEMS);
+  const { sel: cleanSel, setSel: setCleanSel } = clean;
   const [drive, setDrive] = useState("All drives");
   const [minimum, setMinimum] = useState("100 MB");
   const [sortFiles, setSortFiles] = useState("Size");
@@ -942,13 +943,8 @@ export function StoragePage() {
           <Btn size="sm" variant="ghost" onClick={() => simulate("Rescan sample cleanup")}>
             Rescan
           </Btn>
-          <Btn
-            size="sm"
-            onClick={() =>
-              setCleanSel(new Set(CLEAN_CATS.filter((c) => c[2] === "SAFE").map((c) => c[0])))
-            }
-          >
-            Select all safe
+          <Btn size="sm" onClick={clean.selectAll}>
+            Select all eligible
           </Btn>
           <Btn size="sm" variant="ghost" onClick={() => setCleanSel(new Set())}>
             Deselect all
@@ -1229,10 +1225,16 @@ const PROCS = [
     pid: 712,
   },
 ];
+// Only "safe to terminate" rows are selectable; caution and system processes never are.
+const PROC_ITEMS = PROCS.map((p) => ({
+  id: p.pid,
+  risk: p.s === "SAFE TO TERMINATE" ? ("SAFE" as const) : ("PROTECTED" as const),
+}));
 export function ProcessReductionPage() {
   const [f, setF] = useState("ALL");
   const [sort, setSort] = useState("SAFETY + RAM");
-  const [sel, setSel] = useState<Set<number>>(new Set());
+  const procSel = usePersistedSelection("process-reduction", PROC_ITEMS);
+  const { sel, setSel } = procSel;
   const [confirm, setConfirm] = useState(false);
   const [d, setD] = useState<(typeof PROCS)[number] | null>(null);
   const vis = PROCS.filter(
@@ -1298,12 +1300,7 @@ export function ProcessReductionPage() {
             onChange={setF}
           />
           <div className="flex gap-1.5">
-            <Btn
-              size="sm"
-              onClick={() =>
-                setSel(new Set(PROCS.filter((p) => p.s === "SAFE TO TERMINATE").map((p) => p.pid)))
-              }
-            >
+            <Btn size="sm" onClick={procSel.selectAll}>
               Select all safe
             </Btn>
             <Btn size="sm" variant="ghost" onClick={() => setSel(new Set())}>
@@ -1386,8 +1383,7 @@ export function ProcessReductionPage() {
               variant="danger"
               onClick={() => {
                 setConfirm(false);
-                setSel(new Set());
-                simulate("Terminate processes");
+                simulate(`Terminate ${sel.size} selected processes`);
               }}
             >
               Confirm terminate

@@ -2,17 +2,29 @@
 // 1. Overall Optimization Score · 2. Auto Optimize maintenance panel · 3. compact system
 // overview · 4. system information strip · 5. quick actions. Optimization Status was removed.
 // The full System Performance Telemetry chart lives on the System Telemetry page.
-import { memo, useState, type CSSProperties } from "react";
-import { Link } from "@tanstack/react-router";
+import { memo, useRef, useState, type CSSProperties } from "react";
+import { toast } from "sonner";
+import { Link, useNavigate } from "@tanstack/react-router";
 import {
+  Activity,
+  ArrowUpRight,
+  CheckCircle2,
   Cpu,
-  MemoryStick,
-  MonitorCog,
   HardDrive,
   HeartPulse,
-  RefreshCw,
-  ArrowUpRight,
   Info,
+  Loader2,
+  MemoryStick,
+  MonitorCog,
+  Play,
+  RefreshCw,
+  Rocket,
+  ShieldCheck,
+  Sparkles,
+  Trash2,
+  Wifi,
+  Zap,
+  type LucideIcon,
 } from "lucide-react";
 import {
   Badge,
@@ -27,12 +39,21 @@ import {
   SectionTitle,
   SimNotice,
   simulate,
+  useSimRun,
 } from "../kit";
+import { OpProgress } from "../RunModal";
+import {
+  QUICK_ACTIONS,
+  canStartQuick,
+  navigatesAway,
+  quickResult,
+  quickStepAt,
+  type QuickAction,
+} from "@/lib/eo/quickActions";
 import { CountUp, ScoreRing } from "../controls";
 import { AutoOptimizePanel } from "../AutoOptimizePanel";
 import { HW } from "@/lib/eo/data";
 import { SCORE_CATEGORIES, overallScore, scoreStatus } from "@/lib/eo/score";
-import { cn } from "@/lib/utils";
 
 const TILES = [
   {
@@ -66,65 +87,6 @@ const TILES = [
     l1: "920 GB / 2 TB",
     l2: "Samsung 990 PRO · Gen4",
     foot: "HEALTH 100%",
-  },
-];
-
-const QUICK = [
-  {
-    cat: "FULL TUNE",
-    title: "One-Click Optimize",
-    desc: "Analyze recommendations, review your selection, and confirm a simulated run",
-    tag: "REVIEW & CONFIRM",
-    to: "one-click",
-  },
-  {
-    cat: "STORAGE",
-    title: "Clean Temporary Files",
-    desc: "Purge Windows temp directories, Direct3D shader caches, and crash logs",
-    tag: "REVIEW CLEANUP",
-    to: "storage",
-  },
-  {
-    cat: "POWER",
-    title: "Boost Performance",
-    desc: "Switch Windows power plan to Ultimate and lock high-priority thread quantum",
-    tag: "POWER PROFILE",
-    to: "max-performance",
-  },
-  {
-    cat: "MEMORY",
-    title: "RAM Cleanup",
-    desc: "Trim inactive standby memory pages and flush fragmented working sets",
-    tag: "REVIEW MEMORY",
-    to: "process-reduction",
-  },
-  {
-    cat: "BOOT",
-    title: "Startup Manager",
-    desc: "Review high-impact startup telemetry agents and delayed services",
-    tag: "STARTUP APPS",
-    to: "startup-manager",
-  },
-  {
-    cat: "NETWORK",
-    title: "Network Boost",
-    desc: "Tune TCP Ack frequency, receive window scaling, and disable throttling",
-    tag: "NETWORK DIAGNOSTICS",
-    to: "network",
-  },
-  {
-    cat: "DIAGNOSTICS",
-    title: "View Telemetry",
-    desc: "Open the simulated CPU, RAM and GPU telemetry console",
-    tag: "DEMO TELEMETRY",
-    to: "system-info",
-  },
-  {
-    cat: "SAFETY",
-    title: "Create Restore Point",
-    desc: "Snapshot Windows registry hives and service configurations before tuning",
-    tag: "BACKUP OPTIONS",
-    to: "backup-restore",
   },
 ];
 
@@ -331,40 +293,210 @@ const SystemOverview = memo(function SystemOverview() {
   );
 });
 
-/* ── 5. Quick actions ── */
+/* ── 5. Quick actions — One-Click opens its page; every other action runs in place ── */
+const QUICK_ICONS: Record<string, LucideIcon> = {
+  "one-click": Sparkles,
+  temp: Trash2,
+  boost: Zap,
+  ram: MemoryStick,
+  startup: Rocket,
+  network: Wifi,
+  telemetry: Activity,
+  restore: ShieldCheck,
+};
+
 const QuickActions = memo(function QuickActions() {
+  const navigate = useNavigate();
+  const sim = useSimRun(2600);
+  const [activeId, setActiveId] = useState<string | null>(null);
+  const [doneId, setDoneId] = useState<string | null>(null);
+  const [open, setOpen] = useState(false);
+  const openRef = useRef(open);
+  openRef.current = open;
+  const runningId = sim.running ? activeId : null;
+  const action = QUICK_ACTIONS.find((a) => a.id === activeId) ?? null;
+  const progress = sim.progress ?? 0;
+  const stepIdx = action && sim.running ? quickStepAt(action, progress) : -1;
+  const phase = sim.running ? "running" : action && doneId === action.id ? "done" : "idle";
+
+  const trigger = (a: QuickAction) => {
+    if (navigatesAway(a)) {
+      navigate({ to: "/$page", params: { page: a.to ?? "" } });
+      return;
+    }
+    // Same action already running → just show its progress again.
+    if (runningId === a.id) {
+      setOpen(true);
+      return;
+    }
+    if (!canStartQuick(runningId)) return;
+    setActiveId(a.id);
+    setDoneId(null);
+    setOpen(true);
+    sim.start(() => {
+      setDoneId(a.id);
+      // Popup was dismissed while running: confirm completion with a compact toast instead.
+      if (!openRef.current) {
+        const r = quickResult(a);
+        toast.success(`${a.title} finished — simulated`, {
+          description: `${r.completed} completed · ${r.skipped} skipped · 0 changes on this PC`,
+        });
+      }
+    });
+  };
+
+  const result = action && phase === "done" ? quickResult(action) : null;
+  const ActionIcon = action ? (QUICK_ICONS[action.id] ?? Zap) : Zap;
+
   return (
     <section aria-labelledby="eo-quick-title">
       <SectionTitle
         id="eo-quick-title"
         title="QUICK ACTIONS"
-        badge={<Badge tone="cyan">8 TOOLS</Badge>}
-        sub="Open a tool page — every action there is a prototype simulation"
-        right={<Badge tone="warning">ALL ACTIONS SIMULATED</Badge>}
+        sub="Run a single optimization right here — One-Click opens its review page"
+        right={<Badge tone="warning">SIMULATED</Badge>}
       />
-      <div className="grid grid-cols-4 gap-2.5">
-        {QUICK.map((q) => (
-          <Link
-            key={q.title}
-            to="/$page"
-            params={{ page: q.to }}
-            className={cn("eo-quick-link group rounded-xl border border-border bg-window p-3.5")}
-          >
-            <Label className="text-[9.5px] text-cyan">{q.cat}</Label>
-            <div className="mt-1 flex items-start justify-between gap-2 text-[13px] font-bold">
-              {q.title}
-              <ArrowUpRight
-                aria-hidden="true"
-                className="eo-quick-arrow h-4 w-4 shrink-0 text-cyan"
-              />
-            </div>
-            <p className="mt-1 text-[11px] leading-snug text-muted-foreground">{q.desc}</p>
-            <div className="mt-2">
-              <Badge tone="success">{q.tag}</Badge>
-            </div>
-          </Link>
-        ))}
+      <div className="eo-quick-grid grid grid-cols-4 gap-2.5">
+        {QUICK_ACTIONS.map((q) => {
+          const Icon = QUICK_ICONS[q.id] ?? Zap;
+          const away = navigatesAway(q);
+          const isRunning = runningId === q.id;
+          const blocked = runningId !== null && !isRunning && !away;
+          const isDone = doneId === q.id && !sim.running;
+          return (
+            <button
+              key={q.id}
+              type="button"
+              onClick={() => trigger(q)}
+              aria-disabled={blocked || undefined}
+              aria-describedby={blocked ? "eo-quick-busy" : undefined}
+              data-state={isRunning ? "running" : isDone ? "done" : undefined}
+              data-primary={away ? "true" : undefined}
+              className="eo-quick"
+            >
+              <span className="flex items-start justify-between gap-2">
+                <span className="eo-quick-icon" aria-hidden="true">
+                  <Icon className="h-4 w-4" />
+                </span>
+                {away ? (
+                  <ArrowUpRight aria-hidden="true" className="eo-quick-arrow h-4 w-4 text-cyan" />
+                ) : isRunning ? (
+                  <Loader2 aria-hidden="true" className="h-4 w-4 animate-spin text-cyan" />
+                ) : isDone ? (
+                  <CheckCircle2 aria-hidden="true" className="h-4 w-4 text-success" />
+                ) : (
+                  <Play aria-hidden="true" className="eo-quick-arrow h-3.5 w-3.5 text-subtle" />
+                )}
+              </span>
+              <Label className="mt-2 text-[9.5px] text-cyan">{q.cat}</Label>
+              <span className="mt-0.5 block text-[13px] font-bold">{q.title}</span>
+              <span className="mt-0.5 block flex-1 text-[11px] leading-snug text-muted-foreground">
+                {q.desc}
+              </span>
+              <span className="eo-quick-foot">
+                {isRunning ? (
+                  <>
+                    <span className="eo-quick-progress" aria-hidden="true">
+                      <span style={{ width: `${progress}%` }} />
+                    </span>
+                    <span className="text-cyan tabular-nums">{Math.round(progress)}%</span>
+                  </>
+                ) : isDone ? (
+                  <span className="text-success">Done · simulated</span>
+                ) : away ? (
+                  <span className="text-cyan">Review &amp; confirm</span>
+                ) : (
+                  <span>Run now</span>
+                )}
+              </span>
+            </button>
+          );
+        })}
       </div>
+      <p id="eo-quick-busy" className="sr-only">
+        Another quick action is running. Wait for it to finish.
+      </p>
+
+      <Modal
+        open={open && action !== null}
+        onClose={() => setOpen(false)}
+        title={action?.title ?? "Quick action"}
+        sub={
+          phase === "running"
+            ? "Running on the Dashboard · simulated"
+            : "Quick action finished · simulated, nothing on this PC changed"
+        }
+        width="max-w-md"
+        icon={<ActionIcon className="h-4 w-4" />}
+        tone={result?.status === "Failed" ? "danger" : result ? "success" : "cyan"}
+        footer={
+          phase === "running" ? (
+            <Btn variant="ghost" onClick={() => setOpen(false)}>
+              Keep running in background
+            </Btn>
+          ) : (
+            <Btn variant="primary" onClick={() => setOpen(false)}>
+              Done
+            </Btn>
+          )
+        }
+      >
+        {action && (
+          <div className="space-y-3">
+            {phase === "running" && (
+              <OpProgress
+                value={progress}
+                title={action.steps[stepIdx]?.t ?? action.title}
+                detail={`Step ${stepIdx + 1} of ${action.steps.length}`}
+                active
+              />
+            )}
+            {result && (
+              <div className="eo-quick-summary" role="status">
+                <span>
+                  <b className="text-success">{result.completed}</b> completed
+                </span>
+                <span>
+                  <b className="text-warning">{result.skipped}</b> skipped
+                </span>
+                {result.failed > 0 && (
+                  <span>
+                    <b className="text-destructive">{result.failed}</b> failed
+                  </span>
+                )}
+                <span>
+                  <b>0</b> changes on this PC
+                </span>
+              </div>
+            )}
+            <ol className="space-y-1.5" aria-label="Steps">
+              {action.steps.map((st, i) => {
+                const state =
+                  phase === "done"
+                    ? st.outcome
+                    : i < stepIdx
+                      ? "Completed"
+                      : i === stepIdx
+                        ? "Running"
+                        : "Pending";
+                return (
+                  <li key={st.t} className="eo-quick-step" data-state={state}>
+                    <span className="eo-quick-step-dot" aria-hidden="true" />
+                    <span className="min-w-0 flex-1">
+                      <span className="block truncate text-[12px] font-semibold">{st.t}</span>
+                      <span className="block truncate text-[11px] text-muted-foreground">
+                        {phase === "done" && st.reason ? st.reason : st.detail}
+                      </span>
+                    </span>
+                    <span className="eo-quick-step-state">{state}</span>
+                  </li>
+                );
+              })}
+            </ol>
+            <p className="text-[10.5px] text-subtle">Source: {action.source}</p>
+          </div>
+        )}
+      </Modal>
     </section>
   );
 });

@@ -15,7 +15,7 @@ export interface MaintTask {
   /** Where the operation already exists in the project. */
   source: string;
   details: string;
-  /** Selected in a fresh configuration (SAFE items only). */
+  /** Selected in a fresh configuration: every eligible task except ones needing confirmation. */
   recommended: boolean;
   browser?: "Chrome" | "Edge" | "Firefox";
   /** Sample amount shown in history — prototype data, never measured. */
@@ -66,7 +66,7 @@ export const MAINT_TASKS: MaintTask[] = [
     risk: "SAFE",
     source: "Storage · Crash dumps & error reports",
     details: "Keeps the most recent dump so a fresh crash can still be investigated.",
-    recommended: false,
+    recommended: true,
     sample: "96 MB · 14 files",
   },
   {
@@ -90,7 +90,7 @@ export const MAINT_TASKS: MaintTask[] = [
     source: "Storage · Browser caches (logins preserved)",
     details:
       "Cache folders only. Skipped while Chrome is running — Chrome is never closed for you.",
-    recommended: false,
+    recommended: true,
     sample: "540 MB",
   },
   {
@@ -102,7 +102,7 @@ export const MAINT_TASKS: MaintTask[] = [
     browser: "Edge",
     source: "Storage · Browser caches (logins preserved)",
     details: "Cache folders only. Skipped while Edge is running — Edge is never closed for you.",
-    recommended: false,
+    recommended: true,
     sample: "310 MB",
   },
   {
@@ -115,7 +115,7 @@ export const MAINT_TASKS: MaintTask[] = [
     source: "Storage · Browser caches (logins preserved)",
     details:
       "Cache folders only. Skipped while Firefox is running — Firefox is never closed for you.",
-    recommended: false,
+    recommended: true,
     sample: "188 MB",
   },
   {
@@ -138,7 +138,7 @@ export const MAINT_TASKS: MaintTask[] = [
     risk: "LOW",
     source: "Storage · DirectX shader cache / Tools",
     details: "First launch of a game afterwards may stutter briefly while shaders rebuild.",
-    recommended: false,
+    recommended: true,
     sample: "640 MB",
   },
   {
@@ -149,7 +149,7 @@ export const MAINT_TASKS: MaintTask[] = [
     risk: "SAFE",
     source: "Tools · Flush DNS Resolver Cache",
     details: "Equivalent to ipconfig /flushdns. No network settings are changed.",
-    recommended: false,
+    recommended: true,
     sample: "212 entries",
   },
 ];

@@ -25,6 +25,7 @@ import {
 import { RunModal } from "../RunModal";
 import { TelemetryConsole } from "../Telemetry";
 import { toggleInSet } from "@/lib/eo/selection";
+import { usePersistedSelection } from "../useSelection";
 import { CATALOG, HW } from "@/lib/eo/data";
 import { cn } from "@/lib/utils";
 
@@ -41,9 +42,15 @@ const ADV_INPUT = [
   "High-precision timer request",
   "USB selective suspend (input devices)",
 ];
+// First row of each list is already applied on the sample system (shown as OPTIMIZED).
+const INPUT_ITEMS = [...NORMAL_INPUT, ...ADV_INPUT].map((id) => ({
+  id,
+  risk: "LOW" as const,
+  done: id === NORMAL_INPUT[0] || id === ADV_INPUT[0],
+}));
 export function InputOptimizerPage() {
   const [mode, setMode] = useState("NORMAL");
-  const [sel, setSel] = useState<Set<string>>(new Set());
+  const { sel, setSel } = usePersistedSelection("input-optimizer", INPUT_ITEMS);
   const test = useSimRun(2500);
   const [run, setRun] = useState(false);
   const [tested, setTested] = useState(false);
@@ -52,7 +59,7 @@ export function InputOptimizerPage() {
       <SectionTitle title={title} sub={sub} right={<Badge>{items.length} sample settings</Badge>} />
       {mode === "CUSTOM" && (
         <div className="mb-2 flex gap-1.5">
-          <Btn size="sm" onClick={() => setSel((s) => new Set([...s, ...items]))}>
+          <Btn size="sm" onClick={() => setSel((s) => new Set([...s, ...items.slice(1)]))}>
             Select all
           </Btn>
           <Btn
@@ -378,17 +385,26 @@ const REG_CATS = [
   "NTFS",
   "SYSTEM",
 ];
+const REG_LIST = CATALOG.map((c, i) => ({
+  ...c,
+  state: i % 5 === 0 ? "OPTIMIZED" : i % 7 === 0 ? "NOT APPLICABLE" : "PENDING",
+}));
+// Already-optimized rows are not re-selected; not-applicable rows can never be selected.
+const REG_ITEMS = REG_LIST.map((i) => ({
+  id: i.id,
+  risk: i.risk,
+  done: i.state === "OPTIMIZED",
+  unsupported: i.state === "NOT APPLICABLE",
+}));
 export function RegistryTweakPage() {
   const [mode, setMode] = useState("NORMAL");
   const [cat, setCat] = useState("ALL");
   const [q, setQ] = useState("");
-  const [sel, setSel] = useState<Set<string>>(new Set());
+  const reg = usePersistedSelection("registry-tweak", REG_ITEMS);
+  const { sel, setSel } = reg;
   const [detail, setDetail] = useState<(typeof CATALOG)[number] | null>(null);
   const [run, setRun] = useState(false);
-  const list = CATALOG.map((c, i) => ({
-    ...c,
-    state: i % 5 === 0 ? "OPTIMIZED" : i % 7 === 0 ? "NOT APPLICABLE" : "PENDING",
-  }));
+  const list = REG_LIST;
   const vis = list.filter(
     (i) =>
       (cat === "ALL" ||
@@ -506,6 +522,9 @@ export function RegistryTweakPage() {
             </div>
             <Chips options={REG_CATS} value={cat} onChange={setCat} />
             <div className="mt-3 flex justify-end gap-1.5">
+              <Btn size="sm" onClick={reg.selectAll}>
+                Select all eligible
+              </Btn>
               <Btn size="sm" variant="ghost" onClick={() => setSel(new Set())}>
                 Deselect all
               </Btn>
@@ -529,15 +548,15 @@ export function RegistryTweakPage() {
                     key={i.id}
                     className="flex items-center gap-3 rounded-lg border border-border bg-window px-3 py-2 text-[12.5px]"
                   >
-                    <Check
-                      label={`Select ${i.name}`}
-                      on={sel.has(i.id)}
-                      onChange={() =>
-                        setSel((s) => {
-                          return toggleInSet(s, i.id);
-                        })
-                      }
-                    />
+                    {i.state === "NOT APPLICABLE" ? (
+                      <span className="w-4.5 shrink-0" aria-hidden="true" />
+                    ) : (
+                      <Check
+                        label={`Select ${i.name}`}
+                        on={sel.has(i.id)}
+                        onChange={() => setSel((s) => toggleInSet(s, i.id))}
+                      />
+                    )}
                     <button
                       className="flex-1 text-left hover:text-cyan"
                       onClick={() => setDetail(i)}
@@ -779,34 +798,41 @@ export function RegistryValuesRamPage() {
   );
 }
 
+const GPU_GROUPS = [
+  {
+    name: "UNIVERSAL GPU",
+    tag: "SYSTEM-WIDE",
+    detected: true,
+    items: [
+      "Hardware-Accelerated GPU Scheduling (HAGS)",
+      "GPU priority for games (MMCSS)",
+      "TDR delay calibration",
+    ],
+  },
+  {
+    name: "NVIDIA GPU",
+    tag: "GEFORCE / RTX",
+    detected: true,
+    items: ["NVIDIA PowerMizer Maximum Performance Mode", "Disable NVIDIA telemetry container"],
+  },
+  {
+    name: "AMD GPU",
+    tag: "RADEON / ADRENALIN",
+    detected: false,
+    items: ["AMD Radeon ULPS Disable", "AMD shader cache mode"],
+  },
+];
+const GPU_ITEMS = GPU_GROUPS.flatMap((g) =>
+  g.items.map((id) => ({ id, risk: "MEDIUM" as const, unsupported: !g.detected })),
+);
+
 export function GpuRegistryValuesPage() {
   const [policy, setPolicy] = useState("Recommended");
-  const [sel, setSel] = useState<Set<string>>(new Set());
+  // Each profile policy keeps its own selection; undetected vendors are never selectable.
+  const gpu = usePersistedSelection(`gpu:${policy}`, GPU_ITEMS);
+  const { sel, setSel } = gpu;
   const [detail, setDetail] = useState<string | null>(null);
-  const groups = [
-    {
-      name: "UNIVERSAL GPU",
-      tag: "SYSTEM-WIDE",
-      detected: true,
-      items: [
-        "Hardware-Accelerated GPU Scheduling (HAGS)",
-        "GPU priority for games (MMCSS)",
-        "TDR delay calibration",
-      ],
-    },
-    {
-      name: "NVIDIA GPU",
-      tag: "GEFORCE / RTX",
-      detected: true,
-      items: ["NVIDIA PowerMizer Maximum Performance Mode", "Disable NVIDIA telemetry container"],
-    },
-    {
-      name: "AMD GPU",
-      tag: "RADEON / ADRENALIN",
-      detected: false,
-      items: ["AMD Radeon ULPS Disable", "AMD shader cache mode"],
-    },
-  ];
+  const groups = GPU_GROUPS;
   return (
     <div className="space-y-4">
       <PageHeader
@@ -862,12 +888,7 @@ export function GpuRegistryValuesPage() {
         title="HARDWARE-AWARE OPTIMIZATION GROUPS"
         right={
           <>
-            <Btn
-              size="sm"
-              onClick={() =>
-                setSel(new Set(groups.filter((g) => g.detected).flatMap((g) => g.items)))
-              }
-            >
+            <Btn size="sm" onClick={gpu.selectAll}>
               Select all applicable
             </Btn>
             <Btn size="sm" variant="ghost" onClick={() => setSel(new Set())}>

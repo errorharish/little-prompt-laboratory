@@ -66,11 +66,13 @@ describe("Auto Optimize safety rules", () => {
       planRun(cfg({ tasks: ["recycle-bin"], recycleConfirm: false }), "Schedule")[0]?.run,
     ).toBe(true);
   });
-  it("browser tasks are cache-only and never selected by default", () => {
+  it("selects every eligible task by default except the Recycle Bin", () => {
     const browser = MAINT_TASKS.filter((t) => t.category === "BROWSER");
     expect(browser.length).toBe(3);
-    expect(browser.every((t) => !DEFAULT_CONFIG.tasks.includes(t.id))).toBe(true);
+    // Browser tasks are cache-only, so they are eligible defaults.
+    expect(browser.every((t) => DEFAULT_CONFIG.tasks.includes(t.id))).toBe(true);
     expect(DEFAULT_CONFIG.tasks).not.toContain("recycle-bin");
+    expect(DEFAULT_CONFIG.tasks.length).toBe(MAINT_TASKS.length - 1);
   });
   it("never overlaps runs: skip policy skips, queue policy queues at most one", () => {
     expect(onScheduleDue(false, false, "skip")).toBe("start");

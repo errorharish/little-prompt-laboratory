@@ -1,22 +1,19 @@
-// Shared state for the 1-Click / Auto Optimize workflow: Analyze → Review → Confirm → Result.
-// Used by the dedicated 1-Click page and the Dashboard Auto Optimize panel so there is one
-// workflow, not two. Selection and summaries go through src/lib/eo/selection.ts.
+// Shared state for the 1-Click workflow: Analyze → Review → Confirm → Result.
+// Selection and summaries go through src/lib/eo/selection.ts; the selection itself is
+// persisted (first use: every eligible action selected, protected items never).
 import { useMemo, useState } from "react";
 import { useSimRun } from "./kit";
+import { usePersistedSelection } from "./useSelection";
 import { ONE_CLICK_ACTIONS } from "@/lib/eo/data";
-import {
-  recommendedSelection,
-  summarizeSelection,
-  toggleInSet,
-  type SimulatedRunSummary,
-} from "@/lib/eo/selection";
+import { summarizeSelection, type SimulatedRunSummary } from "@/lib/eo/selection";
 
 export type LastRun = SimulatedRunSummary & { at: string; titles: string[] };
 
 export function useOptimizeWorkflow(scanMs = 1400) {
   const scan = useSimRun(scanMs);
   const [analyzed, setAnalyzed] = useState(false);
-  const [sel, setSel] = useState<Set<string>>(new Set());
+  const selection = usePersistedSelection("one-click", ONE_CLICK_ACTIONS);
+  const { sel, setSel } = selection;
   const [lastRun, setLastRun] = useState<LastRun | null>(null);
 
   const summary = useMemo(() => summarizeSelection(ONE_CLICK_ACTIONS, sel), [sel]);
@@ -30,16 +27,15 @@ export function useOptimizeWorkflow(scanMs = 1400) {
     summary,
     selectedItems,
     lastRun,
-    toggle: (id: string) => setSel((s) => toggleInSet(s, id)),
-    /** Loads the sample recommendations; protected items are never pre-selected. */
+    toggle: selection.toggle,
+    /** Loads the sample recommendations; the saved (or default eligible) selection is kept. */
     analyze: (onDone?: () => void) =>
       scan.start(() => {
         setAnalyzed(true);
-        setSel(recommendedSelection(ONE_CLICK_ACTIONS));
         onDone?.();
       }),
-    selectRecommended: () => setSel(recommendedSelection(ONE_CLICK_ACTIONS)),
-    clear: () => setSel(new Set()),
+    selectRecommended: selection.selectAll,
+    clear: selection.clear,
     complete: (s: SimulatedRunSummary) =>
       setLastRun({
         ...s,

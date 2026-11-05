@@ -64,6 +64,35 @@ function useActiveBox(deps: unknown[]) {
   return { ref, box };
 }
 
+const V4_TAB_META: Record<(typeof V4_TABS)[number], { label: string; sub: string }> = {
+  "v4-max-performance": { label: "Maximum Performance", sub: "Host engine" },
+  "emulator-optimization": { label: "Emulator Optimization", sub: "MSI App Player 5" },
+};
+/** Secondary V4 destinations and the tab they belong to. */
+const V4_CHILDREN: Record<(typeof V4_TABS)[number], string[]> = {
+  "v4-max-performance": ["v4-dashboard", "v4-core-optimizer"],
+  "emulator-optimization": ["emulator-modules", "emulator-deployer", "low-end-steam"],
+};
+
+/** Right side of the V4 bar: where you are inside a tab (e.g. Emulator › Module Hub). */
+function V4Crumb({ slug }: { slug: string }) {
+  const parent = V4_TABS.find((t) => V4_CHILDREN[t].includes(slug));
+  const page = pageBySlug(slug);
+  if (!parent || !page)
+    return <span className="eo-v4-crumb text-subtle">V4 · independent from V3 1-Click</span>;
+  return (
+    <nav aria-label="Breadcrumb" className="eo-v4-crumb">
+      <Link to="/$page" params={{ page: parent }} className="hover:text-cyan">
+        {V4_TAB_META[parent].label}
+      </Link>
+      <span aria-hidden="true">›</span>
+      <span aria-current="page" className="text-foreground">
+        {slug === "emulator-modules" ? "Module Hub" : page.title}
+      </span>
+    </nav>
+  );
+}
+
 export function Shell({ children }: { children: ReactNode }) {
   const loc = useLocation();
   const navigate = useNavigate();
@@ -93,42 +122,44 @@ export function Shell({ children }: { children: ReactNode }) {
       </a>
       {/* ── Title bar (48px) ── */}
       <header className="eo-shell-header relative z-20 flex h-12 shrink-0 items-center justify-between px-4">
-        <div className="flex items-center gap-3">
-          <div className="eo-brand flex h-7 w-7 items-center justify-center rounded-lg eo-glow">
-            <Zap aria-hidden="true" className="h-3.5 w-3.5 fill-current text-primary-foreground" />
-          </div>
-          <span className="eo-shell-brand text-[14px] font-black">ERROR OPTIMIZER</span>
+        <div className="flex items-center gap-3.5">
+          <Link to="/" className="eo-logo" aria-label="ERROR OPTIMIZER — Dashboard">
+            <span className="eo-logo-mark" aria-hidden="true">
+              <Zap className="h-3.5 w-3.5" />
+            </span>
+            <span className="eo-logo-text">
+              <span className="eo-shell-brand">ERROR OPTIMIZER</span>
+              <span className="eo-logo-edition">{isV4 ? "V4 PROFESSIONAL" : "V3 CLASSIC"}</span>
+            </span>
+          </Link>
           <div
             role="group"
             aria-label="Suite"
-            className="eo-suite-pill flex rounded-md border border-border bg-background/70 p-0.5"
+            className="eo-suite"
+            data-v4={isV4 ? "true" : undefined}
           >
+            <span aria-hidden="true" className="eo-suite-thumb" />
             {(["V3", "V4"] as const).map((v) => (
-              <Btn
+              <button
                 key={v}
-                size="sm"
-                variant="ghost"
-                pressed={(v === "V4") === !!isV4}
+                type="button"
+                aria-pressed={(v === "V4") === !!isV4}
                 title={
                   v === "V3"
                     ? "Switch to Error Optimizer V3 Classic Suite"
                     : "Switch to Error Optimizer V4 Professional Suite"
                 }
-                onClick={() =>
+                onClick={() => {
+                  if ((v === "V4") === !!isV4) return;
                   navigate({
                     to: v === "V3" ? "/" : "/$page",
                     params: v === "V4" ? { page: "v4-max-performance" } : undefined,
-                  } as never)
-                }
-                className={cn(
-                  "h-6 rounded border-0 px-3 text-[10.5px] font-black tracking-widest",
-                  (v === "V4") === !!isV4
-                    ? "eo-brand text-primary-foreground"
-                    : "text-muted-foreground hover:text-foreground",
-                )}
+                  } as never);
+                }}
+                className="eo-suite-opt"
               >
                 {v}
-              </Btn>
+              </button>
             ))}
           </div>
         </div>
@@ -160,11 +191,19 @@ export function Shell({ children }: { children: ReactNode }) {
 
       {/* ── V4 top navigation (MainWindow.xaml: exactly 2 tabs) ── */}
       {isV4 && (
-        <div className="eo-shell-tabs relative z-10 flex h-11 shrink-0 items-center justify-between border-b border-border px-4">
+        <div className="eo-shell-tabs eo-v4-nav relative z-10 flex shrink-0 items-center justify-between border-b border-border px-4">
           <nav
             ref={tabBox.ref}
             aria-label="V4 sections"
-            className="relative flex h-full items-center gap-1"
+            className="relative flex h-full items-center gap-1.5"
+            onKeyDown={(e) => {
+              if (e.key !== "ArrowRight" && e.key !== "ArrowLeft") return;
+              const links = Array.from(e.currentTarget.querySelectorAll<HTMLElement>("a"));
+              const i = links.indexOf(document.activeElement as HTMLElement);
+              if (i < 0) return;
+              e.preventDefault();
+              links[(i + (e.key === "ArrowRight" ? 1 : links.length - 1)) % links.length]?.focus();
+            }}
           >
             {tabBox.box && (
               <span
@@ -181,12 +220,8 @@ export function Shell({ children }: { children: ReactNode }) {
             {V4_TABS.map((s) => {
               const p = pageBySlug(s);
               if (!p) return null;
-              const active =
-                slug === s ||
-                (s === "emulator-optimization" &&
-                  ["emulator-modules", "emulator-deployer", "low-end-steam"].includes(slug)) ||
-                (s === "v4-max-performance" &&
-                  ["v4-dashboard", "v4-core-optimizer"].includes(slug));
+              const meta = V4_TAB_META[s];
+              const active = slug === s || V4_CHILDREN[s].includes(slug);
               return (
                 <Link
                   key={s}
@@ -194,20 +229,20 @@ export function Shell({ children }: { children: ReactNode }) {
                   params={{ page: s }}
                   title={p.tooltip}
                   aria-current={active ? "page" : undefined}
-                  className={cn(
-                    "eo-nav-item relative flex h-8 items-center gap-2 rounded-lg px-4 text-[11px] font-bold tracking-[0.12em]",
-                    active
-                      ? "text-cyan"
-                      : "text-muted-foreground hover:bg-highlight/50 hover:text-foreground",
-                  )}
+                  className="eo-nav-item eo-v4-tab"
                 >
-                  <Icon name={p.icon} className="h-4 w-4" />
-                  {s === "v4-max-performance" ? "MAXIMUM PERFORMANCE" : "EMULATOR OPTIMIZATION"}
+                  <span className="eo-v4-tab-icon" aria-hidden="true">
+                    <Icon name={p.icon} className="h-4 w-4" />
+                  </span>
+                  <span className="flex min-w-0 flex-col leading-tight">
+                    <span className="eo-v4-tab-label">{meta.label}</span>
+                    <span className="eo-v4-tab-sub">{meta.sub}</span>
+                  </span>
                 </Link>
               );
             })}
           </nav>
-          <span className="text-[10px] font-semibold text-subtle">Independent from V3 1-Click</span>
+          <V4Crumb slug={slug} />
         </div>
       )}
 
