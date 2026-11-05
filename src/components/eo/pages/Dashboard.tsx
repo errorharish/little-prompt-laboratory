@@ -43,7 +43,7 @@ import {
   useSimRun,
 } from "../kit";
 import { GuideTip } from "../Guide";
-import { OpProgress } from "../RunModal";
+import { OpProgress } from "../OpProgress";
 import {
   NAV_SHORTCUTS,
   QUICK_OPTIMIZE,

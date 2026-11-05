@@ -4,7 +4,7 @@
 import { useMemo, useSyncExternalStore, type CSSProperties } from "react";
 import { Activity, AlertTriangle, HeartPulse, Info } from "lucide-react";
 import { Badge, Btn, Card, DemoBadge, Details, SectionTitle, useSimRun } from "./kit";
-import { OpProgress } from "./RunModal";
+import { OpProgress } from "./OpProgress";
 import { CountUp, ScoreRing } from "./controls";
 import {
   ATTENTION_BELOW,

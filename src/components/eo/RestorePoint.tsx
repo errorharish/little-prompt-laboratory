@@ -13,7 +13,7 @@ import {
   type LucideIcon,
 } from "lucide-react";
 import { Badge, Btn, KV, Modal } from "./kit";
-import { OpProgress } from "./RunModal";
+import { OpProgress } from "./OpProgress";
 import { getRestoreState, setRestoreState } from "./restorePointStore";
 import {
   MANUAL_ENABLE_STEPS,
