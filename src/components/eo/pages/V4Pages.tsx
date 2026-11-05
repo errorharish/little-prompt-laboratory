@@ -162,7 +162,10 @@ export function V4MaxPerformancePage() {
             <div className="eo-v4-head">
               <div className="min-w-0">
                 <Label className="text-cyan">OPTIMIZATION SCOPE</Label>
-                <h2 className="mt-0.5 text-[15px] font-bold">Host latency workflow</h2>
+                <h2 className="mt-0.5 flex items-center gap-1.5 text-[15px] font-bold">
+                  Host latency workflow
+                  <GuideTip id="v4.scope" />
+                </h2>
               </div>
               <SelectionBar
                 count={scope.sel.size}
@@ -258,9 +261,12 @@ export function V4MaxPerformancePage() {
         <aside aria-label="Engine status" className="eo-stagger space-y-3">
           <Card className="eo-v4-rail">
             <div className="flex items-center justify-between gap-2">
-              <Label as="h2" className="text-foreground">
-                ENGINE
-              </Label>
+              <span className="flex items-center gap-1.5">
+                <Label as="h2" className="text-foreground">
+                  ENGINE
+                </Label>
+                <GuideTip id="emu.engines" />
+              </span>
               <Btn size="sm" variant="ghost" onClick={() => simulate("Retry service")}>
                 Retry service
               </Btn>
@@ -415,6 +421,11 @@ const ENGINES = [
     needsAdb: true,
   },
 ];
+const MODULE_GUIDE: Record<string, GuideId> = {
+  "EMULATOR OPTIMIZATION": "emulator-optimization",
+  "DEEP DEBLOATER": "hub.debloater",
+  "LOW-END EXTREME": "hub.lowend",
+};
 const GUIDE_SECTIONS = [
   ["1. Getting Started", "Architecture & sequence"],
   ["2. Maximum Performance", "Host Windows tuning suite"],
@@ -980,7 +991,10 @@ export function EmulatorModulesPage() {
                 </Label>
                 <Badge tone="success">{m.tag}</Badge>
               </div>
-              <h2 className="mt-2 text-[15px] font-bold">{m.n}</h2>
+              <h2 className="mt-2 flex items-center gap-1.5 text-[15px] font-bold">
+                {m.n}
+                <GuideTip id={MODULE_GUIDE[m.k] ?? "emulator-modules"} />
+              </h2>
               <p className="text-[12px] text-muted-foreground">{m.sub}</p>
               <div className="mt-2 text-[11px] text-subtle">{m.suit}</div>
               <ul className="mt-3 flex-1 space-y-1 text-[11.5px] text-muted-foreground">
@@ -1091,7 +1105,10 @@ export function EmulatorModulesPage() {
         <Card>
           <div className="eo-v4-head">
             <div className="min-w-0">
-              <Label className="text-cyan">EMULATOR COMPONENTS</Label>
+              <span className="flex items-center gap-1.5">
+                <Label className="text-cyan">EMULATOR COMPONENTS</Label>
+                <GuideTip id="hub.debloater" />
+              </span>
               <p className="mt-0.5 text-[11px] text-success">
                 Read-only protected configs · reversible package disabling
               </p>
@@ -1149,7 +1166,10 @@ export function EmulatorModulesPage() {
         <Card>
           <div className="eo-v4-head">
             <div className="min-w-0">
-              <Label className="text-cyan">LOW-END EXTREME TARGETING</Label>
+              <span className="flex items-center gap-1.5">
+                <Label className="text-cyan">LOW-END EXTREME TARGETING</Label>
+                <GuideTip id="hub.lowend" />
+              </span>
               <p className="mt-0.5 text-[11px] text-muted-foreground">
                 Dual/quad-core CPUs, Intel HD/UHD graphics, 4–8 GB RAM · unprivileged
               </p>

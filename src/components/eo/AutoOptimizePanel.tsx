@@ -142,6 +142,7 @@ export function AutoOptimizePanel() {
           <div>
             <div className="flex flex-wrap items-center gap-2">
               <h2 className="text-[15px] font-black uppercase">Auto Optimize</h2>
+              <GuideTip id="dashboard.auto" />
               <StatusPill status={status} />
               <Badge tone="warning">SIMULATED</Badge>
             </div>

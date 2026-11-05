@@ -222,6 +222,7 @@ function TierView({ slug, t }: { slug: string; t: TierInfo }) {
         <Card>
           <SectionTitle
             title="DEBLOAT TOOLBOX"
+            guide="tier.debloat"
             right={
               <Btn size="sm" onClick={() => setBlock(true)}>
                 Customize blocklist
@@ -254,6 +255,7 @@ function TierView({ slug, t }: { slug: string; t: TierInfo }) {
       <Card>
         <SectionTitle
           title="WHAT WILL CHANGE (OPTIMIZATION PREVIEW)"
+          guide="tier.preview"
           right={
             <Btn size="sm" variant="ghost" onClick={() => simulate("Save custom profile")}>
               Save custom profile
@@ -340,6 +342,7 @@ function TierView({ slug, t }: { slug: string; t: TierInfo }) {
         <Card>
           <SectionTitle
             title="MANUAL UEFI / FIRMWARE OPTIMIZATIONS"
+            guide="tier.uefi"
             sub="These must be changed by you in firmware setup. Error Optimizer only guides and verifies."
             right={
               <Btn size="sm" variant="danger" onClick={() => simulate("Reboot to UEFI firmware")}>

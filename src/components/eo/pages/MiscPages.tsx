@@ -336,7 +336,10 @@ export function AiOptimizationPage() {
             </Card>
             <Card>
               <div className="mb-3 flex items-center gap-2">
-                <Label className="text-foreground">WINDOWS POWER PLANS</Label>
+                <span className="flex items-center gap-1.5">
+                  <Label className="text-foreground">WINDOWS POWER PLANS</Label>
+                  <GuideTip id="ai.power" />
+                </span>
                 <Badge tone="warning">SAMPLE PLANS</Badge>
               </div>
               <div className="space-y-1.5">
@@ -441,6 +444,7 @@ function RamLimiterPanel({
           <div>
             <div className="flex flex-wrap items-center gap-2">
               <h2 className="text-[15px] font-black uppercase">RAM Limiter</h2>
+              <GuideTip id="ai.ram-limiter" />
               <Badge tone="warning">SAMPLE TARGET</Badge>
             </div>
             <p className="mt-0.5 max-w-xl text-[11.5px] text-muted-foreground">
@@ -1010,7 +1014,7 @@ export function SettingsPage() {
         </Row>
       </Card>
       <Card>
-        <SectionTitle title="SAFETY GUARDRAILS & TRANSACTIONAL RECOVERY" />
+        <SectionTitle title="SAFETY GUARDRAILS & TRANSACTIONAL RECOVERY" guide="settings.safety" />
         <Row t="Confirm Medium Risk" s="Prompt before moderate system changes">
           <Tog />
         </Row>
