@@ -1,7 +1,16 @@
 // InputOptimizerView, SystemInfoView, RegistryTweakView, RegistryValuesView, RegistryValuesRamView, GpuRegistryValuesView
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { toast } from "sonner";
-import { CheckCircle2, Cpu, MousePointer2, SlidersHorizontal } from "lucide-react";
+import {
+  CheckCircle2,
+  Cpu,
+  HeartPulse,
+  Loader2,
+  MousePointer2,
+  SlidersHorizontal,
+} from "lucide-react";
+import { CountUp, ScoreRing } from "../controls";
+import { MIN_COVERAGE, SAMPLE_HEALTH_INPUT, computeHealth } from "@/lib/eo/health";
 import { Link } from "@tanstack/react-router";
 import {
   Badge,
@@ -10,6 +19,7 @@ import {
   Card,
   Check,
   CheckRow,
+  DemoBadge,
   Chips,
   Cols,
   Details,
@@ -399,9 +409,205 @@ export function InputOptimizerPage() {
 }
 
 /* ───────── SYSTEM TELEMETRY ───────── */
+const HEALTH_KEY = "eo-health-last";
+const KIND_LABEL: Record<string, string> = {
+  utilization: "LOAD",
+  health: "HARDWARE",
+  responsiveness: "RESPONSIVENESS",
+};
+
+function SystemHealthCheck() {
+  const [last, setLast] = useState<number | null>(null);
+  useEffect(() => {
+    const v = Number(window.localStorage.getItem(HEALTH_KEY));
+    if (v > 0) setLast(v);
+  }, []);
+  const run = useSimRun(2600);
+  const result = useMemo(() => computeHealth(SAMPLE_HEALTH_INPUT), []);
+  const step = run.running
+    ? Math.min(result.categories.length - 1, Math.floor(((run.progress ?? 0) / 100) * result.categories.length))
+    : -1;
+  const shown = last !== null && !run.running;
+  const start = () =>
+    run.start(() => {
+      const t = Date.now();
+      setLast(t);
+      try {
+        window.localStorage.setItem(HEALTH_KEY, String(t));
+      } catch {
+        /* ignore */
+      }
+    });
+  const tone = (v: number | null) =>
+    v === null ? "text-subtle" : v >= 85 ? "text-success" : v >= 70 ? "text-warning" : "text-destructive";
+  return (
+    <Card className="eo-health" glow={shown}>
+      <div className="eo-health-head">
+        <div className="eo-health-ring">
+          <ScoreRing
+            value={shown ? (result.overall ?? 0) : 0}
+            size={132}
+            stroke={10}
+            label={
+              shown
+                ? `System health ${result.overall ?? "not available"} out of 100, ${result.status}`
+                : "System health not checked yet"
+            }
+          >
+            {run.running ? (
+              <Loader2 aria-hidden="true" className="eo-spin h-6 w-6 text-cyan" />
+            ) : shown && result.overall !== null ? (
+              <>
+                <span className="text-[30px] leading-none font-black tabular-nums">
+                  <CountUp value={result.overall} />
+                </span>
+                <span className="text-[10px] font-bold text-subtle">/ 100</span>
+              </>
+            ) : (
+              <span className="text-[22px] font-black text-subtle">—</span>
+            )}
+          </ScoreRing>
+        </div>
+        <div className="min-w-0 flex-1">
+          <div className="flex flex-wrap items-center gap-2">
+            <Label as="h2" className="text-foreground">
+              SYSTEM HEALTH CHECK
+            </Label>
+            <GuideTip id="telemetry.health" />
+            <DemoBadge label="SAMPLE DATA" />
+          </div>
+          <div className={cn("mt-1 text-[18px] font-black uppercase", shown ? tone(result.overall) : "text-subtle")}>
+            {run.running ? "Analyzing…" : shown ? result.status : "Not checked yet"}
+          </div>
+          <p className="mt-0.5 max-w-xl text-[11.5px] text-muted-foreground">
+            Weighted score from CPU, memory, GPU, storage and responsiveness readings. Load and
+            hardware health are scored separately; missing readings are left out, never counted
+            as healthy.
+          </p>
+          <div className="mt-2 flex flex-wrap items-center gap-3 text-[11px] text-muted-foreground">
+            <span>
+              Last check:{" "}
+              <b className="text-foreground">{last ? new Date(last).toLocaleString() : "Never"}</b>
+            </span>
+            {shown && (
+              <span>
+                Coverage: <b className="text-foreground">{Math.round(result.coverage * 100)}%</b>
+              </span>
+            )}
+          </div>
+        </div>
+        <Btn variant="primary" loading={run.running} onClick={start}>
+          <HeartPulse aria-hidden="true" className="h-3.5 w-3.5" />
+          {last ? "Run again" : "Run System Health Check"}
+        </Btn>
+      </div>
+
+      {run.running && (
+        <ol className="eo-health-steps" aria-label="Health check progress">
+          {result.categories.map((c, i) => (
+            <li key={c.key} data-state={i < step ? "done" : i === step ? "active" : undefined}>
+              <span className="eo-quick-step-dot" aria-hidden="true" />
+              {c.label}
+            </li>
+          ))}
+        </ol>
+      )}
+
+      {shown && (
+        <div className="eo-health-body">
+          <ul className="eo-health-cats" aria-label="Category scores">
+            {result.categories.map((c) => (
+              <li key={c.key}>
+                <div className="flex items-baseline justify-between gap-2">
+                  <span className="text-[12px] font-bold">{c.label}</span>
+                  <span className={cn("text-[15px] font-black tabular-nums", tone(c.score))}>
+                    {c.score ?? "—"}
+                  </span>
+                </div>
+                <Bar
+                  value={c.score ?? 0}
+                  tone={c.score === null ? undefined : c.score >= 85 ? "success" : "warning"}
+                  className="mt-1"
+                />
+                <div className="mt-1.5 space-y-0.5">
+                  {c.metrics.map((m) => (
+                    <div key={m.key} className="flex items-center justify-between gap-2 text-[10.5px]">
+                      <span className="min-w-0 truncate text-muted-foreground">
+                        {m.label}{" "}
+                        <span className="text-subtle">· {KIND_LABEL[m.kind]}</span>
+                      </span>
+                      <span className={cn("shrink-0 font-semibold tabular-nums", m.value === null && "text-warning")}>
+                        {m.value === null ? "No data" : `${m.value}${m.unit}`}
+                      </span>
+                    </div>
+                  ))}
+                </div>
+                <div className="mt-1 text-[10px] text-subtle">
+                  Weight {Math.round(c.weight * 100)}%{c.partial ? " · partial data" : ""}
+                </div>
+              </li>
+            ))}
+          </ul>
+          <div className="eo-health-attn">
+            <Label className="mb-1.5 text-foreground">
+              ATTENTION AREAS ({result.attention.length})
+            </Label>
+            {result.attention.length ? (
+              <ul className="space-y-1.5">
+                {result.attention.map((a) => (
+                  <li key={`${a.category}-${a.metric}`} className="eo-health-item" data-kind={a.kind}>
+                    <span className="min-w-0 flex-1">
+                      <span className="block text-[12px] font-semibold">
+                        {a.category} · {a.metric}
+                      </span>
+                      <span className="block text-[11px] text-muted-foreground">{a.text}</span>
+                    </span>
+                    {a.page && (
+                      <Link
+                        to="/$page"
+                        params={{ page: a.page }}
+                        className="eo-health-link"
+                      >
+                        Open
+                      </Link>
+                    )}
+                  </li>
+                ))}
+              </ul>
+            ) : (
+              <p className="text-[11.5px] text-success">No areas need attention.</p>
+            )}
+            <p className="mt-2 text-[10.5px] text-subtle">
+              Recommendations only open a page — nothing runs automatically.
+            </p>
+          </div>
+        </div>
+      )}
+
+      <Details inline title="How the score is calculated" hint="Weights, curves, missing data">
+        <ul className="list-disc space-y-1 pl-4 text-[11.5px] text-muted-foreground">
+          <li>
+            Each reading maps to 0–100 with a fixed curve, e.g. CPU load ≤ 50% = 100, 90% = 60;
+            CPU temperature ≤ 70 °C = 100, 90 °C = 50.
+          </li>
+          <li>A category is the average of its available readings.</li>
+          <li>
+            Overall = weighted average of categories with data (CPU 25%, Memory 20%, GPU 15%,
+            Storage 20%, Responsiveness 20%), re-normalised over the covered weight.
+          </li>
+          <li>
+            Missing readings are excluded and listed. Below {Math.round(MIN_COVERAGE * 100)}%
+            coverage no overall score is shown.
+          </li>
+          <li>85+ is Good, 70–84 Fair, below 70 Needs attention. Same inputs always give the same score.</li>
+        </ul>
+      </Details>
+    </Card>
+  );
+}
+
 export function SystemInfoPage() {
   const [f, setF] = useState("ALL");
-  const [open, setOpen] = useState(false);
   const findings = [
     ["PASS", "HARDWARE", "CPU thermals within envelope"],
     ["PASS", "SECURITY", "UEFI Secure Boot enabled"],
@@ -430,10 +636,8 @@ export function SystemInfoPage() {
             <span className={x.includes("warning") ? "text-warning" : "text-success"}>●</span> {x}
           </span>
         ))}
-        <Btn size="sm" className="ml-auto" onClick={() => setOpen(true)}>
-          System health analysis
-        </Btn>
       </Card>
+      <SystemHealthCheck />
       <TelemetryConsole />
       <Card>
         <SectionTitle title="SAMPLE HARDWARE" />
@@ -500,32 +704,28 @@ export function SystemInfoPage() {
         </Details>
       </Card>
       <SimNotice />
-      <Modal
-        open={open}
-        onClose={() => setOpen(false)}
-        title="System health analysis"
-        footer={<Btn onClick={() => setOpen(false)}>Done / Close</Btn>}
-      >
-        <Bar value={92} tone="success" className="mb-3" />
-        <Chips
-          options={["ALL", "WARNINGS", "PASS", "HARDWARE", "SECURITY"]}
-          value={f}
-          onChange={setF}
-        />
-        <div className="mt-3 space-y-1.5">
-          {findings
-            .filter((x) => f === "ALL" || x[0] === f || x[1] === f)
-            .map((x) => (
-              <div
-                key={x[2]}
-                className="flex items-center justify-between rounded-lg border border-border bg-window px-3 py-2 text-[12.5px]"
-              >
-                <span>{x[2]}</span>
-                <Badge tone={x[0] === "PASS" ? "success" : "warning"}>{x[0]}</Badge>
-              </div>
-            ))}
-        </div>
-      </Modal>
+      <Card>
+        <Details inline title="Other diagnostics" hint="Not part of the health score">
+          <Chips
+            options={["ALL", "WARNINGS", "PASS", "HARDWARE", "SECURITY"]}
+            value={f}
+            onChange={setF}
+          />
+          <div className="mt-3 space-y-1.5">
+            {findings
+              .filter((x) => f === "ALL" || x[0] === f || x[1] === f)
+              .map((x) => (
+                <div
+                  key={x[2]}
+                  className="flex items-center justify-between rounded-lg border border-border bg-window px-3 py-2 text-[12.5px]"
+                >
+                  <span>{x[2]}</span>
+                  <Badge tone={x[0] === "PASS" ? "success" : "warning"}>{x[0]}</Badge>
+                </div>
+              ))}
+          </div>
+        </Details>
+      </Card>
     </div>
   );
 }
