@@ -564,6 +564,8 @@ export function Modal({
   children,
   footer,
   width = "max-w-2xl",
+  icon,
+  tone = "cyan",
 }: {
   open: boolean;
   onClose: () => void;
@@ -572,6 +574,9 @@ export function Modal({
   children: ReactNode;
   footer?: ReactNode | undefined;
   width?: string | undefined;
+  /** Small glyph shown in a tinted tile beside the title. */
+  icon?: ReactNode | undefined;
+  tone?: "cyan" | "success" | "warning" | "danger" | undefined;
 }) {
   const dialog = useRef<HTMLDivElement>(null);
   const closeRef = useRef(onClose);
@@ -641,15 +646,22 @@ export function Modal({
         onClick={(e) => e.stopPropagation()}
       >
         <div className="eo-modal-head flex items-start justify-between gap-4 border-b border-border px-5 py-3.5">
-          <div className="min-w-0">
-            <h2 id={titleId} className="text-base font-bold uppercase">
-              {title}
-            </h2>
-            {sub && (
-              <p id={subId} className="mt-1 text-xs text-muted-foreground">
-                {sub}
-              </p>
+          <div className="flex min-w-0 items-start gap-3">
+            {icon && (
+              <span aria-hidden="true" className="eo-modal-icon" data-tone={tone}>
+                {icon}
+              </span>
             )}
+            <div className="min-w-0">
+              <h2 id={titleId} className="text-[15px] font-bold uppercase">
+                {title}
+              </h2>
+              {sub && (
+                <p id={subId} className="mt-0.5 text-xs text-muted-foreground">
+                  {sub}
+                </p>
+              )}
+            </div>
           </div>
           <Btn
             onClick={onClose}
