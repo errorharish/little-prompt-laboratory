@@ -1027,3 +1027,21 @@ button.eo-check-row:active { transform: translateY(0); box-shadow: var(--shadow-
 .eo-rp-steps { list-style: decimal; }
 .eo-rp-device { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 10px; }
 .eo-rp-device .eo-rp-drive { margin-top: 0; }
+
+/* ── Mode selector cards (Input Optimizer: Normal / Advanced / Custom) ── */
+.eo-mode-pick { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) minmax(0, .72fr); gap: 10px; }
+.eo-mode-card { display: flex; min-width: 0; align-items: center; gap: 10px; padding: 10px 12px; border-radius: 12px; border: 1px solid var(--border); background: var(--gradient-card); box-shadow: var(--shadow-card); text-align: left; transition: border-color var(--duration-standard) var(--ease-out), background-color var(--duration-standard), transform var(--duration-control) var(--ease-out), box-shadow var(--duration-standard); }
+.eo-mode-card:hover { border-color: var(--border-strong); transform: translateY(-1px); }
+.eo-mode-card:focus-visible { outline: 2px solid var(--cyan); outline-offset: 2px; }
+.eo-mode-card[aria-pressed="true"] { border-color: color-mix(in oklab, var(--cyan) 55%, var(--border)); background: linear-gradient(140deg, color-mix(in oklab, var(--cyan) 12%, transparent), transparent 70%), var(--gradient-card); box-shadow: var(--shadow-glow), var(--shadow-card); }
+.eo-mode-card[aria-pressed="true"] .eo-quick-icon { color: var(--primary-foreground); background: var(--gradient-brand); box-shadow: none; }
+.eo-mode-title { display: block; font-size: 12.5px; font-weight: 800; letter-spacing: .04em; text-transform: uppercase; }
+.eo-mode-sub { display: block; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: 11px; color: var(--muted-foreground); }
+.eo-mode-count { flex-shrink: 0; font-size: 10.5px; color: var(--muted-foreground); }
+.eo-mode-count b { color: var(--foreground); }
+.eo-mode-card[aria-pressed="true"] .eo-mode-count b { color: var(--cyan); }
+.eo-mode-body { animation: eo-section-in var(--duration-standard) var(--ease-out) both; }
+.eo-check-row[data-readonly] { cursor: default; }
+@container (max-width: 900px) {
+  .eo-page-content .eo-mode-pick { grid-template-columns: minmax(0, 1fr); }
+}
