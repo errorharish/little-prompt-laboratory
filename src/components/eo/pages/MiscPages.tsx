@@ -22,12 +22,9 @@ import {
   simulate,
 } from "../kit";
 import { GuideButton, GuideSteps, GuideTip } from "../Guide";
-import { RestorePointDialog } from "../RestorePoint";
-import { resetRestoreSim, setDevice, useRestore } from "../restoreStore";
-import type { RpOutcome } from "@/lib/eo/restorePoint";
 import { useAppearance } from "../Appearance";
 import { NumberField, RangeSlider, Segmented } from "../controls";
-import { HardDrive, RotateCcw, ShieldCheck, Target } from "lucide-react";
+import { RotateCcw, ShieldCheck, Target } from "lucide-react";
 import { CATALOG, HW, PROFILES } from "@/lib/eo/data";
 import { cn } from "@/lib/utils";
 
@@ -606,86 +603,6 @@ function RamLimiterPanel({
   );
 }
 
-/* ───────── SYSTEM RESTORE POINTS (simulated device + scenario) ───────── */
-const RP_OUTCOMES: [RpOutcome, string][] = [
-  ["success", "Succeeds"],
-  ["enable-fails", "Enable fails"],
-  ["creation-skipped", "Windows skips point"],
-];
-function RestorePointsCard({ onCreate }: { onCreate: () => void }) {
-  const { device, points } = useRestore();
-  const outcomeLabel = RP_OUTCOMES.find(([k]) => k === device.outcome)?.[1] ?? "Succeeds";
-  return (
-    <Card>
-      <SectionTitle
-        title="SYSTEM RESTORE POINTS"
-        guide="backup.restore-point"
-        sub="Windows restore points need System Protection on the system drive."
-        badge={<Badge tone="warning">SIMULATED</Badge>}
-        right={
-          <Btn size="sm" variant="primary" onClick={onCreate}>
-            Create restore point
-          </Btn>
-        }
-      />
-      <div className="eo-rp-device">
-        <div className="eo-rp-drive">
-          <HardDrive aria-hidden="true" />
-          <span>
-            <b>{device.drive}</b> · System Protection
-          </span>
-          <Badge tone={device.protectionOn ? "success" : "warning"}>
-            {device.protectionOn ? "ON" : "OFF"}
-          </Badge>
-        </div>
-        <div className="flex flex-wrap items-center gap-2">
-          <span className="eo-label text-[10px] text-muted-foreground">Prototype scenario</span>
-          <Btn
-            size="sm"
-            variant="ghost"
-            pressed={device.protectionOn}
-            onClick={() => setDevice({ protectionOn: !device.protectionOn })}
-            title="Switch the sample device's System Protection state"
-          >
-            Protection {device.protectionOn ? "on" : "off"}
-          </Btn>
-          <Segmented
-            label="Simulated outcome"
-            options={RP_OUTCOMES.map(([, l]) => l)}
-            value={outcomeLabel}
-            onChange={(l) =>
-              setDevice({ outcome: RP_OUTCOMES.find(([, x]) => x === l)?.[0] ?? "success" })
-            }
-          />
-          <Btn size="sm" variant="ghost" onClick={resetRestoreSim}>
-            Reset sample device
-          </Btn>
-        </div>
-      </div>
-      {points.length ? (
-        <ul className="mt-3 space-y-1.5" aria-label="Simulated restore points">
-          {points.map((rp) => (
-            <li
-              key={rp.at}
-              className="flex items-center justify-between gap-3 rounded-lg border border-border bg-window px-3 py-2 text-[12.5px]"
-            >
-              <span className="min-w-0 truncate font-semibold">{rp.name}</span>
-              <span className="flex shrink-0 items-center gap-2 text-[11px] text-muted-foreground">
-                {rp.drive} · {new Date(rp.at).toLocaleString()}
-                <Badge tone="cyan">SIMULATED</Badge>
-              </span>
-            </li>
-          ))}
-        </ul>
-      ) : (
-        <p className="mt-3 text-[11.5px] text-muted-foreground">
-          No simulated restore points yet. Nothing is ever created on this PC.
-        </p>
-      )}
-    </Card>
-  );
-}
-
 /* ───────── BACKUP & RESTORE ───────── */
 const TX = [
   ["High Performance Power Plan Activation", "POWER", "Normal", "2026-11-05 10:12", true],
@@ -698,7 +615,6 @@ export function BackupRestorePage() {
   const [f, setF] = useState("ALL");
   const [d, setD] = useState<(typeof TX)[number] | null>(null);
   const [restore, setRestore] = useState(false);
-  const [rpOpen, setRpOpen] = useState(false);
   const vis = TX.filter(
     (t) =>
       t[0].toLowerCase().includes(query.toLowerCase()) &&
@@ -718,7 +634,7 @@ export function BackupRestorePage() {
             <Btn variant="ghost" onClick={() => simulate("Refresh")}>
               Refresh
             </Btn>
-            <Btn variant="primary" onClick={() => setRpOpen(true)}>
+            <Btn variant="primary" onClick={() => simulate("Create restore point")}>
               Create restore point
             </Btn>
             <Btn variant="danger" onClick={() => setRestore(true)}>
@@ -737,12 +653,6 @@ export function BackupRestorePage() {
           { label: "RESTORABLE", value: 13, tone: "success" },
           { label: "NON-REVERSIBLE", value: 1, tone: "warning" },
         ]}
-      />
-      <RestorePointsCard onCreate={() => setRpOpen(true)} />
-      <RestorePointDialog
-        open={rpOpen}
-        onClose={() => setRpOpen(false)}
-        defaultName="Manual restore point"
       />
       <Card>
         <Label className="mb-3 text-foreground">PROFILE CONTAINERS</Label>

@@ -10,7 +10,6 @@ import {
   MODAL_SPEC,
   MOTION,
   NATIVE_AUTO_ARCHITECTURE,
-  NATIVE_RESTORE_POINT,
   NAVIGATION,
   REDUCED_MOTION,
   SLIDER_SPEC,
@@ -391,20 +390,6 @@ function Blueprint() {
           head={["AREA", "INTENDED IMPLEMENTATION"]}
           cols="160px 1fr"
           rows={NATIVE_AUTO_ARCHITECTURE.map((a) => [a.area, a.detail])}
-        />
-      </Section>
-
-      <Section id="restore-point">
-        <SectionTitle
-          id="restore-point-title"
-          title="RESTORE POINT — SYSTEM PROTECTION WORKFLOW"
-          badge={<Badge tone="warning">PROTOTYPE SIMULATION</Badge>}
-          sub="The browser walks through every phase; the native C# implementation is below."
-        />
-        <Table
-          head={["AREA", "INTENDED IMPLEMENTATION"]}
-          cols="160px 1fr"
-          rows={NATIVE_RESTORE_POINT.map((a) => [a.area, a.detail])}
         />
       </Section>
 

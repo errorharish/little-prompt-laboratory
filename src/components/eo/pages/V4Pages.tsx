@@ -419,7 +419,6 @@ const ENGINES = [
     needsAdb: true,
   },
 ];
-const ENGINE_GUIDES: GuideId[] = ["emu.engine1", "emu.engine2", "emu.engine3"];
 const MODULE_GUIDE: Record<string, GuideId> = {
   "EMULATOR OPTIMIZATION": "emulator-optimization",
   "DEEP DEBLOATER": "hub.debloater",
@@ -589,7 +588,6 @@ export function EmulatorOptimizationPage() {
                       <div className="flex flex-wrap items-center gap-2">
                         <Label className="text-cyan">ENGINE {i + 1}</Label>
                         <h2 className="text-[14px] font-bold">{e.n}</h2>
-                        <GuideTip id={ENGINE_GUIDES[i] ?? "emu.engines"} />
                       </div>
                       <p className="mt-0.5 text-[12px] text-muted-foreground">{e.desc}</p>
                     </div>
@@ -1487,10 +1485,7 @@ export function V4CoreOptimizerPage() {
       </Card>
       <Cols cols="1fr 1fr" gap={16}>
         <Card>
-          <span className="flex items-center gap-1.5">
-            <Label className="text-foreground">Target Band</Label>
-            <GuideTip id="v4core.target" />
-          </span>
+          <Label className="text-foreground">Target Band</Label>
           <div className="mt-2 text-xs text-muted-foreground">TARGET BACKGROUND FOOTPRINT</div>
           <Bar value={55} className="mt-2" />
         </Card>
@@ -1582,10 +1577,6 @@ export function EmulatorDeployerPage() {
       />
       <Card>
         <div className="mb-3 flex flex-wrap items-center gap-4 text-[11px]">
-          <span className="flex items-center gap-1.5">
-            <Label className="text-foreground">PREVIEW AUDIT</Label>
-            <GuideTip id="deployer.audit" />
-          </span>
           {["CATEGORY:", "TARGET:", "SAFETY:"].map((k) => (
             <label key={k} className="flex items-center gap-2">
               <Label>{k}</Label>
@@ -1686,10 +1677,7 @@ export function LowEndSteamPage() {
       </Card>
       <Card>
         <div className="mb-3 flex items-center gap-4">
-          <span className="flex items-center gap-1.5">
-            <Label>SUBSYSTEM:</Label>
-            <GuideTip id="lowend.subsystems" />
-          </span>
+          <Label>SUBSYSTEM:</Label>
           <select
             aria-label="Subsystem"
             value={subsystem}

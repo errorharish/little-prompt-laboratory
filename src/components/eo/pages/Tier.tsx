@@ -113,8 +113,6 @@ function TierView({ slug, t }: { slug: string; t: TierInfo }) {
     ...c,
     scope: c.cat === "SYSTEM" ? "UEFI" : "WINDOWS",
     done: i % 4 === 3,
-    // Firmware items are changed by the user in UEFI setup, so they are never pre-selected.
-    recommended: c.cat !== "SYSTEM",
   }));
   // Each tier is its own profile: first use selects every eligible, not-yet-applied item.
   const tierSel = usePersistedSelection(`tier:${slug}`, items);

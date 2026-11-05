@@ -1,8 +1,7 @@
-// Dashboard actions, split into two groups that never mix:
-//  • NAV_SHORTCUTS open an existing page (they never run anything).
-//  • QUICK_OPTIMIZE run their own single task in place on the Dashboard (they never navigate).
-// Steps reuse operations that already exist elsewhere in the prototype (Auto Optimize tasks,
-// Storage, Network, Backup). Pure data + rules — every run is simulated and changes nothing.
+// Dashboard Quick Actions. One-Click is the only action that opens its own page; every other
+// action runs its own, single task in place on the Dashboard. Steps reuse operations that
+// already exist elsewhere in the prototype (Auto Optimize tasks, Storage, Startup Manager,
+// Network, Backup). Pure data + rules — the run itself is simulated and changes nothing.
 import { MAINT_TASKS } from "./autoOptimize";
 
 export type QuickOutcome = "Completed" | "Skipped" | "Failed";
@@ -20,19 +19,11 @@ export interface QuickAction {
   cat: string;
   title: string;
   desc: string;
+  /** Only One-Click navigates. */
+  to?: string;
   /** Where the underlying operation exists in the prototype. */
   source: string;
-  /** "restore-point" runs the shared System Protection → restore point workflow. */
-  flow?: "restore-point";
   steps: QuickStep[];
-}
-
-export interface NavShortcut {
-  id: string;
-  title: string;
-  desc: string;
-  /** Registry slug of the destination page. */
-  to: string;
 }
 
 const task = (id: string): QuickStep => {
@@ -41,39 +32,21 @@ const task = (id: string): QuickStep => {
   return { t: t.name, detail: t.sample, outcome: "Completed" };
 };
 
-export const NAV_SHORTCUTS: NavShortcut[] = [
-  {
-    id: "telemetry",
-    title: "View Telemetry",
-    desc: "Live charts and System Health Check",
-    to: "system-info",
-  },
-  {
-    id: "startup",
-    title: "Startup Manager",
-    desc: "Review apps that start with Windows",
-    to: "startup-manager",
-  },
-  {
-    id: "boost",
-    title: "Boost Performance",
-    desc: "Maximum Performance profile",
-    to: "max-performance",
-  },
+export const QUICK_ACTIONS: QuickAction[] = [
   {
     id: "one-click",
-    title: "One-Click Optimization",
-    desc: "Analyze, review and confirm",
+    cat: "FULL TUNE",
+    title: "One-Click Optimize",
+    desc: "Analyze recommendations, review your selection and confirm a simulated run",
     to: "one-click",
+    source: "1-Click Optimization",
+    steps: [],
   },
-];
-
-export const QUICK_OPTIMIZE: QuickAction[] = [
   {
     id: "temp",
     cat: "STORAGE",
-    title: "Temporary File Cleanup",
-    desc: "Windows and user temp folders, old crash reports",
+    title: "Clean Temporary Files",
+    desc: "Clear Windows and user temp folders and old crash reports",
     source: "Auto Optimize · Clean Temp Files / Storage",
     steps: [
       task("temp-windows"),
@@ -88,10 +61,25 @@ export const QUICK_OPTIMIZE: QuickAction[] = [
     ],
   },
   {
+    id: "boost",
+    cat: "POWER",
+    title: "Boost Performance",
+    desc: "Switch to the Ultimate Performance plan and disable power throttling",
+    source: "Power Profiles / Optimization catalog",
+    steps: [
+      { t: "Ultimate Performance power plan", detail: "Plan activated", outcome: "Completed" },
+      {
+        t: "Disable Execution Power Throttling",
+        detail: "Foreground apps keep full clocks",
+        outcome: "Completed",
+      },
+    ],
+  },
+  {
     id: "ram",
     cat: "MEMORY",
-    title: "Memory Cleanup",
-    desc: "Empty the standby list, release idle working sets",
+    title: "RAM Cleanup",
+    desc: "Empty the standby list and release idle working sets",
     source: "Auto Optimize · Free Standby Memory",
     steps: [
       task("mem-standby"),
@@ -105,32 +93,34 @@ export const QUICK_OPTIMIZE: QuickAction[] = [
     ],
   },
   {
-    id: "cache",
-    cat: "CACHE",
-    title: "Cache Cleanup",
-    desc: "Browser caches and DirectX shader cache",
-    source: "Auto Optimize · Browser cache / System caches",
+    id: "startup",
+    cat: "BOOT",
+    title: "Startup Manager",
+    desc: "Disable high-impact third-party startup apps",
+    source: "Startup Manager",
     steps: [
-      task("browser-chrome"),
-      task("browser-edge"),
-      task("browser-firefox"),
-      task("sys-shader"),
       {
-        t: "Passwords, cookies, logins and history",
-        detail: "Not touched",
+        t: "Steam Client Bootstrapper",
+        detail: "Startup disabled · HIGH impact",
+        outcome: "Completed",
+      },
+      { t: "Discord", detail: "Startup disabled · HIGH impact", outcome: "Completed" },
+      { t: "Adobe Creative Cloud", detail: "Startup disabled · HIGH impact", outcome: "Completed" },
+      {
+        t: "System startup entries",
+        detail: "NVIDIA Display Container, Realtek Audio Console",
         outcome: "Skipped",
-        reason: "Cache only — personal browser data is never cleaned",
+        reason: "Protected system entries",
       },
     ],
   },
   {
     id: "network",
     cat: "NETWORK",
-    title: "Network Refresh",
-    desc: "Flush DNS, remove multimedia throttling",
+    title: "Network Boost",
+    desc: "Remove multimedia network throttling and calibrate TCP auto-tuning",
     source: "Network / Optimization catalog",
     steps: [
-      task("sys-dns"),
       {
         t: "Disable Multimedia Network Throttling Index",
         detail: "Throttling removed",
@@ -141,18 +131,45 @@ export const QUICK_OPTIMIZE: QuickAction[] = [
         detail: "Set to Normal",
         outcome: "Completed",
       },
+      task("sys-dns"),
+    ],
+  },
+  {
+    id: "telemetry",
+    cat: "DIAGNOSTICS",
+    title: "View Telemetry",
+    desc: "Take a quick CPU, RAM and GPU snapshot without leaving the Dashboard",
+    source: "System Telemetry",
+    steps: [
+      { t: "CPU", detail: "18% · 42°C (sample)", outcome: "Completed" },
+      { t: "Memory", detail: "12.2 / 32 GB in use (sample)", outcome: "Completed" },
+      { t: "GPU", detail: "14% · 44°C (sample)", outcome: "Completed" },
     ],
   },
   {
     id: "restore",
     cat: "SAFETY",
     title: "Create Restore Point",
-    desc: "Checks System Protection first",
+    desc: "Snapshot registry hives and service configuration before tuning",
     source: "Backup & Restore",
-    flow: "restore-point",
-    steps: [],
+    steps: [
+      {
+        t: "Registry hives snapshot",
+        detail: "HKLM\\SYSTEM, HKLM\\SOFTWARE",
+        outcome: "Completed",
+      },
+      { t: "Service configuration snapshot", detail: "Startup types saved", outcome: "Completed" },
+      {
+        t: "Register restore point",
+        detail: "“Before quick optimization”",
+        outcome: "Completed",
+      },
+    ],
   },
 ];
+
+/** Only One-Click leaves the Dashboard. */
+export const navigatesAway = (a: QuickAction) => Boolean(a.to);
 
 /** A new quick action may start only when none is running (no duplicate or parallel runs). */
 export const canStartQuick = (runningId: string | null) => runningId === null;
