@@ -6,6 +6,7 @@ import { Badge, Bar, Btn, Chips, Details, KV, Modal, RiskBadge, StatTiles, Stepp
 import type { Risk } from "@/lib/eo/data";
 import { simulatedRunSummary, type SimulatedRunSummary } from "@/lib/eo/selection";
 import { cn } from "@/lib/utils";
+import { RestorePointActions, RestorePointBody, useRestorePointFlow } from "./RestorePoint";
 
 const STAGES = ["ANALYZING", "PREPARING", "APPLYING", "VERIFYING", "FINALIZING"];
 const FLOW = ["Approve", "Restore point", "Simulated run", "Summary"];
@@ -35,7 +36,8 @@ export function RunModal({
 }) {
   const [phase, setPhase] = useState<Phase>("approve");
   const [p, setP] = useState(0);
-  const [rpName, setRpName] = useState(`Before ${profile} optimization`);
+  const rp = useRestorePointFlow(`Before ${profile} optimization`);
+  const rpReset = rp.reset;
   const [tab, setTab] = useState("Kernel");
   const [summary, setSummary] = useState<SimulatedRunSummary | null>(null);
   const started = useRef(0);
@@ -48,9 +50,9 @@ export function RunModal({
       setPhase("approve");
       setP(0);
       setSummary(null);
-      setRpName(`Before ${profile} optimization`);
+      rpReset();
     }
-  }, [open, profile]);
+  }, [open, profile, rpReset]);
 
   useEffect(() => {
     if (phase !== "running" || !open) return;
@@ -107,14 +109,44 @@ export function RunModal({
             </Btn>
           </>
         ) : phase === "restore" ? (
-          <>
-            <Btn variant="ghost" onClick={() => setPhase("approve")}>
-              Back
+          rp.phase === "idle" ? (
+            <>
+              <Btn variant="ghost" onClick={() => setPhase("approve")}>
+                Back
+              </Btn>
+              <Btn variant="primary" disabled={!rp.name.trim()} onClick={() => rp.send("start")}>
+                Create & continue
+              </Btn>
+            </>
+          ) : rp.phase === "created" ? (
+            <Btn variant="primary" onClick={() => setPhase("running")}>
+              Continue to run
             </Btn>
-            <Btn variant="primary" disabled={!rpName.trim()} onClick={() => setPhase("running")}>
-              Create & continue
-            </Btn>
-          </>
+          ) : rp.phase === "cancelled" ||
+            rp.phase === "enable-failed" ||
+            rp.phase === "create-failed" ? (
+            <>
+              <Btn
+                variant="ghost"
+                onClick={() => {
+                  rp.reset();
+                  setPhase("approve");
+                }}
+              >
+                Back
+              </Btn>
+              <Btn variant="ghost" onClick={() => setPhase("running")}>
+                Continue without restore point
+              </Btn>
+              {rp.phase !== "cancelled" && (
+                <Btn variant="primary" onClick={() => rp.send("retry")}>
+                  Try again
+                </Btn>
+              )}
+            </>
+          ) : (
+            <RestorePointActions flow={rp} onClose={() => setPhase("approve")} />
+          )
         ) : phase === "running" ? (
           <Btn variant="danger" onClick={() => setPhase("cancelled")}>
             Stop simulation
@@ -159,22 +191,7 @@ export function RunModal({
           <KV k="Rollback" v="Per-operation support in native app" />
         </div>
       )}
-      {phase === "restore" && (
-        <div className="space-y-3">
-          <label htmlFor="eo-restore-name" className="eo-label block text-foreground">
-            Create restore point
-          </label>
-          <p className="text-xs text-muted-foreground">
-            Name the simulated restore point. No actual restore point is created.
-          </p>
-          <input
-            id="eo-restore-name"
-            value={rpName}
-            onChange={(e) => setRpName(e.target.value)}
-            className="h-9 w-full rounded-lg border border-border bg-window px-3 text-sm outline-none focus:border-cyan/60"
-          />
-        </div>
-      )}
+      {phase === "restore" && <RestorePointBody flow={rp} />}
       {(phase === "running" || phase === "cancelled") && (
         <div className="space-y-4">
           <OpProgress
@@ -236,7 +253,14 @@ export function RunModal({
             ]}
           />
           <KV k="Simulation time" v={`${(summary.elapsedMs / 1000).toFixed(1)} s`} />
-          <KV k="Restore point" v={`“${rpName}” (simulated)`} />
+          <KV
+            k="Restore point"
+            v={
+              rp.phase === "created"
+                ? `“${rp.name.trim()}” · created & verified (simulated)`
+                : "Not created — run continued without one"
+            }
+          />
           <KV k="Verification" v={summary.verification} />
           {items && items.length > 0 && (
             <ul
