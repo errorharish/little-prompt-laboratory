@@ -290,13 +290,13 @@ export function V4MaxPerformancePage() {
                   <div className="text-lg font-bold tabular-nums">
                     {last.before} → {last.after}
                   </div>
-                  <div className="text-[8.5px] font-bold text-muted-foreground">
+                  <div className="text-[10px] font-bold text-muted-foreground">
                     SAMPLE PROCESSES
                   </div>
                 </div>
                 <div className="rounded-lg border border-border bg-window p-2">
                   <div className="text-lg font-bold tabular-nums">0</div>
-                  <div className="text-[8.5px] font-bold text-muted-foreground">
+                  <div className="text-[10px] font-bold text-muted-foreground">
                     CHANGES ON THIS PC
                   </div>
                 </div>
@@ -559,7 +559,7 @@ export function EmulatorOptimizationPage() {
           <div key={c.k} className="flex items-center gap-2.5">
             <span aria-hidden="true" className="eo-v4-dot" data-ok={c.ok ? "true" : undefined} />
             <div className="min-w-0">
-              <Label className="text-[9px]">{c.k}</Label>
+              <Label className="text-[10px]">{c.k}</Label>
               <div
                 className={cn(
                   "truncate text-[12.5px] font-bold",
@@ -699,7 +699,7 @@ export function EmulatorOptimizationPage() {
               ).map(([k, v, c]) => (
                 <div key={k} className="rounded-lg border border-border bg-window py-2">
                   <div className={cn("text-lg font-bold tabular-nums", c)}>{v}</div>
-                  <div className="text-[8.5px] font-bold text-muted-foreground">{k}</div>
+                  <div className="text-[10px] font-bold text-muted-foreground">{k}</div>
                 </div>
               ))}
             </div>
@@ -1082,7 +1082,7 @@ export function EmulatorModulesPage() {
                   ["RECOMMENDED PROFILE", "Balanced"],
                 ].map(([k, v]) => (
                   <div key={k}>
-                    <Label className="text-[9px]">{k}</Label>
+                    <Label className="text-[10px]">{k}</Label>
                     <div className="font-semibold">{v}</div>
                   </div>
                 ))}
@@ -1389,7 +1389,7 @@ export function EmulatorModulesPage() {
           ].map(([k, v]) => (
             <div key={k} className="rounded-lg border border-border bg-window p-3 text-center">
               <div className="text-xl font-bold">{v}</div>
-              <div className="text-[9px] font-bold tracking-widest text-subtle">{k}</div>
+              <div className="text-[10px] font-bold tracking-widest text-subtle">{k}</div>
             </div>
           ))}
         </div>
@@ -1530,7 +1530,7 @@ export function V4CoreOptimizerPage() {
         </div>
         <div className="overflow-hidden rounded-lg border border-border">
           <div
-            className="grid bg-window px-3 py-2 eo-label text-[9px] text-subtle"
+            className="grid bg-window px-3 py-2 eo-label text-[10px] text-subtle"
             style={{ gridTemplateColumns: "2fr 2fr 1.5fr 1.5fr" }}
           >
             <span>PROCESS / SERVICE</span>
