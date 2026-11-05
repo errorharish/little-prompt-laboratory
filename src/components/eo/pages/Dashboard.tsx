@@ -41,6 +41,7 @@ import {
   simulate,
   useSimRun,
 } from "../kit";
+import { GuideTip } from "../Guide";
 import { OpProgress } from "../RunModal";
 import {
   QUICK_ACTIONS,

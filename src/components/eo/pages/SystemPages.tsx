@@ -22,6 +22,7 @@ import {
   simulate,
   useSimRun,
 } from "../kit";
+import type { GuideId } from "@/lib/eo/guides";
 import { RunModal } from "../RunModal";
 import { TelemetryConsole } from "../Telemetry";
 import { toggleInSet } from "@/lib/eo/selection";

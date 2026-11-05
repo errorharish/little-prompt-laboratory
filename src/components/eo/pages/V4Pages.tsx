@@ -41,6 +41,7 @@ import {
   useSimRun,
 } from "../kit";
 import { GuideButton, GuideSteps, GuideTip } from "../Guide";
+import type { GuideId } from "@/lib/eo/guides";
 import { cn } from "@/lib/utils";
 import { HW } from "@/lib/eo/data";
 import { Segmented } from "../controls";

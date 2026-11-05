@@ -5,6 +5,7 @@ import { Link } from "@tanstack/react-router";
 import { CalendarClock, Pause, Play, Settings2, Square, Zap } from "lucide-react";
 import type { CSSProperties } from "react";
 import { Badge, Btn, Card, Label } from "./kit";
+import { GuideTip } from "./Guide";
 import { autoOptimize, useAutoOptimize, useNow, type AutoState } from "./autoOptimizeStore";
 import { MAINT_TASKS, formatCountdown, formatInterval } from "@/lib/eo/autoOptimize";
 
