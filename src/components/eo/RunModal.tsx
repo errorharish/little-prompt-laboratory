@@ -4,8 +4,15 @@ import { useEffect, useRef, useState } from "react";
 import { CheckCircle2, ShieldCheck, Square, Zap } from "lucide-react";
 import { Badge, Bar, Btn, Chips, Details, KV, Modal, RiskBadge, StatTiles, Stepper } from "./kit";
 import type { Risk } from "@/lib/eo/data";
+import { OpProgress } from "./OpProgress";
 import { simulatedRunSummary, type SimulatedRunSummary } from "@/lib/eo/selection";
 import { cn } from "@/lib/utils";
+import {
+  RestoreNameField,
+  RestorePointActions,
+  RestorePointBody,
+  useRestorePointFlow,
+} from "./RestorePoint";
 
 const STAGES = ["ANALYZING", "PREPARING", "APPLYING", "VERIFYING", "FINALIZING"];
 const FLOW = ["Approve", "Restore point", "Simulated run", "Summary"];
@@ -35,7 +42,9 @@ export function RunModal({
 }) {
   const [phase, setPhase] = useState<Phase>("approve");
   const [p, setP] = useState(0);
-  const [rpName, setRpName] = useState(`Before ${profile} optimization`);
+  const rp = useRestorePointFlow(`Before ${profile} optimization`);
+  const resetRp = rp.reset;
+  const [rpCreated, setRpCreated] = useState(false);
   const [tab, setTab] = useState("Kernel");
   const [summary, setSummary] = useState<SimulatedRunSummary | null>(null);
   const started = useRef(0);
@@ -48,8 +57,10 @@ export function RunModal({
       setPhase("approve");
       setP(0);
       setSummary(null);
-      setRpName(`Before ${profile} optimization`);
+      setRpCreated(false);
+      resetRp(`Before ${profile} optimization`);
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [open, profile]);
 
   useEffect(() => {
@@ -106,15 +117,36 @@ export function RunModal({
               Approve & proceed
             </Btn>
           </>
-        ) : phase === "restore" ? (
+        ) : phase === "restore" && rp.stage === "idle" ? (
           <>
             <Btn variant="ghost" onClick={() => setPhase("approve")}>
               Back
             </Btn>
-            <Btn variant="primary" disabled={!rpName.trim()} onClick={() => setPhase("running")}>
+            <Btn variant="primary" disabled={!rp.name.trim()} onClick={rp.start}>
               Create & continue
             </Btn>
           </>
+        ) : phase === "restore" ? (
+          <RestorePointActions
+            flow={rp}
+            onCancel={() => resetRp(rp.name)}
+            onDone={() => {
+              setRpCreated(true);
+              setPhase("running");
+            }}
+            doneLabel="Continue to run"
+            extra={
+              <Btn
+                variant="ghost"
+                onClick={() => {
+                  setRpCreated(false);
+                  setPhase("running");
+                }}
+              >
+                Continue without
+              </Btn>
+            }
+          />
         ) : phase === "running" ? (
           <Btn variant="danger" onClick={() => setPhase("cancelled")}>
             Stop simulation
@@ -159,22 +191,12 @@ export function RunModal({
           <KV k="Rollback" v="Per-operation support in native app" />
         </div>
       )}
-      {phase === "restore" && (
-        <div className="space-y-3">
-          <label htmlFor="eo-restore-name" className="eo-label block text-foreground">
-            Create restore point
-          </label>
-          <p className="text-xs text-muted-foreground">
-            Name the simulated restore point. No actual restore point is created.
-          </p>
-          <input
-            id="eo-restore-name"
-            value={rpName}
-            onChange={(e) => setRpName(e.target.value)}
-            className="h-9 w-full rounded-lg border border-border bg-window px-3 text-sm outline-none focus:border-cyan/60"
-          />
-        </div>
-      )}
+      {phase === "restore" &&
+        (rp.stage === "idle" ? (
+          <RestoreNameField flow={rp} />
+        ) : (
+          <RestorePointBody flow={rp} heading />
+        ))}
       {(phase === "running" || phase === "cancelled") && (
         <div className="space-y-4">
           <OpProgress
@@ -236,7 +258,10 @@ export function RunModal({
             ]}
           />
           <KV k="Simulation time" v={`${(summary.elapsedMs / 1000).toFixed(1)} s`} />
-          <KV k="Restore point" v={`“${rpName}” (simulated)`} />
+          <KV
+            k="Restore point"
+            v={rpCreated && rp.result ? `“${rp.result.name}” (simulated)` : "Not created"}
+          />
           <KV k="Verification" v={summary.verification} />
           {items && items.length > 0 && (
             <ul
@@ -275,55 +300,4 @@ export function RunModal({
   );
 }
 
-/** Shared optimization progress block: ring, current operation, detail line and bar. */
-export function OpProgress({
-  value,
-  title,
-  detail,
-  active,
-}: {
-  value: number;
-  title: string;
-  detail: string;
-  active?: boolean | undefined;
-}) {
-  const r = 24;
-  const len = 2 * Math.PI * r;
-  const v = Math.max(0, Math.min(100, value));
-  return (
-    <div className="eo-op">
-      <div className="eo-op-head">
-        <div className="eo-op-ring" aria-hidden="true">
-          <svg viewBox="0 0 56 56" width="56" height="56">
-            <defs>
-              <linearGradient id="eo-op-grad" x1="0" x2="1" y1="0" y2="1">
-                <stop offset="0%" stopColor="var(--cyan)" />
-                <stop offset="100%" stopColor="var(--primary)" />
-              </linearGradient>
-            </defs>
-            <circle className="eo-op-track" cx="28" cy="28" r={r} />
-            <circle
-              className="eo-op-arc"
-              cx="28"
-              cy="28"
-              r={r}
-              strokeDasharray={len.toFixed(2)}
-              strokeDashoffset={(len * (1 - v / 100)).toFixed(2)}
-            />
-          </svg>
-          <span>{Math.round(v)}%</span>
-        </div>
-        <div className="min-w-0 flex-1">
-          <div className="eo-op-current">
-            <span key={title}>{title}</span>
-          </div>
-          <div className="mt-0.5 text-[11.5px] text-muted-foreground">{detail}</div>
-          <Badge tone="cyan" className="mt-1.5">
-            SIMULATED
-          </Badge>
-        </div>
-      </div>
-      <Bar value={v} active={active} />
-    </div>
-  );
-}
+export { OpProgress };

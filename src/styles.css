@@ -992,3 +992,81 @@ button.eo-check-row:active { transform: translateY(0); box-shadow: var(--shadow-
 .eo-guide-steps p { margin-top: 2px; font-size: 12px; line-height: 1.5; color: var(--muted-foreground); }
 .eo-guide-note { margin-top: 14px; border-top: 1px solid var(--border); padding-top: 10px; font-size: 11px; color: var(--success); }
 .eo-guide-num-sm { height: 22px; width: 22px; flex-shrink: 0; font-size: 10.5px; }
+
+/* ── Dashboard: navigation shortcuts + Quick Optimize ── */
+.eo-nav-grid { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 10px; }
+.eo-nav-tile { display: flex; align-items: center; gap: 10px; min-height: 58px; padding: 10px 12px; border-radius: 11px; border: 1px solid var(--border); background: var(--gradient-card); box-shadow: var(--shadow-card); transition: border-color var(--duration-control), transform var(--duration-control) var(--ease-out), box-shadow var(--duration-control); }
+.eo-nav-tile:hover { border-color: color-mix(in oklab, var(--cyan) 45%, var(--border)); transform: translateY(-2px); box-shadow: var(--shadow-elevated); }
+.eo-nav-tile:active { transform: translateY(0); box-shadow: var(--shadow-pressed); }
+.eo-nav-tile:hover .eo-quick-arrow { transform: translate(2px, -2px); }
+.eo-nav-tile:hover .eo-quick-icon { transform: translateY(-1px) scale(1.06); }
+.eo-nav-tile[data-primary="true"] { border-color: color-mix(in oklab, var(--primary) 55%, var(--border)); background: linear-gradient(140deg, color-mix(in oklab, var(--primary) 16%, transparent), transparent 70%), var(--gradient-card); }
+.eo-qo-grid { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 10px; }
+.eo-qo-grid .eo-quick { min-height: 128px; }
+@container (max-width: 1050px) {
+  .eo-page-content .eo-qo-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+}
+@container (max-width: 900px) {
+  .eo-page-content .eo-nav-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+@container (max-width: 640px) {
+  .eo-page-content .eo-qo-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+
+/* ── Restore point / System Protection ── */
+.eo-rp-alert { display: flex; align-items: flex-start; gap: 10px; padding: 10px 12px; border-radius: 9px; border: 1px solid var(--border); background: var(--window); font-size: 12px; line-height: 1.5; }
+.eo-rp-alert[data-tone="success"] { color: var(--success); border-color: color-mix(in oklab, var(--success) 35%, var(--border)); background: color-mix(in oklab, var(--success) 7%, var(--window)); }
+.eo-rp-alert[data-tone="danger"] { color: var(--destructive); border-color: color-mix(in oklab, var(--destructive) 35%, var(--border)); background: color-mix(in oklab, var(--destructive) 7%, var(--window)); }
+.eo-rp-drive { display: flex; align-items: center; gap: 10px; padding: 9px 12px; border-radius: 9px; border: 1px solid color-mix(in oklab, var(--warning) 30%, var(--border)); background: color-mix(in oklab, var(--warning) 5%, var(--window)); }
+.eo-rp-list { display: grid; gap: 6px; }
+.eo-rp-list li { position: relative; padding-left: 18px; font-size: 12px; line-height: 1.45; color: var(--muted-foreground); }
+.eo-rp-list li::before { content: ""; position: absolute; left: 3px; top: 6px; height: 6px; width: 6px; border-radius: 50%; background: var(--cyan); box-shadow: 0 0 6px color-mix(in oklab, var(--cyan) 60%, transparent); }
+.eo-rp-steps { counter-reset: rp; display: grid; gap: 6px; }
+.eo-rp-steps li { counter-increment: rp; position: relative; padding-left: 26px; font-size: 11.5px; line-height: 1.45; color: var(--muted-foreground); }
+.eo-rp-steps li::before { content: counter(rp); position: absolute; left: 0; top: 0; display: flex; height: 18px; width: 18px; align-items: center; justify-content: center; border-radius: 50%; font-size: 10px; font-weight: 800; color: var(--cyan); background: color-mix(in oklab, var(--cyan) 12%, transparent); box-shadow: inset 0 0 0 1px color-mix(in oklab, var(--cyan) 26%, transparent); }
+h3[data-tone="warning"] { color: var(--warning); }
+h3[data-tone="danger"] { color: var(--destructive); }
+h3[data-tone="success"] { color: var(--success); }
+h3[data-tone="cyan"] { color: var(--cyan); }
+.eo-rp-device { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 12px; padding-top: 12px; padding-bottom: 12px; }
+.eo-rp-device .eo-section-title { margin-bottom: 8px; }
+
+/* ── Input Optimizer: mode picker + read-only recommended rows ── */
+.eo-mode-pick { display: grid; grid-template-columns: minmax(0, 1.15fr) minmax(0, 1.15fr) minmax(0, 0.9fr); gap: 8px; }
+.eo-mode-opt { display: flex; align-items: center; gap: 10px; min-width: 0; padding: 10px 12px; border-radius: 11px; border: 1px solid var(--border); background: var(--window); text-align: left; transition: border-color var(--duration-control) var(--ease-out), background-color var(--duration-control) var(--ease-out), box-shadow var(--duration-control) var(--ease-out), transform var(--duration-control) var(--ease-out); }
+.eo-mode-opt:hover { border-color: color-mix(in oklab, var(--cyan) 40%, var(--border)); transform: translateY(-1px); }
+.eo-mode-opt[aria-checked="true"] { border-color: color-mix(in oklab, var(--cyan) 65%, transparent); background: linear-gradient(140deg, color-mix(in oklab, var(--cyan) 12%, transparent), transparent 75%), var(--window); box-shadow: var(--shadow-glow); }
+.eo-mode-opt[aria-checked="true"] .eo-mode-count { color: var(--cyan); border-color: color-mix(in oklab, var(--cyan) 40%, transparent); }
+.eo-mode-count { flex-shrink: 0; padding: 2px 7px; border-radius: 999px; border: 1px solid var(--border); font-size: 9.5px; font-weight: 800; letter-spacing: .06em; text-transform: uppercase; color: var(--subtle); white-space: nowrap; transition: color var(--duration-control), border-color var(--duration-control); }
+.eo-mode-row { display: flex; align-items: center; gap: 10px; padding: 8px 12px; border-radius: 9px; border: 1px solid color-mix(in oklab, var(--border) 90%, transparent); background: var(--window); }
+.eo-mode-row:not([data-included]) { opacity: .66; }
+.eo-mode-row-mark { display: flex; height: 18px; width: 18px; flex-shrink: 0; align-items: center; justify-content: center; border-radius: 5px; border: 1px solid var(--border); color: var(--subtle); }
+.eo-mode-row[data-included] .eo-mode-row-mark { border-color: var(--cyan); background: var(--cyan); color: var(--sidebar-primary-foreground); }
+@container (max-width: 900px) {
+  .eo-page-content .eo-mode-pick { grid-template-columns: minmax(0, 1fr); }
+}
+
+/* ── System Telemetry: System Health Check ── */
+.eo-health-grid { display: grid; grid-template-columns: 196px minmax(0, 1fr); gap: 18px; align-items: center; }
+.eo-health-score { display: flex; flex-direction: column; align-items: center; padding-right: 18px; border-right: 1px solid var(--border); }
+.eo-health-meta { margin-top: 8px; display: grid; gap: 4px; width: 100%; font-size: 10.5px; }
+.eo-health-meta > div { display: flex; justify-content: space-between; gap: 8px; }
+.eo-health-meta dt { color: var(--subtle); }
+.eo-health-meta dd { font-weight: 700; text-align: right; }
+.eo-health-cats { display: grid; gap: 8px; }
+.eo-health-cats > li { display: grid; grid-template-columns: minmax(0, 190px) minmax(0, 1fr) 36px; align-items: center; gap: 12px; }
+.eo-health-cats > li[data-missing] .eo-score-bar { opacity: .4; background: repeating-linear-gradient(135deg, var(--window) 0 4px, color-mix(in oklab, var(--border) 70%, transparent) 4px 8px); }
+.eo-health-attn { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; }
+.eo-health-attn > li { min-width: 0; padding: 9px 11px; border-radius: 9px; border: 1px solid color-mix(in oklab, var(--warning) 28%, var(--border)); background: color-mix(in oklab, var(--warning) 5%, var(--window)); }
+.eo-health-attn > li[data-missing] { border-color: var(--border); background: var(--window); }
+.eo-health-table { width: 100%; border-collapse: collapse; font-size: 11.5px; }
+.eo-health-table th { padding: 4px 8px; text-align: left; font-size: 9.5px; font-weight: 800; letter-spacing: .08em; text-transform: uppercase; color: var(--subtle); border-bottom: 1px solid var(--border); }
+.eo-health-table td { padding: 5px 8px; border-bottom: 1px solid color-mix(in oklab, var(--border) 60%, transparent); color: var(--muted-foreground); }
+@container (max-width: 1000px) {
+  .eo-page-content .eo-health-attn { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+@container (max-width: 760px) {
+  .eo-page-content .eo-health-grid { grid-template-columns: minmax(0, 1fr); }
+  .eo-page-content .eo-health-score { border-right: 0; padding-right: 0; }
+  .eo-page-content .eo-health-attn { grid-template-columns: minmax(0, 1fr); }
+}

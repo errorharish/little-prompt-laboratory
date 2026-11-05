@@ -1,15 +1,16 @@
 // Dashboard — premium control centre. Hierarchy (user-directed, see MISSING_REFERENCES):
 // 1. Overall Optimization Score · 2. Auto Optimize maintenance panel · 3. compact system
-// overview · 4. system information strip · 5. quick actions. Optimization Status was removed.
+// overview · 4. system information strip · 5. navigation shortcuts + Quick Optimize. Optimization Status was removed.
 // The full System Performance Telemetry chart lives on the System Telemetry page.
 import { memo, useRef, useState, type CSSProperties } from "react";
 import { toast } from "sonner";
-import { Link, useNavigate } from "@tanstack/react-router";
+import { Link } from "@tanstack/react-router";
 import {
   Activity,
   ArrowUpRight,
   CheckCircle2,
   Cpu,
+  Eraser,
   HardDrive,
   HeartPulse,
   Info,
@@ -42,15 +43,17 @@ import {
   useSimRun,
 } from "../kit";
 import { GuideTip } from "../Guide";
-import { OpProgress } from "../RunModal";
+import { OpProgress } from "../OpProgress";
 import {
-  QUICK_ACTIONS,
+  NAV_SHORTCUTS,
+  QUICK_OPTIMIZE,
   canStartQuick,
-  navigatesAway,
   quickResult,
   quickStepAt,
   type QuickAction,
 } from "@/lib/eo/quickActions";
+import { RestorePointDialog } from "../RestorePoint";
+import { useRestoreState } from "../restorePointStore";
 import { CountUp, ScoreRing } from "../controls";
 import { AutoOptimizePanel } from "../AutoOptimizePanel";
 import { HW } from "@/lib/eo/data";
@@ -96,7 +99,6 @@ const SYS_INFO: [string, string][] = [
   ["Performance profile", "V3 Normal"],
   ["Timer resolution", "0.5 ms (locked)"],
   ["Power plan", "Balanced"],
-  ["Restore point", "None created"],
 ];
 
 export function DashboardPage() {
@@ -124,7 +126,8 @@ export function DashboardPage() {
 
       <SystemOverview />
       <SystemInfo />
-      <QuickActions />
+      <NavShortcuts />
+      <QuickOptimize />
       <SimNotice />
     </div>
   );
@@ -132,13 +135,18 @@ export function DashboardPage() {
 
 /* ── 4. Important system information — one compact strip, sample values ── */
 const SystemInfo = memo(function SystemInfo() {
+  const rp = useRestoreState();
+  const rows: [string, string][] = [
+    ...SYS_INFO,
+    ["Restore point", rp.last ? `${rp.last.name} (simulated)` : "None created"],
+  ];
   return (
     <section aria-labelledby="eo-sysinfo-title" className="eo-card eo-sysinfo px-4 py-2.5">
       <h2 id="eo-sysinfo-title" className="sr-only">
         System information
       </h2>
       <dl className="eo-sysinfo-list">
-        {SYS_INFO.map(([k, v]) => (
+        {rows.map(([k, v]) => (
           <div key={k}>
             <dt>{k}</dt>
             <dd>{v}</dd>
@@ -297,43 +305,82 @@ const SystemOverview = memo(function SystemOverview() {
   );
 });
 
-/* ── 5. Quick actions — One-Click opens its page; every other action runs in place ── */
-const QUICK_ICONS: Record<string, LucideIcon> = {
+/* ── 5a. Navigation shortcuts — open existing pages, never run anything ── */
+const ACTION_ICONS: Record<string, LucideIcon> = {
   "one-click": Sparkles,
-  temp: Trash2,
   boost: Zap,
-  ram: MemoryStick,
   startup: Rocket,
-  network: Wifi,
   telemetry: Activity,
+  temp: Trash2,
+  ram: MemoryStick,
+  cache: Eraser,
+  network: Wifi,
   restore: ShieldCheck,
 };
 
-const QuickActions = memo(function QuickActions() {
-  const navigate = useNavigate();
+const NavShortcuts = memo(function NavShortcuts() {
+  return (
+    <section aria-labelledby="eo-shortcuts-title">
+      <SectionTitle
+        id="eo-shortcuts-title"
+        title="NAVIGATION SHORTCUTS"
+        guide="dashboard.shortcuts"
+        sub="Open a page — nothing runs until you start it there"
+      />
+      <ul className="eo-nav-grid">
+        {NAV_SHORTCUTS.map((a) => {
+          const Icon = ACTION_ICONS[a.id] ?? Zap;
+          return (
+            <li key={a.id}>
+              <Link
+                to="/$page"
+                params={{ page: a.to ?? "" }}
+                className="eo-nav-tile"
+                data-primary={a.id === "one-click" ? "true" : undefined}
+              >
+                <span className="eo-quick-icon" aria-hidden="true">
+                  <Icon className="h-4 w-4" />
+                </span>
+                <span className="min-w-0 flex-1">
+                  <span className="block truncate text-[12.5px] font-bold">{a.title}</span>
+                  <span className="block truncate text-[11px] text-muted-foreground">{a.desc}</span>
+                </span>
+                <ArrowUpRight aria-hidden="true" className="eo-quick-arrow h-4 w-4 text-cyan" />
+              </Link>
+            </li>
+          );
+        })}
+      </ul>
+    </section>
+  );
+});
+
+/* ── 5b. Quick Optimize — each card runs only its own action, in place ── */
+const QuickOptimize = memo(function QuickOptimize() {
   const sim = useSimRun(2600);
   const [activeId, setActiveId] = useState<string | null>(null);
   const [doneId, setDoneId] = useState<string | null>(null);
   const [open, setOpen] = useState(false);
+  const [rpOpen, setRpOpen] = useState(false);
   const openRef = useRef(open);
   openRef.current = open;
-  const runningId = sim.running ? activeId : null;
-  const action = QUICK_ACTIONS.find((a) => a.id === activeId) ?? null;
+  const runningId = sim.running ? activeId : rpOpen ? "restore" : null;
+  const action = QUICK_OPTIMIZE.find((a) => a.id === activeId) ?? null;
   const progress = sim.progress ?? 0;
   const stepIdx = action && sim.running ? quickStepAt(action, progress) : -1;
   const phase = sim.running ? "running" : action && doneId === action.id ? "done" : "idle";
 
   const trigger = (a: QuickAction) => {
-    if (navigatesAway(a)) {
-      navigate({ to: "/$page", params: { page: a.to ?? "" } });
-      return;
-    }
     // Same action already running → just show its progress again.
     if (runningId === a.id) {
-      setOpen(true);
+      if (a.flow !== "restore-point") setOpen(true);
       return;
     }
     if (!canStartQuick(runningId)) return;
+    if (a.flow === "restore-point") {
+      setRpOpen(true);
+      return;
+    }
     setActiveId(a.id);
     setDoneId(null);
     setOpen(true);
@@ -350,23 +397,22 @@ const QuickActions = memo(function QuickActions() {
   };
 
   const result = action && phase === "done" ? quickResult(action) : null;
-  const ActionIcon = action ? (QUICK_ICONS[action.id] ?? Zap) : Zap;
+  const ActionIcon = action ? (ACTION_ICONS[action.id] ?? Zap) : Zap;
 
   return (
     <section aria-labelledby="eo-quick-title">
       <SectionTitle
         id="eo-quick-title"
-        title="QUICK ACTIONS"
+        title="QUICK OPTIMIZE"
         guide="dashboard.quick-actions"
-        sub="Run a single optimization right here — One-Click opens its review page"
+        sub="Runs one action right here on the Dashboard"
         right={<Badge tone="warning">SIMULATED</Badge>}
       />
-      <div className="eo-quick-grid grid grid-cols-4 gap-2.5">
-        {QUICK_ACTIONS.map((q) => {
-          const Icon = QUICK_ICONS[q.id] ?? Zap;
-          const away = navigatesAway(q);
+      <div className="eo-qo-grid">
+        {QUICK_OPTIMIZE.map((q) => {
+          const Icon = ACTION_ICONS[q.id] ?? Zap;
           const isRunning = runningId === q.id;
-          const blocked = runningId !== null && !isRunning && !away;
+          const blocked = runningId !== null && !isRunning;
           const isDone = doneId === q.id && !sim.running;
           return (
             <button
@@ -376,16 +422,13 @@ const QuickActions = memo(function QuickActions() {
               aria-disabled={blocked || undefined}
               aria-describedby={blocked ? "eo-quick-busy" : undefined}
               data-state={isRunning ? "running" : isDone ? "done" : undefined}
-              data-primary={away ? "true" : undefined}
               className="eo-quick"
             >
               <span className="flex items-start justify-between gap-2">
                 <span className="eo-quick-icon" aria-hidden="true">
                   <Icon className="h-4 w-4" />
                 </span>
-                {away ? (
-                  <ArrowUpRight aria-hidden="true" className="eo-quick-arrow h-4 w-4 text-cyan" />
-                ) : isRunning ? (
+                {isRunning ? (
                   <Loader2 aria-hidden="true" className="h-4 w-4 animate-spin text-cyan" />
                 ) : isDone ? (
                   <CheckCircle2 aria-hidden="true" className="h-4 w-4 text-success" />
@@ -399,17 +442,17 @@ const QuickActions = memo(function QuickActions() {
                 {q.desc}
               </span>
               <span className="eo-quick-foot">
-                {isRunning ? (
+                {isRunning && q.flow !== "restore-point" ? (
                   <>
                     <span className="eo-quick-progress" aria-hidden="true">
                       <span style={{ width: `${progress}%` }} />
                     </span>
                     <span className="text-cyan tabular-nums">{Math.round(progress)}%</span>
                   </>
+                ) : isRunning ? (
+                  <span className="text-cyan">In progress</span>
                 ) : isDone ? (
                   <span className="text-success">Done · simulated</span>
-                ) : away ? (
-                  <span className="text-cyan">Review &amp; confirm</span>
                 ) : (
                   <span>Run now</span>
                 )}
@@ -419,17 +462,23 @@ const QuickActions = memo(function QuickActions() {
         })}
       </div>
       <p id="eo-quick-busy" className="sr-only">
-        Another quick action is running. Wait for it to finish.
+        Another quick optimization is running. Wait for it to finish.
       </p>
+
+      <RestorePointDialog
+        open={rpOpen}
+        onClose={() => setRpOpen(false)}
+        defaultName="Before quick optimization"
+      />
 
       <Modal
         open={open && action !== null}
         onClose={() => setOpen(false)}
-        title={action?.title ?? "Quick action"}
+        title={action?.title ?? "Quick optimization"}
         sub={
           phase === "running"
             ? "Running on the Dashboard · simulated"
-            : "Quick action finished · simulated, nothing on this PC changed"
+            : "Finished · simulated, nothing on this PC changed"
         }
         width="max-w-md"
         icon={<ActionIcon className="h-4 w-4" />}
@@ -441,7 +490,7 @@ const QuickActions = memo(function QuickActions() {
             </Btn>
           ) : (
             <Btn variant="primary" onClick={() => setOpen(false)}>
-              Done
+              Dismiss
             </Btn>
           )
         }

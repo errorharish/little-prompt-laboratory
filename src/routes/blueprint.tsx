@@ -10,6 +10,7 @@ import {
   MODAL_SPEC,
   MOTION,
   NATIVE_AUTO_ARCHITECTURE,
+  NATIVE_RESTORE_POINT,
   NAVIGATION,
   REDUCED_MOTION,
   SLIDER_SPEC,
@@ -390,6 +391,20 @@ function Blueprint() {
           head={["AREA", "INTENDED IMPLEMENTATION"]}
           cols="160px 1fr"
           rows={NATIVE_AUTO_ARCHITECTURE.map((a) => [a.area, a.detail])}
+        />
+      </Section>
+
+      <Section id="restore">
+        <SectionTitle
+          id="restore-title"
+          title="SYSTEM PROTECTION & RESTORE POINTS"
+          badge={<Badge tone="warning">PROTOTYPE SIMULATION</Badge>}
+          sub="Check protection → disabled dialog → explicit confirmation → elevate → enable C: only → verify → create → verify. Never silent, never other drives."
+        />
+        <Table
+          head={["AREA", "INTENDED C# / .NET 8 IMPLEMENTATION"]}
+          cols="160px 1fr"
+          rows={NATIVE_RESTORE_POINT.map((a) => [a.area, a.detail])}
         />
       </Section>
 

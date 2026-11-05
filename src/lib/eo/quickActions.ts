@@ -1,7 +1,8 @@
-// Dashboard Quick Actions. One-Click is the only action that opens its own page; every other
-// action runs its own, single task in place on the Dashboard. Steps reuse operations that
-// already exist elsewhere in the prototype (Auto Optimize tasks, Storage, Startup Manager,
-// Network, Backup). Pure data + rules — the run itself is simulated and changes nothing.
+// Dashboard actions, in two separate groups (user-directed):
+// • Navigation Shortcuts open an existing page and never run anything.
+// • Quick Optimize runs one single action in place on the Dashboard and never navigates.
+// Steps reuse operations that already exist elsewhere in the prototype (Auto Optimize tasks,
+// Storage, Network, Backup). Pure data + rules — every run is simulated and changes nothing.
 import { MAINT_TASKS } from "./autoOptimize";
 
 export type QuickOutcome = "Completed" | "Skipped" | "Failed";
@@ -19,11 +20,15 @@ export interface QuickAction {
   cat: string;
   title: string;
   desc: string;
-  /** Only One-Click navigates. */
+  /** "navigate" opens `to`; "run" executes in place. */
+  kind: "navigate" | "run";
+  /** Page slug for navigation shortcuts. */
   to?: string;
   /** Where the underlying operation exists in the prototype. */
   source: string;
   steps: QuickStep[];
+  /** Runs a dedicated workflow instead of the step list. */
+  flow?: "restore-point";
 }
 
 const task = (id: string): QuickStep => {
@@ -32,21 +37,76 @@ const task = (id: string): QuickStep => {
   return { t: t.name, detail: t.sample, outcome: "Completed" };
 };
 
-export const QUICK_ACTIONS: QuickAction[] = [
+/** Group 1 — navigation shortcuts: open an existing page, never execute anything. */
+export const NAV_SHORTCUTS: QuickAction[] = [
   {
     id: "one-click",
     cat: "FULL TUNE",
     title: "One-Click Optimize",
-    desc: "Analyze recommendations, review your selection and confirm a simulated run",
+    desc: "Analyze, review and confirm recommended changes",
+    kind: "navigate",
     to: "one-click",
     source: "1-Click Optimization",
     steps: [],
   },
   {
+    id: "boost",
+    cat: "PERFORMANCE",
+    title: "Boost Performance",
+    desc: "Maximum Performance profile for gaming and rendering",
+    kind: "navigate",
+    to: "max-performance",
+    source: "Maximum Performance",
+    steps: [],
+  },
+  {
+    id: "startup",
+    cat: "BOOT",
+    title: "Startup Manager",
+    desc: "Review apps that launch with Windows",
+    kind: "navigate",
+    to: "startup-manager",
+    source: "Startup Manager",
+    steps: [],
+  },
+  {
+    id: "telemetry",
+    cat: "DIAGNOSTICS",
+    title: "View Telemetry",
+    desc: "Live charts, hardware and the System Health Check",
+    kind: "navigate",
+    to: "system-info",
+    source: "System Telemetry",
+    steps: [],
+  },
+];
+
+/** Group 2 — Quick Optimize: one action each, executed in place on the Dashboard. */
+export const QUICK_OPTIMIZE: QuickAction[] = [
+  {
+    id: "ram",
+    cat: "MEMORY",
+    title: "Memory Cleanup",
+    desc: "Empty the standby list and refresh idle working sets",
+    kind: "run",
+    source: "Auto Optimize · Free Standby Memory",
+    steps: [
+      task("mem-standby"),
+      { t: "Idle working-set refresh", detail: "Background processes only", outcome: "Completed" },
+      {
+        t: "Active app working sets",
+        detail: "Not trimmed",
+        outcome: "Skipped",
+        reason: "Running apps are never trimmed",
+      },
+    ],
+  },
+  {
     id: "temp",
     cat: "STORAGE",
-    title: "Clean Temporary Files",
-    desc: "Clear Windows and user temp folders and old crash reports",
+    title: "Temporary File Cleanup",
+    desc: "Windows and user temp folders and old crash reports",
+    kind: "run",
     source: "Auto Optimize · Clean Temp Files / Storage",
     steps: [
       task("temp-windows"),
@@ -61,56 +121,21 @@ export const QUICK_ACTIONS: QuickAction[] = [
     ],
   },
   {
-    id: "boost",
-    cat: "POWER",
-    title: "Boost Performance",
-    desc: "Switch to the Ultimate Performance plan and disable power throttling",
-    source: "Power Profiles / Optimization catalog",
+    id: "cache",
+    cat: "CACHE",
+    title: "Cache Cleanup",
+    desc: "Shader cache and closed browsers' cache — cache only",
+    kind: "run",
+    source: "Auto Optimize · Browser cache / System caches",
     steps: [
-      { t: "Ultimate Performance power plan", detail: "Plan activated", outcome: "Completed" },
+      task("sys-shader"),
+      task("browser-chrome"),
+      task("browser-edge"),
       {
-        t: "Disable Execution Power Throttling",
-        detail: "Foreground apps keep full clocks",
-        outcome: "Completed",
-      },
-    ],
-  },
-  {
-    id: "ram",
-    cat: "MEMORY",
-    title: "RAM Cleanup",
-    desc: "Empty the standby list and release idle working sets",
-    source: "Auto Optimize · Free Standby Memory",
-    steps: [
-      task("mem-standby"),
-      { t: "Idle working-set refresh", detail: "Background processes only", outcome: "Completed" },
-      {
-        t: "Active app working sets",
-        detail: "Not trimmed",
+        t: "Mozilla Firefox cache",
+        detail: "Firefox is open (sample)",
         outcome: "Skipped",
-        reason: "Running apps are never trimmed",
-      },
-    ],
-  },
-  {
-    id: "startup",
-    cat: "BOOT",
-    title: "Startup Manager",
-    desc: "Disable high-impact third-party startup apps",
-    source: "Startup Manager",
-    steps: [
-      {
-        t: "Steam Client Bootstrapper",
-        detail: "Startup disabled · HIGH impact",
-        outcome: "Completed",
-      },
-      { t: "Discord", detail: "Startup disabled · HIGH impact", outcome: "Completed" },
-      { t: "Adobe Creative Cloud", detail: "Startup disabled · HIGH impact", outcome: "Completed" },
-      {
-        t: "System startup entries",
-        detail: "NVIDIA Display Container, Realtek Audio Console",
-        outcome: "Skipped",
-        reason: "Protected system entries",
+        reason: "Browser caches are cleared only while that browser is closed",
       },
     ],
   },
@@ -118,7 +143,8 @@ export const QUICK_ACTIONS: QuickAction[] = [
     id: "network",
     cat: "NETWORK",
     title: "Network Boost",
-    desc: "Remove multimedia network throttling and calibrate TCP auto-tuning",
+    desc: "Remove multimedia throttling and calibrate TCP auto-tuning",
+    kind: "run",
     source: "Network / Optimization catalog",
     steps: [
       {
@@ -135,41 +161,21 @@ export const QUICK_ACTIONS: QuickAction[] = [
     ],
   },
   {
-    id: "telemetry",
-    cat: "DIAGNOSTICS",
-    title: "View Telemetry",
-    desc: "Take a quick CPU, RAM and GPU snapshot without leaving the Dashboard",
-    source: "System Telemetry",
-    steps: [
-      { t: "CPU", detail: "18% · 42°C (sample)", outcome: "Completed" },
-      { t: "Memory", detail: "12.2 / 32 GB in use (sample)", outcome: "Completed" },
-      { t: "GPU", detail: "14% · 44°C (sample)", outcome: "Completed" },
-    ],
-  },
-  {
     id: "restore",
     cat: "SAFETY",
     title: "Create Restore Point",
-    desc: "Snapshot registry hives and service configuration before tuning",
+    desc: "Checks System Protection, then creates a restore point",
+    kind: "run",
     source: "Backup & Restore",
-    steps: [
-      {
-        t: "Registry hives snapshot",
-        detail: "HKLM\\SYSTEM, HKLM\\SOFTWARE",
-        outcome: "Completed",
-      },
-      { t: "Service configuration snapshot", detail: "Startup types saved", outcome: "Completed" },
-      {
-        t: "Register restore point",
-        detail: "“Before quick optimization”",
-        outcome: "Completed",
-      },
-    ],
+    steps: [],
+    flow: "restore-point",
   },
 ];
 
-/** Only One-Click leaves the Dashboard. */
-export const navigatesAway = (a: QuickAction) => Boolean(a.to);
+export const QUICK_ACTIONS: QuickAction[] = [...NAV_SHORTCUTS, ...QUICK_OPTIMIZE];
+
+/** Navigation shortcuts leave the Dashboard; Quick Optimize actions never do. */
+export const navigatesAway = (a: QuickAction) => a.kind === "navigate";
 
 /** A new quick action may start only when none is running (no duplicate or parallel runs). */
 export const canStartQuick = (runningId: string | null) => runningId === null;

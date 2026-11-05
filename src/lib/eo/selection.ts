@@ -24,19 +24,26 @@ export interface SelectionCandidate<T extends string | number = string> {
   done?: boolean | undefined;
   /** Not applicable to the sample hardware / unsupported. Never selectable. */
   unsupported?: boolean | undefined;
+  /** Incompatible with the current device / profile / configuration. Never selectable. */
+  incompatible?: boolean | undefined;
   /** Irreversible or data-deleting — needs an explicit, confirmed user choice. */
   destructive?: boolean | undefined;
+  /** Explicitly not recommended for this mode (omitted = recommended). */
+  recommended?: boolean | undefined;
 }
 
-/** May the user select this item at all? Protected and unsupported items never. */
+/** May the user select this item at all? Protected, unsupported and incompatible items never. */
 export function isSelectable(i: SelectionCandidate<string | number>): boolean {
-  return i.risk !== "PROTECTED" && !i.unsupported;
+  return i.risk !== "PROTECTED" && !i.unsupported && !i.incompatible;
 }
 
-/** Is this item part of the first-use default selection ("all eligible")?
- *  Excludes protected, high-risk, destructive, already-applied and unsupported items. */
+/** Is this item part of the first-use default selection?
+ *  Applicable AND recommended AND eligible: excludes protected, unsupported, incompatible,
+ *  high-risk, destructive, already-applied and not-recommended items. */
 export function isDefaultEligible(i: SelectionCandidate<string | number>): boolean {
-  return isSelectable(i) && i.risk !== "HIGH" && !i.destructive && !i.done;
+  return (
+    isSelectable(i) && i.risk !== "HIGH" && !i.destructive && !i.done && i.recommended !== false
+  );
 }
 
 /** First-use default: every eligible item selected. */

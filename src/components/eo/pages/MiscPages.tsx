@@ -25,6 +25,9 @@ import { GuideButton, GuideSteps, GuideTip } from "../Guide";
 import { useAppearance } from "../Appearance";
 import { NumberField, RangeSlider, Segmented } from "../controls";
 import { RotateCcw, ShieldCheck, Target } from "lucide-react";
+import { RestorePointDialog } from "../RestorePoint";
+import { setRestoreState, useRestoreState } from "../restorePointStore";
+import { PROTECTION_SCENARIOS, SYSTEM_DRIVE } from "@/lib/eo/restorePoint";
 import { CATALOG, HW, PROFILES } from "@/lib/eo/data";
 import { cn } from "@/lib/utils";
 
@@ -615,6 +618,9 @@ export function BackupRestorePage() {
   const [f, setF] = useState("ALL");
   const [d, setD] = useState<(typeof TX)[number] | null>(null);
   const [restore, setRestore] = useState(false);
+  const [createRp, setCreateRp] = useState(false);
+  const rpState = useRestoreState();
+  const scenario = PROTECTION_SCENARIOS.find((s) => s.id === rpState.scenario)!;
   const vis = TX.filter(
     (t) =>
       t[0].toLowerCase().includes(query.toLowerCase()) &&
@@ -634,7 +640,7 @@ export function BackupRestorePage() {
             <Btn variant="ghost" onClick={() => simulate("Refresh")}>
               Refresh
             </Btn>
-            <Btn variant="primary" onClick={() => simulate("Create restore point")}>
+            <Btn variant="primary" onClick={() => setCreateRp(true)}>
               Create restore point
             </Btn>
             <Btn variant="danger" onClick={() => setRestore(true)}>
@@ -654,6 +660,29 @@ export function BackupRestorePage() {
           { label: "NON-REVERSIBLE", value: 1, tone: "warning" },
         ]}
       />
+      <Card className="eo-rp-device">
+        <div className="min-w-0">
+          <SectionTitle
+            title="SYSTEM PROTECTION"
+            guide="backup.restore-point"
+            badge={<Badge tone="warning">SIMULATED DEVICE</Badge>}
+            sub={`${SYSTEM_DRIVE.label} · ${scenario.desc}`}
+          />
+          <p className="-mt-1.5 pl-3 text-[11px] text-subtle">
+            Last restore point:{" "}
+            {rpState.last ? `“${rpState.last.name}” · ${rpState.last.at} (simulated)` : "none yet"}
+          </p>
+        </div>
+        <Segmented
+          label="Simulated System Protection state"
+          options={PROTECTION_SCENARIOS.map((s) => s.label)}
+          value={scenario.label}
+          onChange={(v) => {
+            const next = PROTECTION_SCENARIOS.find((s) => s.label === v);
+            if (next) setRestoreState({ scenario: next.id });
+          }}
+        />
+      </Card>
       <Card>
         <Label className="mb-3 text-foreground">PROFILE CONTAINERS</Label>
         <div className="grid grid-cols-3 items-stretch gap-3.5">
@@ -800,6 +829,11 @@ export function BackupRestorePage() {
           Restored values are read back from Windows and verified (simulated in this prototype).
         </p>
       </Modal>
+      <RestorePointDialog
+        open={createRp}
+        onClose={() => setCreateRp(false)}
+        defaultName="Manual restore point"
+      />
     </div>
   );
 }

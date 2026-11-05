@@ -1,0 +1,8 @@
+# Pure rule modules (src/lib/eo)
+Each module is pure (no React, no storage) and has a test in `src/test/`. UI reads the rules; it never re-implements them.
+- `slider.ts`, `score.ts` — slider values and illustrative optimization score (`premium-rules.test.ts`). Why: every slider/score behaves the same.
+- `autoOptimize.ts` — tasks, interval validation, run planning, overlap, summaries (`auto-optimize-rules.test.ts`). Why: one set of maintenance safety rules.
+- `quickActions.ts` — two Dashboard groups: `NAV_SHORTCUTS` (kind "navigate", only open a page) and `QUICK_OPTIMIZE` (kind "run", own steps in place, one run at a time) (`quick-actions.test.ts`). Why: user-directed — navigation and optimization never mix.
+- `restorePoint.ts` — System Protection / restore-point state machine (`restore-point-rules.test.ts`). Every create-restore-point path uses `useRestorePointFlow` / `RestorePointDialog` from `src/components/eo/RestorePoint.tsx`; simulated device state is in `restorePointStore.ts`. Why: protection is checked, confirmed and verified the same way everywhere.
+- `health.ts` — System Health scoring, rendered only by `HealthCheck.tsx` (`health-score.test.ts`). Why: one documented, reproducible method.
+- `inputModes.ts` — Normal/Advanced selections are computed from the shared default rule; Custom is a saved `usePersistedSelection` profile edited through a draft (`input-modes.test.ts`). Why: recommendation-driven modes never drift from the rule.
