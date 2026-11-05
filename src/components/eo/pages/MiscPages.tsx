@@ -910,7 +910,7 @@ export function SettingsPage() {
           ["AI Power Plan Auto-Enable", "Activate scheme on Windows logon"],
           ["AI Workload Optimization", "Safe passive monitoring on boot"],
           ["AI RAM Limiter", "Memory pressure monitor on boot"],
-          ["Smart Auto Optimize", "Authoritative scheduler reconciliation"],
+          ["Smart Auto Optimize", "Simulated scheduler reconciliation"],
         ].map(([t, s]) => (
           <Row key={t} t={t} s={s}>
             <Tog init={false} />
