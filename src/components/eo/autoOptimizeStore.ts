@@ -230,7 +230,7 @@ function boot() {
     openBrowsers: Array.isArray(saved.openBrowsers) ? saved.openBrowsers : [],
   };
   listeners.forEach((l) => l());
-  ticker = setInterval(tick, 1000);
+  if (!ticker) ticker = setInterval(tick, 1000);
   if (config.enabled && !config.paused) {
     const missed = state.nextAt !== null && state.nextAt < Date.now();
     set({ nextAt: nextRunAt(Date.now(), config.intervalMin) });
