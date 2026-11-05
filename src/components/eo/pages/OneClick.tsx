@@ -46,7 +46,7 @@ const FILTERS = {
   CATEGORY: ["System Performance", "Background Workload", "Memory", "Power / Performance"],
   "ACTION REQUIREMENTS": ["Can Optimize Now", "Background-Safe", "Requires Restart"],
 };
-const GUIDE = [
+const GUIDE: [string, string][] = [
   ["CHECK", "ERROR OPTIMIZER scans your PC and finds relevant optimization opportunities."],
   [
     "REVIEW",
@@ -127,13 +127,7 @@ export function OneClickPage() {
         sub="Analyze sample recommendations, review your choices, confirm a simulated run."
         actions={
           <div className="flex gap-2">
-            <Btn
-              variant="ghost"
-              onClick={() => setGuide(true)}
-              title="How 1-Click Optimization works"
-            >
-              Guide
-            </Btn>
+            <GuideButton onClick={() => setGuide(true)} />
             <Btn disabled={scan.running} onClick={analyze} title="Analyze sample recommendations">
               {scan.running ? (
                 <>Analyzing…</>
@@ -522,25 +516,10 @@ export function OneClickPage() {
           </Btn>
         }
       >
-        <ol className="space-y-3">
-          {GUIDE.map(([t, desc], i) => (
-            <li key={t} className="grid gap-3" style={{ gridTemplateColumns: "32px 1fr" }}>
-              <span
-                aria-hidden="true"
-                className="eo-brand flex h-8 w-8 items-center justify-center rounded-full text-sm font-black"
-              >
-                {i + 1}
-              </span>
-              <div>
-                <div className="eo-label text-foreground">{t}</div>
-                <p className="text-xs text-muted-foreground">{desc}</p>
-              </div>
-            </li>
-          ))}
-        </ol>
-        <p className="pt-3 text-[11px] text-success">
-          Protected apps, drivers and critical Windows components are never treated as targets.
-        </p>
+        <GuideSteps
+          steps={GUIDE}
+          note="Protected apps, drivers and critical Windows components are never treated as targets."
+        />
       </Modal>
 
       <ReviewSelectionModal

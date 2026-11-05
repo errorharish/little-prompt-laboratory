@@ -123,9 +123,7 @@ export function V4MaxPerformancePage() {
         sub="Host latency reduction for gaming and focused work — simulated."
         actions={
           <>
-            <Btn variant="ghost" onClick={() => setGuide(true)}>
-              Guide
-            </Btn>
+            <GuideButton onClick={() => setGuide(true)} />
             <Btn
               variant="ghost"
               disabled={!last || r.running}
@@ -347,29 +345,26 @@ export function V4MaxPerformancePage() {
           </Btn>
         }
       >
-        {[
-          [
-            "WHAT MAXIMUM PERFORMANCE OPTIMIZES",
-            "Reduces background CPU contention, releases idle process working sets, and balances priorities.",
-          ],
-          [
-            "WHAT REMAINS SAFEGUARDED (NEVER TOUCHED)",
-            "Core Windows OS binaries, display drivers, audio engines, network controllers and your active apps.",
-          ],
-          [
-            "REVERSIBILITY VIA LOCAL ROLLBACK JOURNAL",
-            "Every applied modification is recorded in a transactional journal before execution.",
-          ],
-          [
-            "BUILT FOR GAMING, EDITING, STREAMING & DAILY USE",
-            "Designed for workload-specific review; no compatibility or performance tests run in this prototype.",
-          ],
-        ].map(([a, b]) => (
-          <div key={a} className="mb-3">
-            <Label className="text-cyan">{a}</Label>
-            <p className="mt-1 text-xs text-muted-foreground">{b}</p>
-          </div>
-        ))}
+        <GuideSteps
+          steps={[
+            [
+              "What Maximum Performance optimizes",
+              "Reduces background CPU contention, releases idle process working sets, and balances priorities.",
+            ],
+            [
+              "What remains safeguarded",
+              "Core Windows OS binaries, display drivers, audio engines, network controllers and your active apps are never touched.",
+            ],
+            [
+              "Reversibility via local rollback journal",
+              "Every applied modification is recorded in a transactional journal before execution.",
+            ],
+            [
+              "Built for gaming, editing, streaming & daily use",
+              "Designed for workload-specific review; no compatibility or performance tests run in this prototype.",
+            ],
+          ]}
+        />
       </Modal>
     </div>
   );
@@ -512,9 +507,7 @@ export function EmulatorOptimizationPage() {
         sub="MSI App Player 5 scheduling, guest debloat and graphics tuning — simulated."
         actions={
           <>
-            <Btn variant="ghost" onClick={() => setGuide(true)}>
-              Guide
-            </Btn>
+            <GuideButton onClick={() => setGuide(true)} />
             <Btn
               variant="ghost"
               disabled={!applied.size || running !== null}
@@ -934,9 +927,7 @@ export function EmulatorModulesPage() {
         }
         actions={
           <>
-            <Btn variant="ghost" onClick={() => setGuide(true)}>
-              Guide
-            </Btn>
+            <GuideButton onClick={() => setGuide(true)} />
             {active && (
               <Btn size="sm" onClick={() => simulate("Rescan")}>
                 Rescan
@@ -1331,23 +1322,20 @@ export function EmulatorModulesPage() {
           </Btn>
         }
       >
-        {[
-          [
-            "1. THREE DEDICATED MODULES",
-            "Emulator Optimization for balanced daily tuning, Deep Debloater for cleanup, Low-End Extreme for weak hardware.",
-          ],
-          [
-            "2. EVERYTHING ELIGIBLE IS PRE-SELECTED",
-            "Protected packages and advanced risky tweaks are never selected for you. Each profile keeps its own selection.",
-          ],
-          ["3. REVIEW BEFORE APPLYING", "Review & apply lists exactly the selected changes."],
-          ["4. REVERSIBILITY & ROLLBACK", "Every applied change can be rolled back at any time."],
-        ].map(([a, b]) => (
-          <div key={a} className="mb-3">
-            <Label className="text-cyan">{a}</Label>
-            <p className="text-xs text-muted-foreground">{b}</p>
-          </div>
-        ))}
+        <GuideSteps
+          steps={[
+            [
+              "Three dedicated modules",
+              "Emulator Optimization for balanced daily tuning, Deep Debloater for cleanup, Low-End Extreme for weak hardware.",
+            ],
+            [
+              "Everything eligible is pre-selected",
+              "Protected packages and advanced risky tweaks are never selected for you. Each profile keeps its own selection.",
+            ],
+            ["Review before applying", "Review & apply lists exactly the selected changes."],
+            ["Reversibility & rollback", "Every applied change can be rolled back at any time."],
+          ]}
+        />
       </Modal>
     </div>
   );
@@ -1633,9 +1621,7 @@ export function LowEndSteamPage() {
         sub="Simulated emulator tuning for dual-core, quad-core and integrated graphics."
         actions={
           <>
-            <Btn variant="ghost" onClick={() => setGuide(true)}>
-              Guide
-            </Btn>
+            <GuideButton onClick={() => setGuide(true)} />
             <Btn onClick={() => simulate("Scan candidates")}>Scan candidates</Btn>
           </>
         }
@@ -1703,12 +1689,24 @@ export function LowEndSteamPage() {
         onClose={() => setGuide(false)}
         title="Low End Steam guide"
         sub="Simulated low-spec emulator review."
-        footer={<Btn onClick={() => setGuide(false)}>Close</Btn>}
+        footer={
+          <Btn variant="primary" onClick={() => setGuide(false)}>
+            Got it
+          </Btn>
+        }
       >
-        <p className="text-sm text-muted-foreground">
-          Review compositor timing and guest memory options. The original operations require an
-          emulator connection; this prototype does not connect or measure performance.
-        </p>
+        <GuideSteps
+          steps={[
+            ["Connect", "The original operations need MSI App Player running with ADB turned on."],
+            [
+              "Review",
+              "Check the compositor (SurfaceFlinger) timing and guest memory (Dalvik) options for your hardware.",
+            ],
+            ["Optimize", "Apply the eligible items; advanced risky tweaks stay off unless you allow them."],
+            ["Restore", "Restore returns every item to its previous value."],
+          ]}
+          note="This prototype does not connect to an emulator or measure performance."
+        />
       </Modal>
     </div>
   );

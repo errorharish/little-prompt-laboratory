@@ -1235,9 +1235,7 @@ export function PerformanceTuningPage() {
             <Btn variant="ghost" onClick={() => simulate("Revert to stock")}>
               Revert to stock
             </Btn>
-            <Btn variant="ghost" onClick={() => setGuide(true)}>
-              Guide
-            </Btn>
+            <GuideButton onClick={() => setGuide(true)} />
             <Btn onClick={() => simulate("Rescan")}>Rescan</Btn>
           </>
         }
@@ -1320,21 +1318,19 @@ export function PerformanceTuningPage() {
           </Btn>
         }
       >
-        {[
-          ["1. CHECK", "Checks whether your CPU or GPU supports safe tuning controls."],
-          ["2. TEST", "Measures your current baseline performance and temperature."],
-          ["3. TUNE", "Applies one controlled change."],
-          ["4. VERIFY", "Checks stability, temperature and real performance."],
-          [
-            "5. DECIDE",
-            "Keeps the change only if it improves verified stable performance. Otherwise it is reverted.",
-          ],
-        ].map(([a, b]) => (
-          <div key={a} className="mb-2 rounded-lg border border-border bg-window p-3">
-            <div className="eo-label text-foreground">{a}</div>
-            <p className="text-xs text-muted-foreground">{b}</p>
-          </div>
-        ))}
+        <GuideSteps
+          steps={[
+            ["CHECK", "Checks whether your CPU or GPU supports safe tuning controls."],
+            ["TEST", "Measures your current baseline performance and temperature."],
+            ["TUNE", "Applies one controlled change."],
+            ["VERIFY", "Checks stability, temperature and real performance."],
+            [
+              "DECIDE",
+              "Keeps the change only if it improves stable performance. Otherwise it is reverted.",
+            ],
+          ]}
+          note="In this prototype nothing is measured or tuned."
+        />
       </Modal>
     </div>
   );
