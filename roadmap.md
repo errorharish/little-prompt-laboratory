@@ -30,9 +30,9 @@
 - [ ] Per-page layout redesign of the remaining manager pages beyond the shared components. Blocked: needs the WPF reference files to avoid guessing layouts.
 
 # Final product-wide redesign (prompt-7)
-- [ ] Auto Optimize settings: compact layout, Back to Dashboard, Advanced Settings collapsed.
-- [ ] Global page container, grid, spacing and alignment applied to all 34 destinations.
-- [ ] Shared components refined: cards, sidebar, buttons, tabs/segmented, sliders, toggles, inputs, progress, pills.
-- [ ] Optimization dialogs (run, review, detail, confirm) and toasts redesigned.
-- [ ] Motion: page transitions, hover, press, dialog enter/exit, expand/collapse, reduced motion.
-- [ ] Verify all 34 destinations at 1280×820 / 1024×768 and run tests.
+- [x] Auto Optimize settings: compact layout, Back to Dashboard, Advanced Settings collapsed.
+- [x] Global page container, grid, spacing and alignment applied to all 34 destinations.
+- [x] Shared components refined: cards, sidebar, buttons, tabs/segmented, sliders, toggles, inputs, progress, pills.
+- [x] Optimization dialogs (run, review, detail, confirm) and toasts redesigned.
+- [x] Motion: page transitions, hover, press, dialog enter/exit, expand/collapse, reduced motion.
+- [x] Verify all 34 destinations at 1280×820 / 1024×768 and run tests.

@@ -385,6 +385,26 @@ export const REDUCED_MOTION: string[] = [
 
 export const COMPONENT_MAP: { web: string; wpf: string; note: string }[] = [
   {
+    web: "StatTiles (metric strip)",
+    wpf: "Border + UniformGrid with 1px separators",
+    note: "One panel divided into cells; replaces rows of separate stat cards. Cells wrap by width.",
+  },
+  {
+    web: "BackLink",
+    wpf: "Button · BackNavigationStyle (Command=NavigateBack)",
+    note: "Pages reached from the Dashboard (Auto Optimize, 1-Click) show ← Back to Dashboard before the title.",
+  },
+  {
+    web: "Details (inline)",
+    wpf: "Expander inside the parent panel",
+    note: "Advanced settings and technical inventories stay collapsed in the primary view.",
+  },
+  {
+    web: "OpProgress",
+    wpf: "ProgressRing + current-operation TextBlock + ProgressBar",
+    note: "Shared optimization progress block in run dialogs: percent ring, current stage, items reached.",
+  },
+  {
     web: "Card",
     wpf: "Border · FigmaCardStyle / GlassCard",
     note: "Gradient surface + 1px border",
