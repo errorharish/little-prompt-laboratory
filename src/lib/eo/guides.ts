@@ -80,7 +80,8 @@ export const GUIDES = {
     when: "After the Normal profile, if you want finer control.",
     benefit: `Small scheduling and responsiveness improvements on some systems. ${VARIES}`,
     risk: "medium",
-    limits: "High-risk changes are never pre-selected. Wrong registry values can cause instability.",
+    limits:
+      "High-risk changes are never pre-selected. Wrong registry values can cause instability.",
     restart: "Many registry changes need a restart",
     reversible: "Yes — the original value is backed up first",
   },
@@ -127,7 +128,8 @@ export const GUIDES = {
     when: "When sign-in feels slow or the system tray is crowded.",
     benefit: "Faster sign-in and less background activity.",
     risk: "low",
-    limits: "System entries ask for confirmation. Apps you turn off won't auto-start until you turn them back on.",
+    limits:
+      "System entries ask for confirmation. Apps you turn off won't auto-start until you turn them back on.",
     restart: "Takes effect at next sign-in",
     reversible: "Yes — switch the entry back on",
   },
@@ -322,7 +324,8 @@ export const GUIDES = {
     when: "When you play Android games in MSI App Player 5.",
     benefit: `Steadier emulator performance. ${VARIES}`,
     risk: "low",
-    limits: "Engines 2 and 3 need MSI App Player running with ADB turned on. Config files are never edited.",
+    limits:
+      "Engines 2 and 3 need MSI App Player running with ADB turned on. Config files are never edited.",
     restart: "Restart the emulator after applying",
     reversible: "Yes — per engine or Restore all",
   },
@@ -358,7 +361,8 @@ export const GUIDES = {
     when: "When setting up a new emulator instance.",
     benefit: "A leaner emulator.",
     risk: "medium",
-    limits: "Essential Android components are protected. Disabling a needed app can break a feature.",
+    limits:
+      "Essential Android components are protected. Disabling a needed app can break a feature.",
     restart: "Restart the emulator",
     reversible: "Yes — disabled components can be enabled again",
   },

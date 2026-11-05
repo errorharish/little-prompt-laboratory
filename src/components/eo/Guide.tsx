@@ -58,7 +58,11 @@ export function GuideTip({
     const left = Math.max(8, Math.min(a.left + a.width / 2 - width / 2, vw - width - 8));
     const below = a.bottom + GAP;
     const above = below + h > vh - 8 && a.top - GAP - h > 8;
-    setPos({ top: above ? a.top - GAP - h : Math.min(below, Math.max(8, vh - h - 8)), left, above });
+    setPos({
+      top: above ? a.top - GAP - h : Math.min(below, Math.max(8, vh - h - 8)),
+      left,
+      above,
+    });
   }, []);
 
   useLayoutEffect(() => {
@@ -133,7 +137,10 @@ export function GuideTip({
             style={{
               top: pos?.top ?? -9999,
               left: pos?.left ?? -9999,
-              width: Math.min(POP_W, typeof window === "undefined" ? POP_W : window.innerWidth - 16),
+              width: Math.min(
+                POP_W,
+                typeof window === "undefined" ? POP_W : window.innerWidth - 16,
+              ),
             }}
             // React events bubble through portals: keep clicks/keys from reaching parent rows.
             onClick={(e) => e.stopPropagation()}

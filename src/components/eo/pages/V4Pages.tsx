@@ -793,7 +793,9 @@ export function EmulatorOptimizationPage() {
                     {i + 1}
                   </span>
                   <span className="min-w-0">
-                    <span className="eo-guide-step-title block">{(t ?? "").replace(/^\d+\.\s*/, "")}</span>
+                    <span className="eo-guide-step-title block">
+                      {(t ?? "").replace(/^\d+\.\s*/, "")}
+                    </span>
                     <span className="block text-[10.5px] text-subtle">{s}</span>
                   </span>
                 </span>
@@ -1740,7 +1742,10 @@ export function LowEndSteamPage() {
               "Review",
               "Check the compositor (SurfaceFlinger) timing and guest memory (Dalvik) options for your hardware.",
             ],
-            ["Optimize", "Apply the eligible items; advanced risky tweaks stay off unless you allow them."],
+            [
+              "Optimize",
+              "Apply the eligible items; advanced risky tweaks stay off unless you allow them.",
+            ],
             ["Restore", "Restore returns every item to its previous value."],
           ]}
           note="This prototype does not connect to an emulator or measure performance."
