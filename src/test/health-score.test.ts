@@ -61,7 +61,9 @@ describe("System Health Check score", () => {
         key: "cpu",
         label: "CPU",
         weight: 1,
-        metrics: [{ key: "cpu-load", label: "CPU load", kind: "utilization", value: 98, unit: "%" }],
+        metrics: [
+          { key: "cpu-load", label: "CPU load", kind: "utilization", value: 98, unit: "%" },
+        ],
       },
     ];
     const r = evaluateHealth(busy);

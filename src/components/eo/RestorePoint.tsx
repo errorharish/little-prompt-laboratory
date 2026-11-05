@@ -235,13 +235,13 @@ export function RestorePointBody({
       {stage === "protection-required" && (
         <>
           <p className="text-[12.5px] text-muted-foreground">
-            Windows can only create a restore point on a drive with System Protection turned on.
-            It is off for your system drive, so a restore point can't be created yet.
+            Windows can only create a restore point on a drive with System Protection turned on. It
+            is off for your system drive, so a restore point can't be created yet.
           </p>
           <DriveRow on={false} />
           <p className="text-[11px] text-subtle">
-            Nothing changes until you choose Enable System Protection and confirm. Other drives
-            are never touched.
+            Nothing changes until you choose Enable System Protection and confirm. Other drives are
+            never touched.
           </p>
         </>
       )}
@@ -249,13 +249,13 @@ export function RestorePointBody({
         <>
           <ul className="eo-rp-list" aria-label="What will happen">
             <li>
-              Turns on System Protection for <b>{SYSTEM_DRIVE.label}</b> only — other drives stay
-              as they are.
+              Turns on System Protection for <b>{SYSTEM_DRIVE.label}</b> only — other drives stay as
+              they are.
             </li>
             <li>Windows asks for administrator permission first.</li>
             <li>
-              Windows reserves part of {SYSTEM_DRIVE.letter} for restore points; you can change
-              this later in System Properties.
+              Windows reserves part of {SYSTEM_DRIVE.letter} for restore points; you can change this
+              later in System Properties.
             </li>
             <li>Existing restore points are kept. Protection is never turned off by the app.</li>
             <li>The setting is read back before the restore point is created.</li>
@@ -298,8 +298,8 @@ export function RestorePointBody({
           <div className="eo-rp-alert" data-tone="success">
             <CheckCircle2 aria-hidden="true" className="h-4 w-4 shrink-0" />
             <span>
-              Simulated restore point created and verified in the prototype. No restore point
-              exists on this PC.
+              Simulated restore point created and verified in the prototype. No restore point exists
+              on this PC.
             </span>
           </div>
           <div>
@@ -459,11 +459,7 @@ export function RestorePointDialog({
         )
       }
     >
-      {flow.stage === "idle" ? (
-        <RestoreNameField flow={flow} />
-      ) : (
-        <RestorePointBody flow={flow} />
-      )}
+      {flow.stage === "idle" ? <RestoreNameField flow={flow} /> : <RestorePointBody flow={flow} />}
     </Modal>
   );
 }
@@ -481,8 +477,8 @@ export function RestoreNameField({ flow }: { flow: RestoreFlow }) {
         className="h-9 w-full rounded-lg border border-border bg-window px-3 text-sm outline-none focus:border-cyan/60"
       />
       <p className="text-[11px] text-muted-foreground">
-        System Protection on {SYSTEM_DRIVE.label} is checked first. Simulated — no restore point
-        is written to this PC.
+        System Protection on {SYSTEM_DRIVE.label} is checked first. Simulated — no restore point is
+        written to this PC.
       </p>
     </div>
   );

@@ -20,15 +20,20 @@ describe("Dashboard navigation shortcuts and Quick Optimize", () => {
       "View Telemetry": "system-info",
     });
     for (const a of NAV_SHORTCUTS) {
-      expect(PAGES.some((p) => p.slug === a.to), a.id).toBe(true);
+      expect(
+        PAGES.some((p) => p.slug === a.to),
+        a.id,
+      ).toBe(true);
       expect(a.steps).toHaveLength(0);
     }
   });
 
   it("only navigation shortcuts leave the Dashboard; Quick Optimize never does", () => {
-    expect(QUICK_ACTIONS.filter(navigatesAway).map((a) => a.id).sort()).toEqual(
-      ["boost", "one-click", "startup", "telemetry"].sort(),
-    );
+    expect(
+      QUICK_ACTIONS.filter(navigatesAway)
+        .map((a) => a.id)
+        .sort(),
+    ).toEqual(["boost", "one-click", "startup", "telemetry"].sort());
     for (const a of QUICK_OPTIMIZE) {
       expect(navigatesAway(a), a.id).toBe(false);
       expect(a.to).toBeUndefined();

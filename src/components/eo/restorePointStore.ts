@@ -18,7 +18,9 @@ const listeners = new Set<() => void>();
 function read(): RestorePointState {
   if (state) return state;
   try {
-    const raw = JSON.parse(window.localStorage.getItem(KEY) ?? "null") as Partial<RestorePointState> | null;
+    const raw = JSON.parse(
+      window.localStorage.getItem(KEY) ?? "null",
+    ) as Partial<RestorePointState> | null;
     state = {
       scenario:
         raw?.scenario === "enabled" || raw?.scenario === "blocked" ? raw.scenario : "disabled",

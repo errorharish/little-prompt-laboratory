@@ -47,8 +47,7 @@ export interface HealthCategory {
 const clamp = (v: number) => Math.min(100, Math.max(0, v));
 
 /** Load ≤ 60% scores 100; above that it falls 1.75 points per % (100% load → 30). */
-export const utilizationScore = (pct: number) =>
-  clamp(pct <= 60 ? 100 : 100 - (pct - 60) * 1.75);
+export const utilizationScore = (pct: number) => clamp(pct <= 60 ? 100 : 100 - (pct - 60) * 1.75);
 
 /** ≤ warn scores 100; warn → crit falls linearly to 40; above crit scores 20. */
 export function thermalScore(c: number, warn: number, crit: number) {
@@ -158,7 +157,8 @@ export function evaluateHealth(categories: readonly HealthCategory[]): HealthRes
 }
 
 const ADVICE: Record<string, string> = {
-  "cpu-load": "High load is normal during heavy work; check Process Reduction if it stays high at idle.",
+  "cpu-load":
+    "High load is normal during heavy work; check Process Reduction if it stays high at idle.",
   "cpu-temp": "Check cooler mounting, fan curves and case airflow.",
   "mem-used": "Close unused apps; Memory Cleanup on the Dashboard releases standby memory.",
   "mem-commit":

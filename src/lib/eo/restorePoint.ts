@@ -117,8 +117,10 @@ export const simulatedProtection = (s: ProtectionScenario): "on" | "off" =>
 export const simulatedProtectionAfterEnable = (s: ProtectionScenario): boolean => s !== "blocked";
 
 /** Scenario after a verified enable: the simulated device now has protection on. */
-export const scenarioAfterEnable = (s: ProtectionScenario, verifiedOn: boolean): ProtectionScenario =>
-  verifiedOn ? "enabled" : s;
+export const scenarioAfterEnable = (
+  s: ProtectionScenario,
+  verifiedOn: boolean,
+): ProtectionScenario => (verifiedOn ? "enabled" : s);
 
 /** Accurate manual steps shown when protection cannot be turned on by the app. */
 export const MANUAL_ENABLE_STEPS: string[] = [

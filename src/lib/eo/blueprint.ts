@@ -564,12 +564,12 @@ export const NATIVE_RESTORE_POINT: { area: string; detail: string }[] = [
   {
     area: "Elevation",
     detail:
-      "Enabling runs in the elevated helper (requireAdministrator manifest, started via ProcessStartInfo Verb=\"runas\"). A declined UAC prompt (Win32Exception 1223) returns to the dialog with an accurate message; permissions are never bypassed.",
+      'Enabling runs in the elevated helper (requireAdministrator manifest, started via ProcessStartInfo Verb="runas"). A declined UAC prompt (Win32Exception 1223) returns to the dialog with an accurate message; permissions are never bypassed.',
   },
   {
     area: "Enable",
     detail:
-      "Calls SystemRestore.Enable(\"C:\\\\\") (WMI root\\default:SystemRestore) for the system drive only; other drives, existing restore points and disk-usage settings are left untouched. Protection is never disabled by the app.",
+      'Calls SystemRestore.Enable("C:\\\\") (WMI root\\default:SystemRestore) for the system drive only; other drives, existing restore points and disk-usage settings are left untouched. Protection is never disabled by the app.',
   },
   {
     area: "Verify",

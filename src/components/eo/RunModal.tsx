@@ -4,6 +4,7 @@ import { useEffect, useRef, useState } from "react";
 import { CheckCircle2, ShieldCheck, Square, Zap } from "lucide-react";
 import { Badge, Bar, Btn, Chips, Details, KV, Modal, RiskBadge, StatTiles, Stepper } from "./kit";
 import type { Risk } from "@/lib/eo/data";
+import { OpProgress } from "./OpProgress";
 import { simulatedRunSummary, type SimulatedRunSummary } from "@/lib/eo/selection";
 import { cn } from "@/lib/utils";
 import {
@@ -191,7 +192,11 @@ export function RunModal({
         </div>
       )}
       {phase === "restore" &&
-        (rp.stage === "idle" ? <RestoreNameField flow={rp} /> : <RestorePointBody flow={rp} heading />)}
+        (rp.stage === "idle" ? (
+          <RestoreNameField flow={rp} />
+        ) : (
+          <RestorePointBody flow={rp} heading />
+        ))}
       {(phase === "running" || phase === "cancelled") && (
         <div className="space-y-4">
           <OpProgress
@@ -295,4 +300,4 @@ export function RunModal({
   );
 }
 
-export { OpProgress } from "./OpProgress";
+export { OpProgress };

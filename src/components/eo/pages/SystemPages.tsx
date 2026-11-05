@@ -37,12 +37,7 @@ import type { GuideId } from "@/lib/eo/guides";
 import { RunModal } from "../RunModal";
 import { TelemetryConsole } from "../Telemetry";
 import { HealthCheck } from "../HealthCheck";
-import {
-  clampSelection,
-  eligibleSelection,
-  isSelectable,
-  toggleInSet,
-} from "@/lib/eo/selection";
+import { clampSelection, eligibleSelection, isSelectable, toggleInSet } from "@/lib/eo/selection";
 import {
   INPUT_ITEMS,
   INPUT_MODES,
@@ -60,12 +55,21 @@ import { cn } from "@/lib/utils";
 // Normal / Advanced are recommendation-driven (computed selection, read-only rows); Custom is
 // the only editable mode and is saved as its own profile. Rules: src/lib/eo/inputModes.ts.
 const MODE_META: Record<InputMode, { title: string; sub: string; Icon: LucideIcon }> = {
-  NORMAL: { title: "Normal Optimization", sub: "Recommended pointer & keyboard presets", Icon: ShieldCheck },
-  ADVANCED: { title: "Advanced Optimization", sub: "Adds queue, timer and USB options", Icon: Gauge },
+  NORMAL: {
+    title: "Normal Optimization",
+    sub: "Recommended pointer & keyboard presets",
+    Icon: ShieldCheck,
+  },
+  ADVANCED: {
+    title: "Advanced Optimization",
+    sub: "Adds queue, timer and USB options",
+    Icon: Gauge,
+  },
   CUSTOM: { title: "Custom", sub: "Pick items yourself · saved profile", Icon: SlidersHorizontal },
 };
 const MODE_KEY = "eo-input-mode";
-const sameSet = (a: Set<string>, b: Set<string>) => a.size === b.size && [...a].every((x) => b.has(x));
+const sameSet = (a: Set<string>, b: Set<string>) =>
+  a.size === b.size && [...a].every((x) => b.has(x));
 
 export function InputOptimizerPage() {
   const [mode, setModeState] = useState<InputMode>("NORMAL");
@@ -106,7 +110,11 @@ export function InputOptimizerPage() {
     return (
       <li key={i.id} className="eo-mode-row" data-included={why ? undefined : "true"}>
         <span className="eo-mode-row-mark" aria-hidden="true">
-          {why ? <Lock className="h-2.5 w-2.5" /> : <CheckIcon className="h-3 w-3" strokeWidth={3.5} />}
+          {why ? (
+            <Lock className="h-2.5 w-2.5" />
+          ) : (
+            <CheckIcon className="h-3 w-3" strokeWidth={3.5} />
+          )}
         </span>
         <span className="min-w-0 flex-1">
           <span className="block truncate text-[12.5px] font-semibold">{i.title}</span>
@@ -172,7 +180,9 @@ export function InputOptimizerPage() {
                   <span className="block truncate text-[12.5px] font-bold uppercase tracking-[0.06em]">
                     {meta.title}
                   </span>
-                  <span className="block truncate text-[11px] text-muted-foreground">{meta.sub}</span>
+                  <span className="block truncate text-[11px] text-muted-foreground">
+                    {meta.sub}
+                  </span>
                 </span>
                 <span className="eo-mode-count">
                   {m === "CUSTOM" && dirty ? "UNSAVED" : `${counts[m]} selected`}
@@ -189,9 +199,15 @@ export function InputOptimizerPage() {
             title="NORMAL OPTIMIZATION"
             guide="input.normal"
             sub="Standard pointer and keyboard presets · selected automatically"
-            right={<Badge tone="cyan">{counts.NORMAL} of {normalItems.length} included</Badge>}
+            right={
+              <Badge tone="cyan">
+                {counts.NORMAL} of {normalItems.length} included
+              </Badge>
+            }
           />
-          <ul className="space-y-1.5" aria-label="Normal optimizations">{normalItems.map(readRow)}</ul>
+          <ul className="space-y-1.5" aria-label="Normal optimizations">
+            {normalItems.map(readRow)}
+          </ul>
         </Card>
       )}
 
@@ -201,12 +217,24 @@ export function InputOptimizerPage() {
             title="ADVANCED OPTIMIZATION"
             guide="input.advanced"
             sub="Normal set plus queue, timer and USB options · selected automatically"
-            right={<Badge tone="cyan">{counts.ADVANCED} of {INPUT_ITEMS.length} included</Badge>}
+            right={
+              <Badge tone="cyan">
+                {counts.ADVANCED} of {INPUT_ITEMS.length} included
+              </Badge>
+            }
           />
           <div className="eo-label mb-1.5 text-[10px] text-cyan">ADVANCED OPTIONS</div>
-          <ul className="space-y-1.5" aria-label="Advanced optimizations">{advItems.map(readRow)}</ul>
-          <Details inline title="Normal set (included)" hint={`${modeSelection("NORMAL").size} recommended items`}>
-            <ul className="space-y-1.5" aria-label="Normal optimizations included">{normalItems.map(readRow)}</ul>
+          <ul className="space-y-1.5" aria-label="Advanced optimizations">
+            {advItems.map(readRow)}
+          </ul>
+          <Details
+            inline
+            title="Normal set (included)"
+            hint={`${modeSelection("NORMAL").size} recommended items`}
+          >
+            <ul className="space-y-1.5" aria-label="Normal optimizations included">
+              {normalItems.map(readRow)}
+            </ul>
           </Details>
         </Card>
       )}
@@ -216,7 +244,13 @@ export function InputOptimizerPage() {
           <SectionTitle
             title="CUSTOM SELECTION"
             sub="Your own picks · saved separately from Normal and Advanced"
-            badge={dirty ? <Badge tone="warning">UNSAVED CHANGES</Badge> : saved.customized ? <Badge tone="success">SAVED</Badge> : undefined}
+            badge={
+              dirty ? (
+                <Badge tone="warning">UNSAVED CHANGES</Badge>
+              ) : saved.customized ? (
+                <Badge tone="success">SAVED</Badge>
+              ) : undefined
+            }
           />
           <div className="mb-2 flex flex-wrap items-center justify-between gap-2">
             <SelectionBar
@@ -265,7 +299,7 @@ export function InputOptimizerPage() {
                     onChange={() => editDraft(toggleInSet(customSel, i.id))}
                     title={i.title}
                     desc={i.group === "advanced" ? `${i.desc} · ${i.compat}` : i.desc}
-                    locked={isSelectable(i) ? undefined : exclusionReason(i) ?? "Not selectable"}
+                    locked={isSelectable(i) ? undefined : (exclusionReason(i) ?? "Not selectable")}
                     right={
                       <>
                         {i.done && <Badge tone="success">APPLIED</Badge>}
@@ -329,7 +363,11 @@ export function InputOptimizerPage() {
             ? "Simulated test finished. No measurements were collected."
             : "Run the simulated test to preview its progress; real results require the native app."}
         </p>
-        <Details inline title="Illustrative before / after states" hint="Demo values, not benchmarks">
+        <Details
+          inline
+          title="Illustrative before / after states"
+          hint="Demo values, not benchmarks"
+        >
           <Cols cols="1fr 40px 1fr">
             <div className="rounded-lg border border-border bg-window p-3">
               <Label className="mb-2">BEFORE OPTIMIZATION</Label>
@@ -703,9 +741,9 @@ export function RegistryTweakPage() {
         onClose={() => setRun(false)}
         profile="Registry Intelligence"
         count={mode === "NORMAL" ? REG_RECOMMENDED.size : sel.size}
-        items={REG_LIST.filter((i) =>
-          (mode === "NORMAL" ? REG_RECOMMENDED : sel).has(i.id),
-        ).map((i) => ({ id: i.id, title: i.name, risk: i.risk }))}
+        items={REG_LIST.filter((i) => (mode === "NORMAL" ? REG_RECOMMENDED : sel).has(i.id)).map(
+          (i) => ({ id: i.id, title: i.name, risk: i.risk }),
+        )}
       />
     </div>
   );

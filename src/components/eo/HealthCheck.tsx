@@ -67,7 +67,8 @@ export function HealthCheck() {
   const run = useSimRun(2600);
   const result = useMemo(() => evaluateHealth(SAMPLE_HEALTH), []);
   const has = Boolean(lastCheck) && !run.running;
-  const stage = STAGES[Math.min(STAGES.length - 1, Math.floor(((run.progress ?? 0) / 100) * STAGES.length))];
+  const stage =
+    STAGES[Math.min(STAGES.length - 1, Math.floor(((run.progress ?? 0) / 100) * STAGES.length))];
   const tone =
     result.status === "Excellent" ? "success" : result.status === "Good" ? "cyan" : "warning";
 
@@ -198,18 +199,28 @@ export function HealthCheck() {
           )}
           <p className="mt-2 flex items-center gap-1.5 text-[10.5px] text-subtle">
             <Info aria-hidden="true" className="h-3 w-3" />
-            Recommendations are information only — nothing runs automatically. High load is
-            resource use, not a hardware fault.
+            Recommendations are information only — nothing runs automatically. High load is resource
+            use, not a hardware fault.
           </p>
         </div>
       )}
 
       <Details inline title="How the score is calculated" hint="Inputs, weights and missing data">
         <ol className="eo-rp-steps mb-3">
-          <li>Each reading gets 0–100: load ≤ 60% = 100, then −1.75 per %; temperatures score 100 up to their warning point and fall to 40 at the critical point; drive use ≤ 75% = 100; drive health is used as reported.</li>
+          <li>
+            Each reading gets 0–100: load ≤ 60% = 100, then −1.75 per %; temperatures score 100 up
+            to their warning point and fall to 40 at the critical point; drive use ≤ 75% = 100;
+            drive health is used as reported.
+          </li>
           <li>A category takes its worst reading, so one hot drive is not hidden by good ones.</li>
-          <li>The overall score is the weighted average of measured categories. Missing readings are left out and shown as coverage — never counted as perfect.</li>
-          <li>Below {Math.round(MIN_COVERAGE * 100)}% coverage there is no score. Readings under {ATTENTION_BELOW} are listed as attention areas.</li>
+          <li>
+            The overall score is the weighted average of measured categories. Missing readings are
+            left out and shown as coverage — never counted as perfect.
+          </li>
+          <li>
+            Below {Math.round(MIN_COVERAGE * 100)}% coverage there is no score. Readings under{" "}
+            {ATTENTION_BELOW} are listed as attention areas.
+          </li>
           <li>85+ Excellent · 70–84 Good · below 70 Needs Attention.</li>
         </ol>
         <table className="eo-health-table">
