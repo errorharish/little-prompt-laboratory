@@ -385,6 +385,26 @@ export const REDUCED_MOTION: string[] = [
 
 export const COMPONENT_MAP: { web: string; wpf: string; note: string }[] = [
   {
+    web: "CheckRow + SelectionBar",
+    wpf: "ToggleButton (CheckRowStyle) in ItemsControl + header TextBlock and Select all / Clear",
+    note: "Whole row is one checkbox. First use selects every eligible item; protected rows show a lock and are never selectable. Selection persists per page and per profile (OptimizationSelectionStore).",
+  },
+  {
+    web: "Quick action card",
+    wpf: "Button · QuickActionCardStyle + DashboardViewModel.RunQuickActionCommand",
+    note: "Only One-Click navigates. Others run one task in place with a compact progress dialog; other cards are disabled while one runs.",
+  },
+  {
+    web: "V4 top navigation",
+    wpf: "MainWindow V4 TabStrip (icon tile + title + subtitle) with sliding SelectionIndicator",
+    note: "Two tabs; sub-pages (Module Hub, Deployer, Low End Steam) keep their parent tab active and show a breadcrumb.",
+  },
+  {
+    web: "Suite switcher (V3 / V4)",
+    wpf: "Two-segment ToggleButton group with animated thumb (TranslateTransform)",
+    note: "Fixed 44px segments so switching never shifts layout.",
+  },
+  {
     web: "StatTiles (metric strip)",
     wpf: "Border + UniformGrid with 1px separators",
     note: "One panel divided into cells; replaces rows of separate stat cards. Cells wrap by width.",
