@@ -17,6 +17,8 @@ import {
   EmptyState,
   Details,
   KV,
+  PageHeader,
+  StatTiles,
 } from "../kit";
 import { RunModal } from "../RunModal";
 import { CATALOG, HW, TIERS, type Risk, type TierInfo } from "@/lib/eo/data";
@@ -176,7 +178,10 @@ function TierView({ slug, t }: { slug: string; t: TierInfo }) {
             { label: "HIGHLY RECOMMENDED", value: counts.safe, tone: "primary" },
             { label: "OPTIMIZED", value: items.length - pending.length, tone: "success" },
             { label: "PENDING", value: pending.length, tone: "warning" },
-            { label: "SAFE · MEDIUM · HIGH", value: `${counts.safe} · ${counts.med} · ${counts.high}` },
+            {
+              label: "SAFE · MEDIUM · HIGH",
+              value: `${counts.safe} · ${counts.med} · ${counts.high}`,
+            },
           ]}
         />
         <p className="flex flex-wrap items-center gap-x-3 gap-y-1 px-1 text-[11px] text-subtle">
