@@ -87,13 +87,14 @@ export const GUIDES = {
   },
   "registry-values": {
     title: "Registry Values",
-    what: "Entry point to the RAM and GPU registry value pages.",
-    why: "These values depend on your RAM size and graphics card, so they have their own pages.",
-    how: "Open RAM or GPU registry values to see what would change for your hardware.",
-    when: "When you want to inspect hardware-specific values.",
+    what: "Overview of every RAM and GPU registry value the optimizer supports, with the value it would set for your hardware.",
+    why: "These values depend on your RAM size, CPU and graphics card, so each one is matched to the detected hardware.",
+    how: "Each row shows the target value above the current one. Click a row for the registry path, type and why it applies. Values that don't fit your hardware are marked N/A.",
+    when: "When you want to see what would change before opening the RAM or GPU page.",
     benefit: "Values matched to your hardware instead of one-size-fits-all.",
     risk: "info",
-    limits: "This page only links; the changes happen on the RAM and GPU pages.",
+    limits:
+      "This page only shows values; applying happens on the RAM and GPU pages. Diagnostic values are reference only and never applied.",
   },
   "registry-values-ram": {
     title: "RAM Registry Values",
@@ -524,6 +525,18 @@ export const GUIDES = {
     limits: "High-risk and already-applied items are never pre-selected.",
     restart: "Usually required",
     reversible: "Yes",
+  },
+  "registry.ram-values": {
+    title: "RAM registry values",
+    what: "Memory, scheduling and network values whose best setting depends on installed RAM, CPU threads and machine type.",
+    why: "A value that suits a 64 GB desktop can be wrong for an 8 GB laptop.",
+    how: "Each target is calculated from the hardware, for example the Service Host threshold from the nearest RAM tier.",
+    when: "After changing RAM or moving to a different machine.",
+    benefit: "Settings sized to your memory and CPU.",
+    risk: "medium",
+    limits: "Some values only take effect after a restart; results vary by system.",
+    restart: "Required for Service Host and I/O buffer values",
+    reversible: "Yes — the previous value is backed up first",
   },
   "ram.size": {
     title: "RAM size",
