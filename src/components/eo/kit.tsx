@@ -76,15 +76,14 @@ const btnCls: Record<BtnVariant, string> = {
 };
 /**
  * `title` is the tooltip. The accessible name is the visible text; icon-only buttons
- * fall back to `label` (or `title`) so screen readers never get an unnamed control.
+ * pass `label` (the browser also falls back to `title` when there is no text).
  */
 export function Btn({ variant = "secondary", children, onClick, className, size = "md", title, disabled, label, pressed, expanded, controls }: { variant?: BtnVariant | undefined; children: ReactNode; onClick?: (() => void) | undefined; className?: string | undefined; size?: "sm" | "md" | "lg" | undefined; title?: string | undefined; disabled?: boolean | undefined; label?: string | undefined; pressed?: boolean | undefined; expanded?: boolean | undefined; controls?: string | undefined }) {
-  const textOnly = typeof children === "string" || typeof children === "number";
   return (
     <button
       type="button"
       title={title}
-      aria-label={label ?? (textOnly ? undefined : title)}
+      aria-label={label}
       aria-pressed={pressed}
       aria-expanded={expanded}
       aria-controls={controls}
