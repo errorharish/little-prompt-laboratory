@@ -506,7 +506,7 @@ export function EmulatorOptimizationPage() {
             <Badge tone="warning">SIMULATED</Badge>
           </>
         }
-        sub="Unified MSI App Player 5 & Free Fire performance engine: host scheduling, guest debloat and graphics pipeline."
+        sub="Simulated host scheduling, guest debloat and graphics tuning for MSI App Player 5."
         actions={
           <>
             <Btn variant="ghost" onClick={() => setGuide(true)}>
@@ -560,7 +560,7 @@ export function EmulatorOptimizationPage() {
       </Card>
 
       <div
-        className="eo-engine-layout grid gap-4"
+        className="eo-engine-layout grid items-start gap-3.5"
         style={{ gridTemplateColumns: "minmax(0,1fr) 320px" }}
       >
         <ol aria-label="Engine pipeline" className="eo-pipeline eo-stagger space-y-3">
@@ -890,7 +890,7 @@ export function EmulatorModulesPage() {
       <div className="space-y-4">
         <PageHeader
           title="Emulator Optimization"
-          sub="Hardware-aware performance tuning, component debloater, and low-end hardware relief for MSI App Player 5."
+          sub="Simulated MSI App Player 5 tuning, component cleanup and low-spec profiles."
           actions={
             <Btn variant="ghost" onClick={() => setGuide(true)}>
               Guide
@@ -1455,7 +1455,7 @@ export function V4CoreOptimizerPage() {
       <PageHeader
         title="V4 Core Optimizer"
         badges={<Badge tone="cyan">MAXIMUM PERFORMANCE</Badge>}
-        sub="Automated safe background reduction and gaming & editing performance tuning."
+        sub="Simulated background reduction with Windows and active workloads preserved."
         actions={<Btn onClick={() => simulate("Scan")}>Scan</Btn>}
       />
       <Card glow>
@@ -1658,7 +1658,7 @@ export function LowEndSteamPage() {
       <PageHeader
         title="Low End Steam"
         badges={<Badge tone="cyan">LOW-SPEC HARDWARE CALIBRATED</Badge>}
-        sub="Conservative, hardware-calibrated emulator optimizations for Dual-Core and Quad-Core systems."
+        sub="Simulated emulator tuning for dual-core, quad-core and integrated graphics."
         actions={
           <>
             <Btn variant="ghost" onClick={() => setGuide(true)}>
