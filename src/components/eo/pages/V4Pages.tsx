@@ -474,7 +474,10 @@ export function EmulatorOptimizationPage() {
   const sequence: { t: string; done: boolean; to?: string }[] = [
     { t: "Host Maximum Performance", done: false, to: "v4-max-performance" },
     { t: "Launch MSI App Player 5 & verify ADB", done: adb },
-    ...ENGINES.map((e, i) => ({ t: `Engine ${i + 1} · ${e.n.toLowerCase()}`, done: applied.has(i) })),
+    ...ENGINES.map((e, i) => ({
+      t: `Engine ${i + 1} · ${e.n.toLowerCase().replace(/\b\w/g, (c) => c.toUpperCase())}`,
+      done: applied.has(i),
+    })),
   ];
 
   return (
@@ -666,7 +669,7 @@ export function EmulatorOptimizationPage() {
                       {s.t}
                     </Link>
                   ) : (
-                    <span className="capitalize-first">{s.t}</span>
+                    <span>{s.t}</span>
                   )}
                 </li>
               ))}
