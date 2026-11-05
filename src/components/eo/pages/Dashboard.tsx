@@ -148,8 +148,8 @@ export function DashboardPage() {
         <SectionTitle title="RECENT ACTIVITY" badge={<DemoBadge label="SAMPLE ACTIVITY" />} sub="Initialization logs and system readiness audit entries" right={<Btn size="sm" variant="ghost" onClick={() => setLogs([])}>Clear logs</Btn>} />
         <div className="divide-y divide-border">
           {!logs.length && <EmptyState title="No sample activity" sub="Activity appears after refreshing the sample dashboard." />}
-          {logs.map((l) => (
-            <div key={l[0]} className="grid items-center gap-4 py-2.5" style={{ gridTemplateColumns: "auto 1fr auto" }}>
+          {logs.slice(0, 8).map((l, i) => (
+            <div key={`${logs.length - i}-${l[0]}`} className="grid items-center gap-4 py-2.5" style={{ gridTemplateColumns: "auto 1fr auto" }}>
               <span className="font-mono text-[11px] text-subtle">{l[0]}</span>
               <div><div className="flex items-center gap-2 text-[13px] font-semibold">{l[1]}<Badge tone="muted">{l[2]}</Badge></div><div className="text-[11.5px] text-muted-foreground">{l[3]}</div></div>
               <Badge tone={l[4] === "DEMO DATA" ? "warning" : "success"}>{l[4]}</Badge>
