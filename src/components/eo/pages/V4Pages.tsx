@@ -61,7 +61,7 @@ const MP_SCOPE = [
     id: "priority",
     icon: Activity,
     t: "Priority balancing",
-    d: "Balance foreground and background scheduling priority.",
+    d: "Balance foreground and background priority.",
     risk: "LOW" as const,
   },
   {
@@ -158,88 +158,103 @@ export function V4MaxPerformancePage() {
         className="eo-engine-layout grid items-start gap-3.5"
         style={{ gridTemplateColumns: "minmax(0,1fr) 300px" }}
       >
-        <Card className="eo-hero eo-v4-hero">
-          <div className="eo-v4-head">
-            <div className="min-w-0">
-              <Label className="text-cyan">OPTIMIZATION SCOPE</Label>
-              <h2 className="mt-0.5 text-[15px] font-bold">Host latency workflow</h2>
+        <div className="space-y-3">
+          <Card className="eo-hero eo-v4-hero">
+            <div className="eo-v4-head">
+              <div className="min-w-0">
+                <Label className="text-cyan">OPTIMIZATION SCOPE</Label>
+                <h2 className="mt-0.5 text-[15px] font-bold">Host latency workflow</h2>
+              </div>
+              <SelectionBar
+                count={scope.sel.size}
+                total={scope.eligibleCount}
+                onAll={scope.selectAll}
+                onClear={scope.clear}
+              />
             </div>
-            <SelectionBar
-              count={scope.sel.size}
-              total={scope.eligibleCount}
-              onAll={scope.selectAll}
-              onClear={scope.clear}
-            />
-          </div>
 
-          <div role="group" aria-label="Workflow scope" className="eo-v4-scope-grid">
-            {MP_SCOPE.map((s) => {
-              const st = stateOf(s.id);
-              return (
-                <CheckRow
-                  key={s.id}
-                  on={scope.sel.has(s.id)}
-                  onChange={() => !r.running && scope.toggle(s.id)}
-                  state={st}
-                  icon={
-                    st === "done" ? (
-                      <CheckCircle2 className="h-4 w-4" />
-                    ) : (
-                      <s.icon className="h-4 w-4" />
-                    )
-                  }
-                  title={s.t}
-                  desc={s.d}
-                  right={
-                    st === "active" ? (
-                      <span className="text-[9.5px] font-bold text-cyan">RUNNING</span>
-                    ) : st === "done" ? (
-                      <span className="text-[9.5px] font-bold text-success">SIMULATED</span>
-                    ) : (
-                      <RiskBadge risk={s.risk} />
-                    )
-                  }
-                />
-              );
-            })}
-          </div>
-
-          <div className="eo-v4-action">
-            <div className="min-w-0 flex-1" aria-live="polite">
-              {r.running ? (
-                <>
-                  <div className="mb-1 flex justify-between text-[10.5px] font-bold text-cyan">
-                    <span>
-                      {MP_SCOPE.find((s) => s.id === runIds[stage])?.t.toUpperCase()} · SIMULATED
-                    </span>
-                    <span className="font-mono">{pct.toFixed(0)}%</span>
-                  </div>
-                  <Bar value={pct} active />
-                </>
-              ) : (
-                <p className="text-[11.5px] text-muted-foreground">
-                  {last
-                    ? `Last simulated run at ${last.at} · ${last.n} areas · 0 changes on this PC.`
-                    : picked.length
-                      ? `${picked.length} of ${MP_SCOPE.length} areas will run. Review before confirming.`
-                      : "Select at least one area to optimize."}
-                </p>
-              )}
+            <div role="group" aria-label="Workflow scope" className="eo-v4-scope-grid">
+              {MP_SCOPE.map((s) => {
+                const st = stateOf(s.id);
+                return (
+                  <CheckRow
+                    key={s.id}
+                    on={scope.sel.has(s.id)}
+                    onChange={() => !r.running && scope.toggle(s.id)}
+                    state={st}
+                    icon={
+                      st === "done" ? (
+                        <CheckCircle2 className="h-4 w-4" />
+                      ) : (
+                        <s.icon className="h-4 w-4" />
+                      )
+                    }
+                    title={s.t}
+                    desc={s.d}
+                    right={
+                      st === "active" ? (
+                        <span className="text-[9.5px] font-bold text-cyan">RUNNING</span>
+                      ) : st === "done" ? (
+                        <span className="text-[9.5px] font-bold text-success">SIMULATED</span>
+                      ) : (
+                        <RiskBadge risk={s.risk} />
+                      )
+                    }
+                  />
+                );
+              })}
             </div>
-            <Btn
-              variant="primary"
-              size="lg"
-              className="eo-v4-cta"
-              disabled={r.running || !picked.length}
-              onClick={() => setConfirmRun(true)}
-            >
-              <Zap aria-hidden="true" className="h-4 w-4" />
-              {r.running
-                ? `Optimizing… ${pct.toFixed(0)}%`
-                : `Optimize selected (${picked.length})`}
-            </Btn>
-          </div>
-        </Card>
+
+            <ul aria-label="Protection" className="mt-3 flex flex-wrap gap-x-4 gap-y-1">
+              {MP_SAFEGUARDS.map((x) => (
+                <li
+                  key={x}
+                  className="flex items-center gap-1.5 text-[11px] font-semibold text-success"
+                >
+                  <ShieldCheck aria-hidden="true" className="h-3.5 w-3.5 shrink-0" />
+                  {x}
+                </li>
+              ))}
+            </ul>
+
+            <div className="eo-v4-action">
+              <div className="min-w-0 flex-1" aria-live="polite">
+                {r.running ? (
+                  <>
+                    <div className="mb-1 flex justify-between text-[10.5px] font-bold text-cyan">
+                      <span>
+                        {MP_SCOPE.find((s) => s.id === runIds[stage])?.t.toUpperCase()} · SIMULATED
+                      </span>
+                      <span className="font-mono">{pct.toFixed(0)}%</span>
+                    </div>
+                    <Bar value={pct} active />
+                  </>
+                ) : (
+                  <p className="text-[11.5px] text-muted-foreground">
+                    {last
+                      ? `Last simulated run at ${last.at} · ${last.n} areas · 0 changes on this PC.`
+                      : picked.length
+                        ? `${picked.length} of ${MP_SCOPE.length} areas will run. Review before confirming.`
+                        : "Select at least one area to optimize."}
+                  </p>
+                )}
+              </div>
+              <Btn
+                variant="primary"
+                size="lg"
+                className="eo-v4-cta"
+                disabled={r.running || !picked.length}
+                onClick={() => setConfirmRun(true)}
+              >
+                <Zap aria-hidden="true" className="h-4 w-4" />
+                {r.running
+                  ? `Optimizing… ${pct.toFixed(0)}%`
+                  : `Optimize selected (${picked.length})`}
+              </Btn>
+            </div>
+          </Card>
+          <SimNotice />
+        </div>
 
         <aside aria-label="Engine status" className="eo-stagger space-y-3">
           <Card className="eo-v4-rail">
@@ -278,23 +293,9 @@ export function V4MaxPerformancePage() {
                 </li>
               ))}
             </ul>
-            <div className="eo-rail-sep" />
-            <ul aria-label="Protection" className="space-y-1">
-              {MP_SAFEGUARDS.map((x) => (
-                <li
-                  key={x}
-                  className="flex items-center gap-1.5 text-[11px] font-semibold text-success"
-                >
-                  <ShieldCheck aria-hidden="true" className="h-3.5 w-3.5 shrink-0" />
-                  {x}
-                </li>
-              ))}
-            </ul>
           </Card>
         </aside>
       </div>
-
-      <SimNotice />
 
       <Modal
         open={confirmRun}
@@ -621,14 +622,6 @@ export function EmulatorOptimizationPage() {
                       {e.pre}
                     </span>
                     <div className="flex items-center gap-2">
-                      <Details inline title="Details">
-                        <p className="text-xs text-muted-foreground">{e.sub}</p>
-                        <div className="mt-2 flex flex-wrap gap-1.5">
-                          {e.tags.map((t) => (
-                            <Badge key={t}>{t}</Badge>
-                          ))}
-                        </div>
-                      </Details>
                       <Btn
                         size="sm"
                         variant="ghost"
@@ -646,6 +639,16 @@ export function EmulatorOptimizationPage() {
                         {i === 1 ? "Scan & debloat" : "Apply"}
                       </Btn>
                     </div>
+                  </div>
+                  <div className="mt-1">
+                    <Details inline title="Technical details">
+                      <p className="text-xs text-muted-foreground">{e.sub}</p>
+                      <div className="mt-2 flex flex-wrap gap-1.5">
+                        {e.tags.map((t) => (
+                          <Badge key={t}>{t}</Badge>
+                        ))}
+                      </div>
+                    </Details>
                   </div>
                 </Card>
               </li>
@@ -897,7 +900,7 @@ const HUB_VIEWS = ["OVERVIEW", ...MODULES.map((m) => m.k)];
 
 export function EmulatorModulesPage() {
   const navigate = useNavigate();
-  const { mod, profile } = useEmu();
+  const { mod, profile, adb } = useEmu();
   const planned = PLANNED[profile];
   const opt = usePersistedSelection(`emu-opt:${profile}`, planned);
   const debloat = usePersistedSelection("emu-debloat", DEBLOAT);
@@ -951,7 +954,10 @@ export function EmulatorModulesPage() {
           onChange={(v) => setMod(v === "OVERVIEW" ? null : v)}
         />
         <span className="text-[11.5px] text-muted-foreground">
-          ADB: <b className="text-warning">Offline (simulated)</b>
+          ADB:{" "}
+          <b className={adb ? "text-success" : "text-warning"}>
+            {adb ? "Connected" : "Offline"} (simulated)
+          </b>
         </span>
       </div>
 
