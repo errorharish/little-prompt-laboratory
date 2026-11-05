@@ -1,7 +1,6 @@
 import { Link, useLocation, useNavigate } from "@tanstack/react-router";
 import { Circle, Zap } from "lucide-react";
 import { ICONS } from "./icons";
-const Icons = { Zap };
 import { Fragment, type ReactNode } from "react";
 import { cn } from "@/lib/utils";
 import { Btn } from "./kit";
@@ -35,7 +34,7 @@ export function Shell({ children }: { children: ReactNode }) {
       <header className="eo-shell-header flex h-14 shrink-0 items-center justify-between border-b border-border bg-window/80 px-4 backdrop-blur">
         <div className="flex items-center gap-3">
           <div className="eo-brand flex h-8 w-8 items-center justify-center rounded-lg eo-glow">
-            <Icons.Zap className="h-4 w-4 fill-current text-primary-foreground" />
+            <Zap aria-hidden="true" className="h-4 w-4 fill-current text-primary-foreground" />
           </div>
           <span className="eo-shell-brand text-[15px] font-black">ERROR OPTIMIZER</span>
           <div role="group" aria-label="Suite" className="flex rounded-md border border-border bg-background p-0.5">
