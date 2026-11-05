@@ -1,5 +1,5 @@
 // InputOptimizerView, SystemInfoView, RegistryTweakView, RegistryValuesView, RegistryValuesRamView, GpuRegistryValuesView
-import { useEffect, useState } from "react";
+import { useEffect, useState, type ReactNode } from "react";
 import {
   Check as CheckIcon,
   Gauge,
@@ -48,6 +48,21 @@ import {
   type InputMode,
 } from "@/lib/eo/inputModes";
 import { usePersistedSelection } from "../useSelection";
+import {
+  GPU_REG_GROUPS,
+  GPU_REGISTRY_VALUES,
+  RAM_GROUPS,
+  RAM_REGISTRY_VALUES,
+  RAM_TIER_MAP,
+  SAMPLE_REGISTRY_HW,
+  SVCHOST_DEFAULT_KB,
+  hex8,
+  nearestRamTier,
+  registrySummary,
+  valuesInGroup,
+  type RegistryGroup,
+  type RegistryValueEntry,
+} from "@/lib/eo/registryValues";
 import { CATALOG, HW } from "@/lib/eo/data";
 import { cn } from "@/lib/utils";
 
