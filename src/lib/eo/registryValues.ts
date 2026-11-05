@@ -105,7 +105,7 @@ export const RAM_GROUPS: RegistryGroup[] = [
   { key: "network", title: "Network profile", tag: "MULTIMEDIA" },
 ];
 
-function ramValues(hw = SAMPLE_REGISTRY_HW): RegistryValueEntry[] {
+function ramValues(hw: RegistryHardware = SAMPLE_REGISTRY_HW): RegistryValueEntry[] {
   const svc = svchostThreshold(hw.ramGb);
   const ioBytes = hw.ramGb >= 16 ? 536870912 : Math.floor((hw.ramGb * 1024 ** 3) / 16);
   const highCore = hw.logicalCores >= 8;
@@ -231,9 +231,9 @@ const ADAPTER =
   "HKLM\\SYSTEM\\CurrentControlSet\\Control\\Class\\{4d36e968-e325-11ce-bfc1-08002be10318}\\<adapter>";
 const AMD_CN = "HKLM\\SOFTWARE\\AMD\\CN";
 
-function gpuValues(hw = SAMPLE_REGISTRY_HW): RegistryValueEntry[] {
+function gpuValues(hw: RegistryHardware = SAMPLE_REGISTRY_HW): RegistryValueEntry[] {
   const nvidia = hw.gpuVendor === "NVIDIA";
-  const amd = (hw.gpuVendor as string) === "AMD";
+  const amd = hw.gpuVendor === "AMD";
   const nvMulti = nvidia && hw.gpuCount > 1;
   const mpoProfile = ["Pro", "Ultimate", "MaxPerformance"].includes(hw.profile);
   const lowRes = hw.profile === "Debloat" || hw.profile === "BiosSafe";
@@ -699,8 +699,8 @@ export function registrySummary(list: RegistryValueEntry[]) {
   };
 }
 
-/** Exposed for tests: recompute for other sample hardware. */
-export const __forHardware = (hw: typeof SAMPLE_REGISTRY_HW) => ({
+/** Recompute for other sample hardware (used by tests). */
+export const valuesForHardware = (hw: RegistryHardware) => ({
   ram: ramValues(hw),
   gpu: gpuValues(hw),
 });
