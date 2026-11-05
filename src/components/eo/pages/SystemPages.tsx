@@ -25,6 +25,7 @@ import {
 import type { GuideId } from "@/lib/eo/guides";
 import { RunModal } from "../RunModal";
 import { TelemetryConsole } from "../Telemetry";
+import { HealthCheck } from "../HealthCheck";
 import { toggleInSet } from "@/lib/eo/selection";
 import { usePersistedSelection } from "../useSelection";
 import { CATALOG, HW } from "@/lib/eo/data";
@@ -256,15 +257,6 @@ export function InputOptimizerPage() {
 
 /* ───────── SYSTEM TELEMETRY ───────── */
 export function SystemInfoPage() {
-  const [f, setF] = useState("ALL");
-  const [open, setOpen] = useState(false);
-  const findings = [
-    ["PASS", "HARDWARE", "CPU thermals within envelope"],
-    ["PASS", "SECURITY", "UEFI Secure Boot enabled"],
-    ["WARNINGS", "SECURITY", "Core Isolation (HVCI) is off"],
-    ["PASS", "HARDWARE", "Memory running at EXPO speed"],
-    ["WARNINGS", "HARDWARE", "Primary drive 46% used"],
-  ];
   return (
     <div className="space-y-4">
       <PageHeader
@@ -273,23 +265,7 @@ export function SystemInfoPage() {
         sub="Sample hardware, performance and system health diagnostics."
         actions={<Btn onClick={() => simulate("Refresh telemetry")}>Refresh</Btn>}
       />
-      <Card className="flex flex-wrap items-center gap-4 py-3">
-        {[
-          "Hardware: OK",
-          "Windows: OK",
-          "Security: 1 warning",
-          "Storage: OK",
-          "Performance: OK",
-          "Drivers: OK",
-        ].map((x) => (
-          <span key={x} className="text-[12px] font-semibold">
-            <span className={x.includes("warning") ? "text-warning" : "text-success"}>●</span> {x}
-          </span>
-        ))}
-        <Btn size="sm" className="ml-auto" onClick={() => setOpen(true)}>
-          System health analysis
-        </Btn>
-      </Card>
+      <HealthCheck />
       <TelemetryConsole />
       <Card>
         <SectionTitle title="SAMPLE HARDWARE" />
@@ -356,32 +332,6 @@ export function SystemInfoPage() {
         </Details>
       </Card>
       <SimNotice />
-      <Modal
-        open={open}
-        onClose={() => setOpen(false)}
-        title="System health analysis"
-        footer={<Btn onClick={() => setOpen(false)}>Done / Close</Btn>}
-      >
-        <Bar value={92} tone="success" className="mb-3" />
-        <Chips
-          options={["ALL", "WARNINGS", "PASS", "HARDWARE", "SECURITY"]}
-          value={f}
-          onChange={setF}
-        />
-        <div className="mt-3 space-y-1.5">
-          {findings
-            .filter((x) => f === "ALL" || x[0] === f || x[1] === f)
-            .map((x) => (
-              <div
-                key={x[2]}
-                className="flex items-center justify-between rounded-lg border border-border bg-window px-3 py-2 text-[12.5px]"
-              >
-                <span>{x[2]}</span>
-                <Badge tone={x[0] === "PASS" ? "success" : "warning"}>{x[0]}</Badge>
-              </div>
-            ))}
-        </div>
-      </Modal>
     </div>
   );
 }
