@@ -106,9 +106,7 @@ export function RestorePointBody({ flow }: { flow: RestorePointFlow }) {
         </>
       )}
 
-      {busy && (
-        <OpProgress value={progress} title={`${busy[0]}…`} detail={busy[1]} active />
-      )}
+      {busy && <OpProgress value={progress} title={`${busy[0]}…`} detail={busy[1]} active />}
 
       {(phase === "protection-off" || phase === "confirm-enable") && (
         <div className="eo-rp-alert" data-tone="warning" role="alert">
@@ -192,10 +190,7 @@ export function RestorePointBody({ flow }: { flow: RestorePointFlow }) {
             <div className="mt-2">
               <KV k="Name" v={`“${name.trim()}”`} />
               <KV k="Drive" v={device.drive} />
-              <KV
-                k="Created"
-                v={createdAt ? new Date(createdAt).toLocaleTimeString() : "—"}
-              />
+              <KV k="Created" v={createdAt ? new Date(createdAt).toLocaleTimeString() : "—"} />
             </div>
           </div>
         </div>

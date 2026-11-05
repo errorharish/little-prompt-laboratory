@@ -30,16 +30,55 @@ export interface HealthCategoryInput {
 /** Piecewise-linear curve: [x, score] points, clamped at both ends. */
 type Curve = [number, number][];
 export const CURVES: Record<string, Curve> = {
-  "cpu-load": [[50, 100], [90, 60], [100, 40]],
-  "cpu-temp": [[70, 100], [90, 50], [100, 30]],
-  "mem-used": [[60, 100], [90, 50], [100, 30]],
-  "mem-commit": [[60, 100], [90, 50], [100, 30]],
-  "gpu-load": [[60, 100], [95, 60], [100, 50]],
-  "gpu-temp": [[75, 100], [90, 50], [100, 30]],
-  "disk-used": [[75, 100], [95, 40], [100, 20]],
-  "disk-health": [[0, 0], [100, 100]],
-  dpc: [[100, 100], [500, 50], [1000, 30]],
-  "startup-heavy": [[0, 100], [5, 50], [10, 30]],
+  "cpu-load": [
+    [50, 100],
+    [90, 60],
+    [100, 40],
+  ],
+  "cpu-temp": [
+    [70, 100],
+    [90, 50],
+    [100, 30],
+  ],
+  "mem-used": [
+    [60, 100],
+    [90, 50],
+    [100, 30],
+  ],
+  "mem-commit": [
+    [60, 100],
+    [90, 50],
+    [100, 30],
+  ],
+  "gpu-load": [
+    [60, 100],
+    [95, 60],
+    [100, 50],
+  ],
+  "gpu-temp": [
+    [75, 100],
+    [90, 50],
+    [100, 30],
+  ],
+  "disk-used": [
+    [75, 100],
+    [95, 40],
+    [100, 20],
+  ],
+  "disk-health": [
+    [0, 0],
+    [100, 100],
+  ],
+  dpc: [
+    [100, 100],
+    [500, 50],
+    [1000, 30],
+  ],
+  "startup-heavy": [
+    [0, 100],
+    [5, 50],
+    [10, 30],
+  ],
 };
 
 export function curveScore(curve: Curve, x: number): number {
@@ -110,7 +149,10 @@ const ADVICE: Record<string, { text: string; page?: string }> = {
   },
   "gpu-load": { text: "GPU is busy. Normal while gaming or rendering." },
   "gpu-temp": { text: "GPU temperature is high. Check case airflow and fan curves." },
-  "disk-used": { text: "Drive is getting full. Free space with Storage Optimizer.", page: "storage" },
+  "disk-used": {
+    text: "Drive is getting full. Free space with Storage Optimizer.",
+    page: "storage",
+  },
   "disk-health": { text: "Drive health reports a problem. Back up your files." },
   dpc: { text: "Driver latency is high. A driver may be delaying the system." },
   "startup-heavy": {

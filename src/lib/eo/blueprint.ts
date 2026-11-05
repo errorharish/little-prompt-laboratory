@@ -674,7 +674,7 @@ export const NATIVE_RESTORE_POINT: { area: string; detail: string }[] = [
   {
     area: "Enable",
     detail:
-      "Helper calls SystemRestore.Enable(\"C:\\\") via WMI for the system drive only; other drives are never touched. Protection is never disabled and existing points are never deleted.",
+      'Helper calls SystemRestore.Enable("C:\\") via WMI for the system drive only; other drives are never touched. Protection is never disabled and existing points are never deleted.',
   },
   {
     area: "Verify protection",

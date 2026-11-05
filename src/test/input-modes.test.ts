@@ -50,12 +50,12 @@ describe("Global default: applicable + recommended", () => {
     expect(isDefaultEligible({ id: "a", risk: "LOW", recommended: false })).toBe(false);
     expect(isDefaultEligible({ id: "b", risk: "LOW", incompatible: true })).toBe(false);
     expect(isDefaultEligible({ id: "c", risk: "LOW" })).toBe(true);
-    expect(
-      [...eligibleSelection([
+    expect([
+      ...eligibleSelection([
         { id: "x", risk: "SAFE" },
         { id: "y", risk: "MEDIUM", recommended: false },
         { id: "z", risk: "LOW", incompatible: true },
-      ])],
-    ).toEqual(["x"]);
+      ]),
+    ]).toEqual(["x"]);
   });
 });

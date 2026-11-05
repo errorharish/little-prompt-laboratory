@@ -51,7 +51,16 @@ describe("Restore point workflow", () => {
   });
 
   it("creates the point only after protection is verified on", () => {
-    const phases = walk(off, ["start", "done", "enable", "confirm", "done", "done", "done", "done"]);
+    const phases = walk(off, [
+      "start",
+      "done",
+      "enable",
+      "confirm",
+      "done",
+      "done",
+      "done",
+      "done",
+    ]);
     expect(phases).toEqual([
       "checking",
       "protection-off",

@@ -58,7 +58,11 @@ import { cn } from "@/lib/utils";
  * Normal / Advanced are recommendation-driven (fixed selection = applicable + recommended items
  * of that mode). Custom is the only editable mode; its selection is saved on Save. */
 const MODE_META: Record<InputMode, { t: string; s: string; icon: typeof MousePointer2 }> = {
-  NORMAL: { t: "Normal optimization", s: "Recommended pointer & keyboard presets", icon: MousePointer2 },
+  NORMAL: {
+    t: "Normal optimization",
+    s: "Recommended pointer & keyboard presets",
+    icon: MousePointer2,
+  },
   ADVANCED: { t: "Advanced optimization", s: "Adds queue, timer & USB tuning", icon: Cpu },
   CUSTOM: { t: "Custom", s: "Choose items yourself", icon: SlidersHorizontal },
 };
@@ -425,7 +429,10 @@ function SystemHealthCheck() {
   const run = useSimRun(2600);
   const result = useMemo(() => computeHealth(SAMPLE_HEALTH_INPUT), []);
   const step = run.running
-    ? Math.min(result.categories.length - 1, Math.floor(((run.progress ?? 0) / 100) * result.categories.length))
+    ? Math.min(
+        result.categories.length - 1,
+        Math.floor(((run.progress ?? 0) / 100) * result.categories.length),
+      )
     : -1;
   const shown = last !== null && !run.running;
   const start = () =>
@@ -439,7 +446,13 @@ function SystemHealthCheck() {
       }
     });
   const tone = (v: number | null) =>
-    v === null ? "text-subtle" : v >= 85 ? "text-success" : v >= 70 ? "text-warning" : "text-destructive";
+    v === null
+      ? "text-subtle"
+      : v >= 85
+        ? "text-success"
+        : v >= 70
+          ? "text-warning"
+          : "text-destructive";
   return (
     <Card className="eo-health" glow={shown}>
       <div className="eo-health-head">
@@ -476,13 +489,18 @@ function SystemHealthCheck() {
             <GuideTip id="telemetry.health" />
             <DemoBadge label="SAMPLE DATA" />
           </div>
-          <div className={cn("mt-1 text-[18px] font-black uppercase", shown ? tone(result.overall) : "text-subtle")}>
+          <div
+            className={cn(
+              "mt-1 text-[18px] font-black uppercase",
+              shown ? tone(result.overall) : "text-subtle",
+            )}
+          >
             {run.running ? "Analyzing…" : shown ? result.status : "Not checked yet"}
           </div>
           <p className="mt-0.5 max-w-xl text-[11.5px] text-muted-foreground">
             Weighted score from CPU, memory, GPU, storage and responsiveness readings. Load and
-            hardware health are scored separately; missing readings are left out, never counted
-            as healthy.
+            hardware health are scored separately; missing readings are left out, never counted as
+            healthy.
           </p>
           <div className="mt-2 flex flex-wrap items-center gap-3 text-[11px] text-muted-foreground">
             <span>
@@ -531,12 +549,19 @@ function SystemHealthCheck() {
                 />
                 <div className="mt-1.5 space-y-0.5">
                   {c.metrics.map((m) => (
-                    <div key={m.key} className="flex items-center justify-between gap-2 text-[10.5px]">
+                    <div
+                      key={m.key}
+                      className="flex items-center justify-between gap-2 text-[10.5px]"
+                    >
                       <span className="min-w-0 truncate text-muted-foreground">
-                        {m.label}{" "}
-                        <span className="text-subtle">· {KIND_LABEL[m.kind]}</span>
+                        {m.label} <span className="text-subtle">· {KIND_LABEL[m.kind]}</span>
                       </span>
-                      <span className={cn("shrink-0 font-semibold tabular-nums", m.value === null && "text-warning")}>
+                      <span
+                        className={cn(
+                          "shrink-0 font-semibold tabular-nums",
+                          m.value === null && "text-warning",
+                        )}
+                      >
                         {m.value === null ? "No data" : `${m.value}${m.unit}`}
                       </span>
                     </div>
@@ -555,7 +580,11 @@ function SystemHealthCheck() {
             {result.attention.length ? (
               <ul className="space-y-1.5">
                 {result.attention.map((a) => (
-                  <li key={`${a.category}-${a.metric}`} className="eo-health-item" data-kind={a.kind}>
+                  <li
+                    key={`${a.category}-${a.metric}`}
+                    className="eo-health-item"
+                    data-kind={a.kind}
+                  >
                     <span className="min-w-0 flex-1">
                       <span className="block text-[12px] font-semibold">
                         {a.category} · {a.metric}
@@ -563,11 +592,7 @@ function SystemHealthCheck() {
                       <span className="block text-[11px] text-muted-foreground">{a.text}</span>
                     </span>
                     {a.page && (
-                      <Link
-                        to="/$page"
-                        params={{ page: a.page }}
-                        className="eo-health-link"
-                      >
+                      <Link to="/$page" params={{ page: a.page }} className="eo-health-link">
                         Open
                       </Link>
                     )}
@@ -587,8 +612,8 @@ function SystemHealthCheck() {
       <Details inline title="How the score is calculated" hint="Weights, curves, missing data">
         <ul className="list-disc space-y-1 pl-4 text-[11.5px] text-muted-foreground">
           <li>
-            Each reading maps to 0–100 with a fixed curve, e.g. CPU load ≤ 50% = 100, 90% = 60;
-            CPU temperature ≤ 70 °C = 100, 90 °C = 50.
+            Each reading maps to 0–100 with a fixed curve, e.g. CPU load ≤ 50% = 100, 90% = 60; CPU
+            temperature ≤ 70 °C = 100, 90 °C = 50.
           </li>
           <li>A category is the average of its available readings.</li>
           <li>
@@ -599,7 +624,10 @@ function SystemHealthCheck() {
             Missing readings are excluded and listed. Below {Math.round(MIN_COVERAGE * 100)}%
             coverage no overall score is shown.
           </li>
-          <li>85+ is Good, 70–84 Fair, below 70 Needs attention. Same inputs always give the same score.</li>
+          <li>
+            85+ is Good, 70–84 Fair, below 70 Needs attention. Same inputs always give the same
+            score.
+          </li>
         </ul>
       </Details>
     </Card>
