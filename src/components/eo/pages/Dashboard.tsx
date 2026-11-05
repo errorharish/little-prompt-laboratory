@@ -27,7 +27,7 @@ const LOGS = [
   ["10:42:01", "System dashboard initialized", "SYSTEM", "V3 telemetry engine started with low-overhead sampling node", "SUCCESS"],
   ["10:42:03", "Hardware status sample loaded", "AUDIT", "Identified Ryzen 7 7800X3D, RTX 4080 Super, 32GB DDR5-6000", "DEMO DATA"],
   ["10:42:08", "Performance profile status checked", "PROFILE", "V3 Normal profile active with conservative latency bias", "ACTIVE"],
-  ["10:42:15", "Optimization readiness displayed", "READINESS", "Anti-cheat compatibility verified · Core isolation compliant", "VERIFIED"],
+  ["10:42:15", "Optimization readiness displayed", "READINESS", "Sample readiness entry · compatibility not assessed in prototype", "SAMPLE"],
   ["10:42:22", "Timer resolution benchmark simulated", "TIMING", "Global multimedia timer lock confirmed at 0.5 ms resolution", "0.5 ms LOCKED"],
 ];
 
@@ -96,7 +96,7 @@ export function DashboardPage() {
           <div className="mt-1 text-[12.5px] font-semibold">Optimal Responsiveness</div>
           <div className="text-[11px] text-subtle">DPC: &lt; 22 µs · Timer: 0.5 ms</div>
           <Bar value={98.4} tone="success" className="mt-3" />
-          <div className="mt-2 flex justify-between text-[9.5px] font-bold tracking-widest"><span className="text-success">V3 PROFILE VERIFIED</span><span className="text-muted-foreground">98.4%</span></div>
+          <div className="mt-2 flex justify-between text-[9.5px] font-bold tracking-widest"><span className="text-success">V3 PROFILE · SAMPLE</span><span className="text-muted-foreground">98.4%</span></div>
         </Card>
       </div>
 
@@ -182,7 +182,7 @@ export function DashboardPage() {
             </div>
           ))}
         </div>
-        <div className={cn("mt-2 flex justify-between text-[9.5px] font-bold tracking-widest text-subtle")}><span>ALL LOG ENTRIES REPRESENT DEMO INITIALIZATION STATE</span><span className="text-success">ENGINE VERIFIED</span></div>
+        <div className={cn("mt-2 flex justify-between text-[9.5px] font-bold tracking-widest text-subtle")}><span>ALL LOG ENTRIES REPRESENT DEMO INITIALIZATION STATE</span><span>SAMPLE STATE</span></div>
       </Card>
     </div>
   );
