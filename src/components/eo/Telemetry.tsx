@@ -57,7 +57,10 @@ const windowed = (s: Sample[], win: string) =>
 /** Smooth curve: horizontal-tangent cubic segments (no overshoot above 100% / below 0%). */
 function curve(vals: number[], w: number, h: number) {
   const step = w / Math.max(1, vals.length - 1);
-  const pt = (v: number, i: number) => [i * step, h - (Math.min(100, Math.max(0, v)) / 100) * h];
+  const pt = (v: number, i: number): [number, number] => [
+    i * step,
+    h - (Math.min(100, Math.max(0, v)) / 100) * h,
+  ];
   return vals
     .map((v, i) => {
       const [x, y] = pt(v, i);
