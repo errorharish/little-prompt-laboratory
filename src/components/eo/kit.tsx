@@ -164,7 +164,8 @@ export function DemoBadge({ label = "DEMO" }: { label?: string | undefined }) {
 /* ── Buttons (Theme/Buttons.xaml: Primary / Secondary / Ghost / Danger) ── */
 type BtnVariant = "primary" | "secondary" | "ghost" | "danger" | "success";
 const btnCls: Record<BtnVariant, string> = {
-  primary: "eo-brand eo-btn-primary text-primary-foreground border-transparent hover:brightness-110",
+  primary:
+    "eo-brand eo-btn-primary text-primary-foreground border-transparent hover:brightness-110",
   secondary:
     "bg-elevated text-foreground border-border-strong hover:border-cyan/50 hover:bg-highlight",
   ghost:
@@ -289,7 +290,10 @@ export function StatTiles({
           <Label className="text-[9.5px]">{s.label}</Label>
           <div
             key={typeof s.value === "string" || typeof s.value === "number" ? s.value : undefined}
-            className={cn("eo-stat-value mt-1 text-2xl font-bold tabular-nums", tc[s.tone ?? "muted"])}
+            className={cn(
+              "eo-stat-value mt-1 text-2xl font-bold tabular-nums",
+              tc[s.tone ?? "muted"],
+            )}
           >
             {s.value}
           </div>
@@ -347,7 +351,10 @@ export function SearchBox({
 }) {
   return (
     <div className="eo-search relative">
-      <Search aria-hidden="true" className="pointer-events-none absolute left-3 top-2.5 h-3.5 w-3.5 text-subtle" />
+      <Search
+        aria-hidden="true"
+        className="pointer-events-none absolute left-3 top-2.5 h-3.5 w-3.5 text-subtle"
+      />
       <input
         aria-label={placeholder}
         value={value}

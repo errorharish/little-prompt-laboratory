@@ -44,7 +44,9 @@ function useActiveBox(deps: unknown[]) {
   const [box, setBox] = useState<Box>(null);
   const measure = useCallback(() => {
     const el = ref.current?.querySelector<HTMLElement>('[aria-current="page"]');
-    setBox(el ? { x: el.offsetLeft, y: el.offsetTop, w: el.offsetWidth, h: el.offsetHeight } : null);
+    setBox(
+      el ? { x: el.offsetLeft, y: el.offsetTop, w: el.offsetWidth, h: el.offsetHeight } : null,
+    );
   }, []);
   useEffect(() => {
     measure();
@@ -192,7 +194,9 @@ export function Shell({ children }: { children: ReactNode }) {
                   aria-current={active ? "page" : undefined}
                   className={cn(
                     "eo-nav-item relative flex h-8 items-center gap-2 rounded-lg px-4 text-[11px] font-bold tracking-[0.12em]",
-                    active ? "text-cyan" : "text-muted-foreground hover:bg-highlight/50 hover:text-foreground",
+                    active
+                      ? "text-cyan"
+                      : "text-muted-foreground hover:bg-highlight/50 hover:text-foreground",
                   )}
                 >
                   <Icon name={p.icon} className="h-4 w-4" />
