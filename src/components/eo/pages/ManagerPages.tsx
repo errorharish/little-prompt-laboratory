@@ -23,7 +23,6 @@ import {
   simulate,
   useSimRun,
 } from "../kit";
-import { cn } from "@/lib/utils";
 import { toggleInSet } from "@/lib/eo/selection";
 
 /* ───────── STARTUP MANAGER ───────── */
