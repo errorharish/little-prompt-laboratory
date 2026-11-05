@@ -24,13 +24,13 @@ export function Label({ children, className, as: Tag = "div", id }: { children: 
   return <Tag id={id} className={cn("eo-label text-muted-foreground", className)}>{children}</Tag>;
 }
 
-export function SectionTitle({ title, sub, right, badge }: { title: string; sub?: string | undefined; right?: ReactNode | undefined; badge?: ReactNode | undefined }) {
+export function SectionTitle({ title, sub, right, badge, id }: { title: string; sub?: string | undefined; right?: ReactNode | undefined; badge?: ReactNode | undefined; id?: string | undefined }) {
   return (
     <div className="eo-section-title mb-4 flex flex-wrap items-start justify-between gap-4">
       <div>
         <div className="flex items-center gap-2">
           <span className="h-3.5 w-1 rounded-full bg-cyan" />
-          <h2 className="eo-label text-[11.5px] text-foreground">{title}</h2>
+          <h2 id={id} className="eo-label text-[11.5px] text-foreground">{title}</h2>
           {badge}
         </div>
         {sub && <p className="mt-1 pl-3 text-xs text-muted-foreground">{sub}</p>}

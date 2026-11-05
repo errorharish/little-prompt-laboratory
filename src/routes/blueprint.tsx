@@ -54,8 +54,7 @@ function Blueprint() {
       </nav>
 
       <Section id="shell">
-        <SectionTitle title="SHELL" />
-        <span id="shell-title" className="sr-only">Shell</span>
+        <SectionTitle id="shell-title" title="SHELL" />
         <div className="grid grid-cols-2 gap-x-8 gap-y-1 text-[12.5px] text-muted-foreground">
           <div>Window base 1280 × 820 · custom title bar 56px · footer 36px</div>
           <div>Title bar: brand tile (cyan→blue gradient) · ERROR OPTIMIZER · V3/V4 pill · subtitle · BLUEPRINT · DEMO DATA · status pill</div>
@@ -67,13 +66,12 @@ function Blueprint() {
       </Section>
 
       <Section id="navigation">
-        <SectionTitle title="NAVIGATION ARCHITECTURE" />
-        <span id="navigation-title" className="sr-only">Navigation architecture</span>
+        <SectionTitle id="navigation-title" title="NAVIGATION ARCHITECTURE" />
         <Table head={["AREA", "BEHAVIOUR"]} cols="160px 1fr" rows={NAVIGATION.map((n) => [n.area, n.detail])} />
       </Section>
 
       <section id="pages" aria-labelledby="pages-title" className="scroll-mt-4 space-y-4">
-        <span id="pages-title" className="sr-only">Page inventory</span>
+        <h2 id="pages-title" className="sr-only">Page inventory</h2>
         {groups.map((g) => (
           <Card key={g.t}>
             <SectionTitle title={g.t} />
@@ -89,8 +87,7 @@ function Blueprint() {
       </section>
 
       <Section id="tokens">
-        <SectionTitle title="COLOUR TOKENS (DesignTokens.xaml → CSS)" />
-        <span id="tokens-title" className="sr-only">Colour tokens</span>
+        <SectionTitle id="tokens-title" title="COLOUR TOKENS (DesignTokens.xaml → CSS)" />
         <div className="grid grid-cols-2 gap-2">
           {TOKENS.map(([n, hex, key, cls]) => (
             <div key={n} className="flex items-center gap-3 rounded-lg border border-border bg-window px-3 py-2 text-[12px]">
@@ -104,20 +101,17 @@ function Blueprint() {
 
       <div className="grid grid-cols-2 gap-4">
         <Section id="type">
-          <SectionTitle title="TYPOGRAPHY" sub="Letter-spacing is 0 everywhere." />
-          <span id="type-title" className="sr-only">Typography</span>
+          <SectionTitle id="type-title" title="TYPOGRAPHY" sub="Letter-spacing is 0 everywhere." />
           <Table head={["ROLE", "SIZE", "WEIGHT", "NOTES"]} cols="1.2fr 70px 60px 1.5fr" rows={TYPE_SCALE.map((t) => [t.role, t.size, t.weight, t.notes])} />
         </Section>
         <Section id="spacing">
-          <SectionTitle title="SPACING & RADII" />
-          <span id="spacing-title" className="sr-only">Spacing and radii</span>
+          <SectionTitle id="spacing-title" title="SPACING & RADII" />
           <Table head={["ROLE", "VALUE"]} cols="1fr 1.4fr" rows={SPACING.map(([r, v]) => [r, v])} />
         </Section>
       </div>
 
       <Section id="depth">
-        <SectionTitle title="SHADOWS & CARD DEPTH" />
-        <span id="depth-title" className="sr-only">Shadows and card depth</span>
+        <SectionTitle id="depth-title" title="SHADOWS & CARD DEPTH" />
         <div className="grid grid-cols-5 gap-2.5">
           {DEPTH.map((d) => (
             <div key={d.name} className="rounded-lg border border-border bg-window p-3" style={d.css.startsWith("--shadow") || d.css === "--overlay-shadow" ? { boxShadow: `var(${d.css})` } : undefined}>
@@ -130,40 +124,34 @@ function Blueprint() {
       </Section>
 
       <Section id="motion">
-        <SectionTitle title="ANIMATION DURATIONS & EASING" />
-        <span id="motion-title" className="sr-only">Animation durations and easing</span>
+        <SectionTitle id="motion-title" title="ANIMATION DURATIONS & EASING" />
         <Table head={["ANIMATION", "DURATION", "EASING", "WPF TRANSLATION"]} cols="1fr 130px 170px 1.6fr" rows={MOTION.map((m) => [m.name, m.duration, <span key="e" className="font-mono text-[11px]">{m.easing}</span>, m.wpf])} />
       </Section>
 
       <div className="grid grid-cols-2 gap-4">
         <Section id="states">
-          <SectionTitle title="HOVER, PRESSED & FOCUS STATES" />
-          <span id="states-title" className="sr-only">Interaction states</span>
+          <SectionTitle id="states-title" title="HOVER, PRESSED & FOCUS STATES" />
           <Table head={["STATE", "SPEC"]} cols="110px 1fr" rows={STATES.map((s) => [s.state, s.spec])} />
         </Section>
         <div className="space-y-4">
           <Section id="dialogs">
-            <SectionTitle title="DIALOGS & MODAL TRANSITIONS" />
-            <span id="dialogs-title" className="sr-only">Dialogs</span>
+            <SectionTitle id="dialogs-title" title="DIALOGS & MODAL TRANSITIONS" />
             <ul className="space-y-1.5 text-[12.5px] text-muted-foreground">{MODAL_SPEC.map((m) => <li key={m}>• {m}</li>)}</ul>
           </Section>
           <Section id="reduced">
-            <SectionTitle title="REDUCED-MOTION BEHAVIOUR" />
-            <span id="reduced-title" className="sr-only">Reduced motion</span>
+            <SectionTitle id="reduced-title" title="REDUCED-MOTION BEHAVIOUR" />
             <ul className="space-y-1.5 text-[12.5px] text-muted-foreground">{REDUCED_MOTION.map((m) => <li key={m}>• {m}</li>)}</ul>
           </Section>
         </div>
       </div>
 
       <Section id="components">
-        <SectionTitle title="COMPONENT → WPF MAPPING" />
-        <span id="components-title" className="sr-only">Component mapping</span>
+        <SectionTitle id="components-title" title="COMPONENT → WPF MAPPING" />
         <Table head={["PROTOTYPE COMPONENT", "WPF CONTROL / RESOURCE", "NOTE"]} cols="1.2fr 1.3fr 1.5fr" rows={COMPONENT_MAP.map((c) => [c.web, <span key="w" className="font-mono text-[11px]">{c.wpf}</span>, c.note])} />
       </Section>
 
       <Section id="patterns">
-        <SectionTitle title="REUSABLE PATTERNS" />
-        <span id="patterns-title" className="sr-only">Reusable patterns</span>
+        <SectionTitle id="patterns-title" title="REUSABLE PATTERNS" />
         <ul className="grid grid-cols-2 gap-x-8 gap-y-1.5 text-[12.5px] text-muted-foreground">
           <li><b className="text-foreground">Page header</b> — accent bar, uppercase h1, badges, subtitle; actions right.</li>
           <li><b className="text-foreground">Stat strip</b> — equal tiles with label, number, caption.</li>
@@ -179,8 +167,7 @@ function Blueprint() {
       </Section>
 
       <Section id="missing" className="border-warning/30">
-        <SectionTitle title="MISSING OR CONFLICTING REFERENCES" sub="Areas where the references do not fully determine the layout. Nothing here was guessed silently." />
-        <span id="missing-title" className="sr-only">Missing references</span>
+        <SectionTitle id="missing-title" title="MISSING OR CONFLICTING REFERENCES" sub="Areas where the references do not fully determine the layout. Nothing here was guessed silently." />
         <div className="space-y-2">{MISSING_REFERENCES.map((m) => <div key={m.area} className="rounded-lg border border-border bg-window p-3"><Label as="h3" className="text-warning">{m.area}</Label><p className="mt-1 text-[12.5px] text-muted-foreground">{m.detail}</p></div>)}</div>
       </Section>
     </div>

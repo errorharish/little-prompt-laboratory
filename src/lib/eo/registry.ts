@@ -76,5 +76,8 @@ export const MISSING_REFERENCES: { area: string; detail: string }[] = [
   { area: "EmulatorDeepOptimizeTab", detail: "Contains no own layout — it hosts MsiAppPlayerPage plus a ToastHost. Rendered as the MSI module hub." },
   { area: "DebloatView / BiosSafeView", detail: "Standalone XAML exists, but MainViewModel routes Debloat and BiosSafe to TierViewModel → TierView. The standalone views are documented in the blueprint but not routed." },
   { area: "Unrouted pages in dock", detail: "OneClick, AutoOptimize, ProcessReduction, ServiceManager, PerformanceTuning and V4Dashboard have no dock entry. Their entry points are in-page links only (Dashboard quick actions, Registry Values tabs)." },
+  { area: "Original reference files", detail: "ERROR_OPTIMIZER_UI_REFERENCE.zip, the source ZIP, the backend manifest and the build report are not attached to this project copy. The registry and layouts were kept from the original audit; they could not be re-checked against the XAML here." },
+  { area: "Stepper and loading skeletons", detail: "The workflow stepper (One-Click, run dialog) and skeleton loading rows are prototype additions with no XAML source. The blueprint suggests WPF equivalents but they are not original controls." },
+  { area: "3D depth HIGH (DEEP)", detail: "Settings offers LOW / MEDIUM / HIGH depth. Only LOW (no tilt) differs visually in the prototype; the original HIGH behaviour is not documented in the supplied material." },
   { area: "Animated backgrounds", detail: "MetallicBackground / AuroraBackground / parallax starfield are C# render controls; only their static appearance is approximated." },
 ];
