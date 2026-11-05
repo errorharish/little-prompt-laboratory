@@ -3,7 +3,8 @@
 import { useState } from "react";
 import { Badge, Btn, Card, Check, Chips, Label, Modal, RiskBadge, SectionTitle, SimNotice, simulate, SearchBox, EmptyState, Details, KV } from "../kit";
 import { RunModal } from "../RunModal";
-import { CATALOG, HW, TIERS, type Risk } from "@/lib/eo/data";
+import { CATALOG, HW, TIERS, type Risk, type TierInfo } from "@/lib/eo/data";
+import { toggleInSet } from "@/lib/eo/selection";
 import { cn } from "@/lib/utils";
 
 const TIER_CATS: Record<string, string[]> = {
@@ -31,7 +32,11 @@ const BLOCKLIST = ["Microsoft.BingNews", "Microsoft.BingWeather", "Microsoft.Get
 
 export function TierPage({ slug }: { slug: string }) {
   const t = TIERS[slug];
-  if (!t) return null;
+  // Guard before any hooks run: TierView always calls the same hooks in the same order.
+  return t ? <TierView slug={slug} t={t} /> : null;
+}
+
+function TierView({ slug, t }: { slug: string; t: TierInfo }) {
   const items = CATALOG.filter((c) => (TIER_CATS[slug] ?? []).includes(c.cat)).map((c, i) => ({ ...c, scope: c.cat === "SYSTEM" ? "UEFI" : "WINDOWS", done: i % 4 === 3 }));
   const [sel, setSel] = useState<Set<string>>(new Set(items.filter((i) => !i.done && i.risk !== "MEDIUM").map((i) => i.id)));
   const [query, setQuery] = useState("");
@@ -47,7 +52,7 @@ export function TierPage({ slug }: { slug: string }) {
   const counts = { safe: items.filter((i) => i.risk === "SAFE" || i.risk === "LOW").length, med: items.filter((i) => i.risk === "MEDIUM").length, high: items.filter((i) => i.risk === "HIGH").length };
   const pending = items.filter((i) => !i.done);
   const vis = items.filter((i) => (scope === "ALL" || i.scope === scope) && i.name.toLowerCase().includes(query.toLowerCase()));
-  const tog = (id: string) => setSel((s) => { const n = new Set(s); n.has(id) ? n.delete(id) : n.add(id); return n; });
+  const tog = (id: string) => setSel((s) => toggleInSet(s, id));
 
   return (
     <div className="space-y-4 pb-16">
@@ -116,13 +121,13 @@ export function TierPage({ slug }: { slug: string }) {
 
       <Modal open={block} onClose={() => setBlock(false)} title="Customize bloatware blocklist" footer={<><Btn variant="ghost" onClick={() => setBlock(false)}>Cancel</Btn><Btn variant="primary" onClick={() => { setBlock(false); simulate("Save blocklist"); }}>Save blocklist</Btn></>}>
         <div className="mb-3 flex justify-end"><Btn size="sm" variant="ghost" onClick={() => setBlockSel(new Set(BLOCKLIST.slice(0, 7)))}>Reset defaults</Btn></div>
-        <div className="space-y-1.5">{BLOCKLIST.map((b) => <div key={b} className="flex items-center gap-3 rounded-md border border-border bg-window px-3 py-2 font-mono text-xs"><Check on={blockSel.has(b)} onChange={() => setBlockSel((s) => { const n = new Set(s); n.has(b) ? n.delete(b) : n.add(b); return n; })} />{b}</div>)}</div>
+        <div className="space-y-1.5">{BLOCKLIST.map((b) => <div key={b} className="flex items-center gap-3 rounded-md border border-border bg-window px-3 py-2 font-mono text-xs"><Check label={`Include ${b}`} on={blockSel.has(b)} onChange={() => setBlockSel((s) => toggleInSet(s, b))} />{b}</div>)}</div>
         <p className="mt-3 text-[11px] text-muted-foreground">Selected packages will be processed during Custom Bloatware Removal.</p>
       </Modal>
       <Modal open={!!detail} onClose={() => setDetail(null)} title={detail?.name ?? ""} sub="Sample catalog entry · No machine state has been detected." footer={<Btn onClick={() => setDetail(null)}>Close</Btn>}>
         {detail && <div className="space-y-3"><KV k="Category" v={detail.cat} /><KV k="Risk classification" v={<RiskBadge risk={detail.risk} />} /><KV k="Sample state" v={detail.done ? "Already optimized (demo)" : "Pending (demo)"} /><KV k="Applicability" v="Evaluated by native engine; not detected here" /><KV k="Restart requirement" v="Per-operation metadata required" /><Details><KV k="Original operation identifier" v={detail.id} mono /><p className="mt-3 text-xs text-muted-foreground">Purpose, target values and readback rules must come from the original catalog; this sample does not infer them.</p></Details></div>}
       </Modal>
-      <RunModal open={run} onClose={() => setRun(false)} profile={t.name} count={sel.size} />
+      <RunModal open={run} onClose={() => setRun(false)} profile={t.name} count={sel.size} items={items.filter((i) => sel.has(i.id)).map((i) => ({ id: i.id, title: i.name, risk: i.risk }))} />
     </div>
   );
 }

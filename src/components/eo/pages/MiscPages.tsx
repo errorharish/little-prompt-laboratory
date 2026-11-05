@@ -19,9 +19,10 @@ export function AiOptimizationPage() {
   const [plan, setPlan] = useState(false);
   return (
     <div className="space-y-4">
+      <PageHeader title="AI Optimization" badges={<><Badge tone="cyan">3 MODULES</Badge><Badge tone="warning">SAMPLE DATA</Badge></>} sub="RAM limiter, workload profiles and power-plan recommendations. Passive monitors only — nothing is enforced until you confirm a target." />
       <Card className="flex flex-wrap items-center justify-between gap-3 py-3">
-        <Chips options={["RAM LIMITER", "WORKLOAD OPTIMIZATION", "POWER PLAN OPTIMIZATION"]} value={mod} onChange={setMod} />
-        <div className="flex items-center gap-2"><Btn size="sm" variant="ghost" onClick={() => simulate("Refresh")}>Refresh</Btn><Chips options={["NORMAL", "CUSTOM"]} value={ctl} onChange={setCtl} /></div>
+        <Chips label="AI module" options={["RAM LIMITER", "WORKLOAD OPTIMIZATION", "POWER PLAN OPTIMIZATION"]} value={mod} onChange={setMod} />
+        <div className="flex items-center gap-2"><Btn size="sm" variant="ghost" onClick={() => simulate("Refresh")}>Refresh</Btn><Chips label="Control mode" options={["NORMAL", "CUSTOM"]} value={ctl} onChange={setCtl} /></div>
       </Card>
       <p className="text-[11.5px] text-muted-foreground"><b className="text-cyan">PRO TIP</b> · AI engines run as safe passive monitors; nothing is enforced until you confirm a target.</p>
 
