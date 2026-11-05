@@ -110,7 +110,7 @@ export function V4MaxPerformancePage() {
                 <Badge tone="success">SAFE DEFAULTS</Badge>
               </div>
               <p className="mt-1 text-xs text-muted-foreground">
-                Applies verified system optimizations, priority balancing, memory working-set
+                Simulates system optimizations, priority balancing, memory working-set
                 refresh and background reduction.
               </p>
             </div>
@@ -250,7 +250,7 @@ const ENGINES = [
       "PM / APPOPS METHOD",
       "AUTOMATIC MANIFEST ROLLBACK",
     ],
-    desc: "Deep-clean verified unnecessary emulator apps, packages, and background services.",
+    desc: "Simulate a deep clean of unnecessary emulator apps, packages, and background services.",
     pre: "Prerequisite: MSI App Player running + Android Debug Bridge connected.",
     needsAdb: true,
   },
@@ -1064,7 +1064,7 @@ export function EmulatorModulesPage() {
           ))}
         </div>
         <p className="mt-3 text-[11px] text-muted-foreground">
-          All planned changes are verified safe and reversible before execution.
+          All planned changes are shown for review before the simulated run. Nothing is executed on this PC.
         </p>
       </Modal>
       <Modal
@@ -1090,7 +1090,7 @@ export function EmulatorModulesPage() {
           Run benchmark (30s)
         </Btn>
         <p className="mt-3 text-[11px] text-success">
-          Safety verified: instance files and emulator configuration files remain untouched.
+          Simulation only: instance files and emulator configuration files are not touched.
         </p>
       </Modal>
     </div>
@@ -1123,7 +1123,7 @@ export function V4DashboardPage() {
           ],
           [
             "EMULATOR OPTIMIZATION",
-            "Optimize MSI App Player 5 for higher and smoother verified performance.",
+            "Optimize MSI App Player 5 for higher and smoother performance (sample profile).",
             "emulator-optimization",
           ],
         ].map(([t, d, s]) => (
