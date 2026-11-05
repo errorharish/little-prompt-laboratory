@@ -1,5 +1,5 @@
 // DashboardView.xaml — section order and copy follow the XAML exactly.
-import { useEffect, useState } from "react";
+import { memo, useEffect, useState } from "react";
 import { Link } from "@tanstack/react-router";
 import { Cpu, MemoryStick, MonitorCog, HardDrive, HeartPulse, RefreshCw, ArrowUpRight, Play, Pause } from "lucide-react";
 import { Badge, Bar, Btn, Card, Chips, DemoBadge, Label, PageHeader, SectionTitle, SimNotice, simulate, EmptyState } from "../kit";
@@ -52,6 +52,10 @@ function path(vals: number[], w: number, h: number) {
   return vals.map((v, i) => `${i ? "L" : "M"}${(i * step).toFixed(1)},${(h - (v / 100) * h).toFixed(1)}`).join(" ");
 }
 
+type Sample = { cpu: number; ram: number; gpu: number };
+const liveValue = (label: string, last: Sample, fallback: number) => (label === "CPU USAGE" ? last.cpu : label === "RAM USAGE" ? last.ram : label === "GPU USAGE" ? last.gpu : fallback);
+const area = (vals: number[], w: number, h: number) => `${path(vals, w, h)} L${w},${h} L0,${h} Z`;
+
 export function DashboardPage() {
   const [paused, setPaused] = useState(false);
   const [logs, setLogs] = useState(LOGS);
@@ -71,7 +75,7 @@ export function DashboardPage() {
           <Link to="/$page" params={{ page: "one-click" }}><Btn variant="primary"><Play className="h-3.5 w-3.5" />1-Click Optimize</Btn></Link>
           <Badge tone="success">{mode} MODE · CONFIGURATION ACTIVE</Badge>
           <Badge tone="muted">TIMER: 0.5 ms (LOCKED)</Badge>
-          <Btn onClick={() => { setRefreshKey((k) => k + 1); setLogs(LOGS); simulate("Refresh sample scan"); }}><RefreshCw className="h-3.5 w-3.5" /> Refresh</Btn>
+          <Btn onClick={() => { setRefreshKey((k) => k + 1); setLogs((l) => [[new Date().toLocaleTimeString([], { hour12: false }), "Sample dashboard refreshed", "SYSTEM", "Sample telemetry redrawn · no hardware was read", "SAMPLE"], ...(l.length ? l : LOGS)]); simulate("Refresh sample scan"); }}><RefreshCw className="h-3.5 w-3.5" /> Refresh</Btn>
         </>}
       />
 
@@ -83,11 +87,11 @@ export function DashboardPage() {
               <div className="flex items-center gap-2"><span className="flex h-6 w-6 items-center justify-center rounded-md bg-primary/15 text-cyan"><t.icon className="h-3.5 w-3.5" /></span><Label>{t.label}</Label></div>
               <DemoBadge />
             </div>
-            <div className="mt-3 text-3xl font-bold tabular-nums">{(t.label === "CPU USAGE" ? last.cpu : t.label === "RAM USAGE" ? last.ram : t.label === "GPU USAGE" ? last.gpu : t.value).toFixed(0)}<span className="text-lg text-muted-foreground">%</span></div>
+            <div className="mt-3 text-3xl font-bold tabular-nums">{liveValue(t.label, last, t.value).toFixed(0)}<span className="text-lg text-muted-foreground">%</span></div>
             <div className="mt-1 truncate text-[12.5px] font-semibold">{t.l1}</div>
             <div className="truncate text-[11px] text-subtle">{t.l2}</div>
-            <Bar value={t.value} className="mt-3" />
-            <div className="mt-2 flex justify-between text-[9.5px] font-bold tracking-widest"><span className="text-success">{t.foot}</span><span className="text-muted-foreground">{t.value}%</span></div>
+            <Bar value={liveValue(t.label, last, t.value)} className="mt-3" />
+            <div className="mt-2 flex justify-between text-[9.5px] font-bold tracking-widest"><span className="text-success">{t.foot}</span><span className="text-muted-foreground">{liveValue(t.label, last, t.value).toFixed(0)}%</span></div>
           </Card>
         ))}
         <Card className="p-4">
@@ -104,14 +108,16 @@ export function DashboardPage() {
       <div className="eo-telemetry-split grid gap-3" style={{ gridTemplateColumns: "58fr 42fr" }}>
         <Card>
           <SectionTitle title="SYSTEM PERFORMANCE TELEMETRY" badge={<DemoBadge label="DEMO DATA" />} sub="Illustrative CPU, memory and graphics utilization"
-            right={<><Btn size="sm" variant="ghost" title={paused ? "Resume sample telemetry" : "Pause sample telemetry"} onClick={() => setPaused(!paused)}>{paused ? <Play className="h-3 w-3" /> : <Pause className="h-3 w-3" />}</Btn><Chips options={["30 SEC", "1 MIN", "5 MIN"]} value={win} onChange={setWin} /></>} />
+            right={<><Btn size="sm" variant="ghost" title={paused ? "Resume sample telemetry" : "Pause sample telemetry"} pressed={paused} onClick={() => setPaused(!paused)}>{paused ? <Play aria-hidden="true" className="h-3 w-3" /> : <Pause aria-hidden="true" className="h-3 w-3" />}</Btn><Chips label="Telemetry window" options={["30 SEC", "1 MIN", "5 MIN"]} value={win} onChange={setWin} /></>} />
           <div className="mb-2 flex gap-4 text-[11px] font-semibold">
             <span className="text-chart-1">● CPU: {last.cpu.toFixed(0)}%</span><span className="text-chart-2">● RAM: {last.ram.toFixed(0)}%</span><span className="text-chart-3">● GPU: {last.gpu.toFixed(0)}%</span>
           </div>
           <div className="grid" style={{ gridTemplateColumns: "32px 1fr" }}>
             <div className="flex h-44 flex-col justify-between text-[9.5px] text-subtle">{["100%", "75%", "50%", "25%", "0%"].map((x) => <span key={x}>{x}</span>)}</div>
             <svg key={refreshKey} role="img" aria-label="Simulated CPU, RAM and GPU utilization chart" viewBox="0 0 600 176" className="eo-chart h-44 w-full" preserveAspectRatio="none">
+              <defs><linearGradient id="eo-cpu-fill" x1="0" x2="0" y1="0" y2="1"><stop offset="0%" stopColor="var(--chart-1)" /><stop offset="100%" stopColor="var(--chart-1)" stopOpacity="0" /></linearGradient></defs>
               {[0, 44, 88, 132, 176].map((y) => <line key={y} x1="0" x2="600" y1={y} y2={y} stroke="var(--border)" strokeDasharray="3 4" />)}
+              <path className="eo-chart-area" d={area(series.map((v) => v.cpu), 600, 176)} fill="url(#eo-cpu-fill)" />
               <path pathLength={1} d={path(series.map((v) => v.ram), 600, 176)} fill="none" stroke="var(--chart-2)" strokeWidth="2" />
               <path pathLength={1} d={path(series.map((v) => v.gpu), 600, 176)} fill="none" stroke="var(--chart-3)" strokeWidth="2" />
               <path pathLength={1} d={path(series.map((v) => v.cpu), 600, 176)} fill="none" stroke="var(--chart-1)" strokeWidth="2" />
@@ -122,7 +128,7 @@ export function DashboardPage() {
         </Card>
         <Card>
           <SectionTitle title="OPTIMIZATION STATUS" sub="Current system tuning profile & kernel health" badge={<Badge tone="cyan">V3 ENGINE</Badge>} />
-          <Chips options={["NORMAL", "ADVANCED", "CONSERVATIVE GAMING"]} value={mode} onChange={setMode} />
+          <Chips label="Optimization mode" options={["NORMAL", "ADVANCED", "CONSERVATIVE GAMING"]} value={mode} onChange={setMode} />
           <p className="mt-3 text-[12.5px] text-muted-foreground">{MODE_TEXT[mode]}</p>
           <div className="mt-4 grid grid-cols-2 gap-2">
             {[["Timer Resolution:", "0.5 ms (Lock)"], ["DPC Latency:", "< 22 µs"], ["Core Parking:", "Disabled"], ["Compatibility:", "Not assessed"]].map(([k, v]) => (
@@ -134,40 +140,8 @@ export function DashboardPage() {
         </Card>
       </div>
 
-      {/* Hardware information table: cols=190,270,*,130 */}
-      <Card>
-        <SectionTitle title="HARDWARE INFORMATION" badge={<DemoBadge label="DEMO DATA" />} sub="Sample system specifications — no hardware detection" right={<Link to="/$page" params={{ page: "system-info" }}><Btn size="sm">View specs</Btn></Link>} />
-        <div className="eo-data-table rounded-lg border border-border">
-          <div className="grid bg-window px-4 py-2 eo-label text-[9.5px] text-subtle" style={{ gridTemplateColumns: "190px 270px 1fr 130px" }}><span>COMPONENT</span><span>HARDWARE SPECIFICATION</span><span>ATTRIBUTES</span><span>STATUS</span></div>
-          {[
-            ["PROCESSOR", "AMD Ryzen 7 7800X3D", "8 Cores / 16 Threads · 4.2 GHz · 96 MB L3", "OPTIMAL (42°C)"],
-            ["GRAPHICS PROCESSOR", "NVIDIA GeForce RTX 4080 Super", "16 GB GDDR6X · PCIe 4.0", "READY (44°C)"],
-            ["INSTALLED RAM", "32 GB DDR5-6000", "2x 16GB · 6000 MT/s CL30-36-36 · AMD EXPO I · Latency: 58.4 ns", "EXPO ACTIVE"],
-            ["PRIMARY STORAGE", "Samsung 990 PRO 2TB", "PCIe Gen 4.0 x4 · Read 7,450 MB/s · Write 6,900 MB/s · DirectStorage Ready", "TRIM ENABLED"],
-          ].map((r) => (
-            <div key={r[0]} className="grid items-center border-t border-border px-4 py-2.5 text-[12.5px]" style={{ gridTemplateColumns: "190px 270px 1fr 130px" }}>
-              <span className="eo-label text-[10px] text-cyan">{r[0]}</span><span className="font-semibold">{r[1]}</span><span className="text-muted-foreground">{r[2]}</span><Badge tone="success">{r[3]}</Badge>
-            </div>
-          ))}
-        </div>
-        <div className="mt-2 flex justify-between text-[9.5px] font-bold tracking-widest text-subtle"><span>ALL SPECIFICATIONS ARE SAMPLE PROTOTYPE VALUES</span><span className="text-success">DIRECTSTORAGE READY</span></div>
-      </Card>
-
-      {/* Quick actions: 4x2, cols=*,10,*,10,*,10,* */}
-      <section className="py-2">
-        <SectionTitle title="QUICK ACTIONS" badge={<Badge tone="cyan">8 TOOLS</Badge>} sub="One-click system optimization tools (Prototype Simulation)" right={<Badge tone="warning">ALL ACTIONS SIMULATED</Badge>} />
-        <div className="grid grid-cols-4 gap-2.5">
-          {QUICK.map((q) => (
-            <Link key={q.title} to="/$page" params={{ page: q.to }} className="eo-quick-link group rounded-xl border border-border bg-window p-4 transition-all hover:-translate-y-0.5 hover:border-cyan/50 hover:shadow-[var(--shadow-glow)]">
-              <Label className="text-cyan">{q.cat}</Label>
-              <div className="mt-1.5 flex items-start justify-between gap-2 text-sm font-bold">{q.title}<ArrowUpRight className="h-4 w-4 shrink-0 text-cyan" /></div>
-              <p className="mt-1 text-[11.5px] leading-snug text-muted-foreground">{q.desc}</p>
-              <div className="mt-3"><Badge tone="success">{q.tag}</Badge></div>
-            </Link>
-          ))}
-        </div>
-        <div className="mt-3 flex justify-between text-[9.5px] font-bold tracking-widest text-subtle"><span>PROTOTYPE INTERACTIONS DO NOT ALTER REAL SYSTEM CONFIGURATIONS</span><span>CLICK ANY ACTION TO OPEN ITS PAGE</span></div>
-      </section>
+      <HardwareInfo />
+      <QuickActions />
 
       {/* Recent activity: rows cols=Auto,*,Auto */}
       <Card>
@@ -187,3 +161,53 @@ export function DashboardPage() {
     </div>
   );
 }
+
+// Static sections are memoized so the 1.2 s sample-telemetry tick does not re-render them.
+const HardwareInfo = memo(function HardwareInfo() {
+  return (
+    <>
+      {/* Hardware information table: cols=190,270,*,130 */}
+      <Card>
+        <SectionTitle title="HARDWARE INFORMATION" badge={<DemoBadge label="DEMO DATA" />} sub="Sample system specifications — no hardware detection" right={<Link to="/$page" params={{ page: "system-info" }}><Btn size="sm">View specs</Btn></Link>} />
+        <div className="eo-data-table rounded-lg border border-border">
+          <div className="grid bg-window px-4 py-2 eo-label text-[9.5px] text-subtle" style={{ gridTemplateColumns: "190px 270px 1fr 130px" }}><span>COMPONENT</span><span>HARDWARE SPECIFICATION</span><span>ATTRIBUTES</span><span>STATUS</span></div>
+          {[
+            ["PROCESSOR", "AMD Ryzen 7 7800X3D", "8 Cores / 16 Threads · 4.2 GHz · 96 MB L3", "OPTIMAL (42°C)"],
+            ["GRAPHICS PROCESSOR", "NVIDIA GeForce RTX 4080 Super", "16 GB GDDR6X · PCIe 4.0", "READY (44°C)"],
+            ["INSTALLED RAM", "32 GB DDR5-6000", "2x 16GB · 6000 MT/s CL30-36-36 · AMD EXPO I · Latency: 58.4 ns", "EXPO ACTIVE"],
+            ["PRIMARY STORAGE", "Samsung 990 PRO 2TB", "PCIe Gen 4.0 x4 · Read 7,450 MB/s · Write 6,900 MB/s · DirectStorage Ready", "TRIM ENABLED"],
+          ].map((r) => (
+            <div key={r[0]} className="grid items-center border-t border-border px-4 py-2.5 text-[12.5px]" style={{ gridTemplateColumns: "190px 270px 1fr 130px" }}>
+              <span className="eo-label text-[10px] text-cyan">{r[0]}</span><span className="font-semibold">{r[1]}</span><span className="text-muted-foreground">{r[2]}</span><Badge tone="success">{r[3]}</Badge>
+            </div>
+          ))}
+        </div>
+        <div className="mt-2 flex justify-between text-[9.5px] font-bold tracking-widest text-subtle"><span>ALL SPECIFICATIONS ARE SAMPLE PROTOTYPE VALUES</span><span className="text-success">DIRECTSTORAGE READY</span></div>
+      </Card>
+
+    </>
+  );
+});
+
+const QuickActions = memo(function QuickActions() {
+  return (
+    <>
+      {/* Quick actions: 4x2, cols=*,10,*,10,*,10,* */}
+      <section className="py-2">
+        <SectionTitle title="QUICK ACTIONS" badge={<Badge tone="cyan">8 TOOLS</Badge>} sub="One-click system optimization tools (Prototype Simulation)" right={<Badge tone="warning">ALL ACTIONS SIMULATED</Badge>} />
+        <div className="grid grid-cols-4 gap-2.5">
+          {QUICK.map((q) => (
+            <Link key={q.title} to="/$page" params={{ page: q.to }} className="eo-quick-link group rounded-xl border border-border bg-window p-4 transition-all hover:-translate-y-0.5 hover:border-cyan/50 hover:shadow-[var(--shadow-glow)]">
+              <Label className="text-cyan">{q.cat}</Label>
+              <div className="mt-1.5 flex items-start justify-between gap-2 text-sm font-bold">{q.title}<ArrowUpRight className="h-4 w-4 shrink-0 text-cyan" /></div>
+              <p className="mt-1 text-[11.5px] leading-snug text-muted-foreground">{q.desc}</p>
+              <div className="mt-3"><Badge tone="success">{q.tag}</Badge></div>
+            </Link>
+          ))}
+        </div>
+        <div className="mt-3 flex justify-between text-[9.5px] font-bold tracking-widest text-subtle"><span>PROTOTYPE INTERACTIONS DO NOT ALTER REAL SYSTEM CONFIGURATIONS</span><span>CLICK ANY ACTION TO OPEN ITS PAGE</span></div>
+      </section>
+
+    </>
+  );
+});
