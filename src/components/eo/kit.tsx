@@ -138,9 +138,9 @@ export function StatTiles({ items, cols }: { items: { label: string; value: Reac
 }
 
 /* ── Filter chips (rows of RadioButton/Button filters) ── */
-export function Chips({ options, value, onChange, className }: { options: string[]; value: string; onChange: (v: string) => void; className?: string | undefined }) {
+export function Chips({ options, value, onChange, className, label }: { options: string[]; value: string; onChange: (v: string) => void; className?: string | undefined; label?: string | undefined }) {
   return (
-    <div className={cn("flex flex-wrap gap-1.5", className)}>
+    <div role="group" aria-label={label} className={cn("flex flex-wrap gap-1.5", className)}>
       {options.map((o) => (
         <button
           key={o}
