@@ -557,8 +557,8 @@ export function NetworkPage() {
           <div>
             <Label className="text-foreground">BATCH SYSTEM NETWORK OPTIMIZATION</Label>
             <p className="mt-1 text-xs text-muted-foreground">
-              Executes, backs up, applies, and readback-verifies all currently pending network
-              targets.
+              Simulates backup, apply and readback for all currently pending network targets. No
+              network settings are changed.
             </p>
           </div>
           <Btn variant="primary" onClick={() => simulate("Batch network optimization")}>
