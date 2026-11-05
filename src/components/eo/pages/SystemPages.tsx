@@ -1,12 +1,14 @@
 // InputOptimizerView, SystemInfoView, RegistryTweakView, RegistryValuesView, RegistryValuesRamView, GpuRegistryValuesView
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import { toast } from "sonner";
+import { CheckCircle2, Cpu, MousePointer2, SlidersHorizontal } from "lucide-react";
 import { Link } from "@tanstack/react-router";
 import {
   Badge,
   Bar,
   Btn,
   Card,
-  Check,
+  CheckRow,
   Chips,
   Cols,
   Details,
@@ -17,6 +19,7 @@ import {
   RiskBadge,
   SearchBox,
   SectionTitle,
+  SelectionBar,
   SimNotice,
   StatTiles,
   simulate,
@@ -25,95 +28,142 @@ import {
 import type { GuideId } from "@/lib/eo/guides";
 import { RunModal } from "../RunModal";
 import { TelemetryConsole } from "../Telemetry";
-import { toggleInSet } from "@/lib/eo/selection";
+import { clampSelection, isSelectable, toggleInSet } from "@/lib/eo/selection";
+import {
+  INPUT_MODES,
+  INPUT_OPTIONS,
+  isEditableMode,
+  optionsFor,
+  parseMode,
+  recommendedFor,
+  type InputMode,
+  type InputOption,
+} from "@/lib/eo/inputModes";
+import { GuideTip } from "../Guide";
 import { usePersistedSelection } from "../useSelection";
 import { CATALOG, HW } from "@/lib/eo/data";
 import { cn } from "@/lib/utils";
 
-/* ───────── INPUT OPTIMIZER ───────── */
-const NORMAL_INPUT = [
-  "Disable mouse acceleration (1:1 raw pointer)",
-  "Keyboard repeat rate maximization",
-  "Keyboard repeat delay minimum",
-  "Mouse hover time reduction",
-];
-const ADV_INPUT = [
-  "Mouse data queue size",
-  "Keyboard data queue size",
-  "High-precision timer request",
-  "USB selective suspend (input devices)",
-];
-// First row of each list is already applied on the sample system (shown as OPTIMIZED).
-const INPUT_ITEMS = [...NORMAL_INPUT, ...ADV_INPUT].map((id) => ({
-  id,
-  risk: "LOW" as const,
-  done: id === NORMAL_INPUT[0] || id === ADV_INPUT[0],
-}));
+/* ───────── INPUT OPTIMIZER ─────────
+ * Normal / Advanced are recommendation-driven (fixed selection = applicable + recommended items
+ * of that mode). Custom is the only editable mode; its selection is saved on Save. */
+const MODE_META: Record<InputMode, { t: string; s: string; icon: typeof MousePointer2 }> = {
+  NORMAL: { t: "Normal optimization", s: "Recommended pointer & keyboard presets", icon: MousePointer2 },
+  ADVANCED: { t: "Advanced optimization", s: "Adds queue, timer & USB tuning", icon: Cpu },
+  CUSTOM: { t: "Custom", s: "Choose items yourself", icon: SlidersHorizontal },
+};
+const MODE_KEY = "eo-input-mode";
+
+function InputRow({
+  o,
+  on,
+  editable,
+  onToggle,
+}: {
+  o: InputOption;
+  on: boolean;
+  editable: boolean;
+  onToggle: () => void;
+}) {
+  const blocked = !isSelectable(o);
+  const status = o.done ? (
+    <Badge tone="success">APPLIED</Badge>
+  ) : o.incompatible ? (
+    <Badge>NOT COMPATIBLE</Badge>
+  ) : o.recommended === false ? (
+    <Badge tone="warning">NOT RECOMMENDED</Badge>
+  ) : null;
+  const right = (
+    <>
+      {status}
+      {o.tier === "advanced" && <RiskBadge risk={o.risk} />}
+      {o.restart && <Badge tone="cyan">RESTART</Badge>}
+    </>
+  );
+  const desc = (
+    <>
+      {o.desc}
+      {o.compat && <span className="text-subtle"> · {o.compat}</span>}
+      {o.note && !on && <span className="text-subtle"> · {o.note}</span>}
+    </>
+  );
+  if (editable)
+    return (
+      <CheckRow
+        on={on}
+        onChange={onToggle}
+        title={o.name}
+        desc={desc}
+        right={right}
+        locked={blocked ? (o.note ?? "Not available") : undefined}
+      />
+    );
+  return (
+    <div className="eo-check-row" data-on={on ? "true" : undefined} data-readonly="true">
+      <span
+        aria-hidden="true"
+        className={cn(
+          "eo-check flex h-4.5 w-4.5 shrink-0 items-center justify-center rounded border",
+          on ? "border-cyan bg-cyan text-sidebar-primary-foreground" : "border-border bg-window",
+        )}
+      >
+        {on && <CheckCircle2 className="h-3 w-3" strokeWidth={3} />}
+      </span>
+      <span className="min-w-0 flex-1 text-left">
+        <span className="block truncate text-[12.5px] font-semibold">{o.name}</span>
+        <span className="block truncate text-[11px] text-muted-foreground">{desc}</span>
+      </span>
+      <span className="sr-only">{on ? "Included" : "Not included"}</span>
+      <span className="flex shrink-0 items-center gap-1.5">{right}</span>
+    </div>
+  );
+}
+
 export function InputOptimizerPage() {
-  const [mode, setMode] = useState("NORMAL");
-  const { sel, setSel } = usePersistedSelection("input-optimizer", INPUT_ITEMS);
+  const [mode, setModeState] = useState<InputMode>("NORMAL");
+  useEffect(() => {
+    setModeState(parseMode(window.localStorage.getItem(MODE_KEY)));
+  }, []);
+  const setMode = (m: InputMode) => {
+    setModeState(m);
+    try {
+      window.localStorage.setItem(MODE_KEY, m);
+    } catch {
+      /* ignore */
+    }
+  };
+  const custom = usePersistedSelection("input-optimizer:custom", INPUT_OPTIONS);
+  const [draft, setDraft] = useState<Set<string> | null>(null);
+  const editable = isEditableMode(mode);
+  const customSel = draft ?? custom.sel;
+  const sel = editable ? customSel : recommendedFor(mode);
+  const shown = optionsFor(mode);
+  const picked = shown.filter((o) => sel.has(o.id));
   const test = useSimRun(2500);
   const [run, setRun] = useState(false);
   const [tested, setTested] = useState(false);
-  const List = ({
-    title,
-    sub,
-    items,
-    guide,
-  }: {
-    title: string;
-    sub: string;
-    items: string[];
-    guide: GuideId;
-  }) => (
-    <Card>
-      <SectionTitle
-        title={title}
-        sub={sub}
-        guide={guide}
-        right={<Badge>{items.length} sample settings</Badge>}
-      />
-      {mode === "CUSTOM" && (
-        <div className="mb-2 flex gap-1.5">
-          <Btn size="sm" onClick={() => setSel((s) => new Set([...s, ...items.slice(1)]))}>
-            Select all
-          </Btn>
-          <Btn
-            size="sm"
-            variant="ghost"
-            onClick={() => setSel((s) => new Set([...s].filter((x) => !items.includes(x))))}
-          >
-            Deselect all
-          </Btn>
-        </div>
-      )}
-      <div className="space-y-1.5">
-        {items.map((i, n) => (
-          <div
-            key={i}
-            className="flex items-center gap-3 rounded-lg border border-border bg-window px-3 py-2 text-[12.5px]"
-          >
-            {mode === "CUSTOM" && (
-              <Check
-                on={sel.has(i)}
-                onChange={() =>
-                  setSel((s) => {
-                    return toggleInSet(s, i);
-                  })
-                }
-              />
-            )}
-            <span className="flex-1">{i}</span>
-            {n === 0 ? (
-              <Badge tone="success">OPTIMIZED</Badge>
-            ) : (
-              <Badge tone="warning">PENDING</Badge>
-            )}
-          </div>
-        ))}
-      </div>
-    </Card>
-  );
+  const counts = {
+    NORMAL: recommendedFor("NORMAL").size,
+    ADVANCED: recommendedFor("ADVANCED").size,
+    CUSTOM: customSel.size,
+  };
+  const edit = (next: Set<string>) => setDraft(clampSelection(next, INPUT_OPTIONS));
+  const groups: [string, string, InputOption[]][] = [
+    [
+      "NORMAL INPUT OPTIMIZATION",
+      "Standard pointer and keyboard presets.",
+      shown.filter((o) => o.tier === "normal"),
+    ],
+    ...(mode === "NORMAL"
+      ? []
+      : ([
+          [
+            "ADVANCED INPUT OPTIMIZATION",
+            "Driver queue, timer and USB settings — risk and compatibility shown per item.",
+            shown.filter((o) => o.tier === "advanced"),
+          ],
+        ] as [string, string, InputOption[]][])),
+  ];
   return (
     <div className="space-y-4">
       <PageHeader
@@ -139,13 +189,129 @@ export function InputOptimizerPage() {
           { label: "JITTER", value: "0.08 ms", sub: "Illustrative only" },
         ]}
       />
+      <div className="eo-mode-pick" role="group" aria-label="Optimization mode">
+        {INPUT_MODES.map((m) => {
+          const meta = MODE_META[m];
+          const Icon = meta.icon;
+          return (
+            <button
+              key={m}
+              type="button"
+              aria-pressed={mode === m}
+              onClick={() => setMode(m)}
+              className="eo-mode-card"
+              data-kind={m === "CUSTOM" ? "custom" : undefined}
+            >
+              <span className="eo-quick-icon" aria-hidden="true">
+                <Icon className="h-4 w-4" />
+              </span>
+              <span className="min-w-0 flex-1 text-left">
+                <span className="eo-mode-title">{meta.t}</span>
+                <span className="eo-mode-sub">{meta.s}</span>
+              </span>
+              <span className="eo-mode-count">
+                <b className="tabular-nums">{counts[m]}</b> selected
+              </span>
+            </button>
+          );
+        })}
+      </div>
       <Card>
-        <div className="flex flex-wrap items-center justify-between gap-3">
-          <SectionTitle
-            title="INPUT PROFILE"
-            sub="Normal presets or custom item selection · simulated."
-          />
-          <Chips options={["NORMAL", "CUSTOM"]} value={mode} onChange={setMode} />
+        <div className="eo-v4-head mb-3">
+          <div className="min-w-0">
+            <div className="flex items-center gap-1.5">
+              <Label as="h2" className="text-foreground">
+                {MODE_META[mode].t.toUpperCase()}
+              </Label>
+              <GuideTip
+                id={
+                  mode === "NORMAL"
+                    ? "input.normal"
+                    : mode === "ADVANCED"
+                      ? "input.advanced"
+                      : "input.custom"
+                }
+              />
+              {editable && draft && <Badge tone="warning">UNSAVED</Badge>}
+            </div>
+            <p className="mt-0.5 text-[11.5px] text-muted-foreground">
+              {editable
+                ? "Pick items yourself. Protected and incompatible items stay locked."
+                : "Every applicable, recommended item is included automatically. Switch to Custom to change items."}
+            </p>
+          </div>
+          {editable ? (
+            <div className="flex flex-wrap items-center gap-2">
+              <SelectionBar
+                count={customSel.size}
+                total={recommendedFor("CUSTOM").size}
+                onAll={() => edit(new Set([...customSel, ...recommendedFor("CUSTOM")]))}
+                onClear={() => edit(new Set())}
+                allLabel="Select all eligible"
+              />
+              <Btn
+                size="sm"
+                variant="ghost"
+                onClick={() => {
+                  setDraft(null);
+                  custom.reset();
+                }}
+                disabled={!draft && !custom.customized}
+              >
+                Reset to recommended
+              </Btn>
+              <Btn
+                size="sm"
+                variant="primary"
+                disabled={!draft}
+                onClick={() => {
+                  if (draft) custom.setSel(draft);
+                  setDraft(null);
+                  toast.success("Custom input profile saved", {
+                    description: `${draft?.size ?? 0} items · stored in this browser`,
+                  });
+                }}
+              >
+                Save custom profile
+              </Btn>
+            </div>
+          ) : (
+            <span className="text-[11px] font-semibold text-muted-foreground">
+              <b className="text-foreground tabular-nums">{picked.length}</b> of {shown.length}{" "}
+              included
+            </span>
+          )}
+        </div>
+        <div key={mode} className="eo-mode-body space-y-3">
+          {groups.map(([title, sub, list]) => (
+            <div key={title}>
+              <div className="mb-1.5 flex items-baseline gap-2">
+                <span className="eo-label text-[10px] text-cyan">{title}</span>
+                <span className="text-[11px] text-subtle">{sub}</span>
+              </div>
+              <div className="grid gap-1.5">
+                {list.map((o) => (
+                  <InputRow
+                    key={o.id}
+                    o={o}
+                    on={sel.has(o.id)}
+                    editable={editable}
+                    onToggle={() => edit(toggleInSet(customSel, o.id))}
+                  />
+                ))}
+              </div>
+            </div>
+          ))}
+        </div>
+        <div className="mt-3 flex flex-wrap items-center justify-between gap-2 border-t border-border pt-3">
+          <span className="text-[11px] text-muted-foreground">
+            {picked.filter((o) => o.restart).length
+              ? `${picked.filter((o) => o.restart).length} selected item(s) need a restart`
+              : "No restart needed for the selected items"}
+          </span>
+          <Btn variant="primary" disabled={!picked.length} onClick={() => setRun(true)}>
+            Run optimization ({picked.length})
+          </Btn>
         </div>
         <Details inline title="Aim-shake diagnosis" hint="Demo: no aim-shake">
           <p className="text-xs text-muted-foreground">
@@ -154,20 +320,6 @@ export function InputOptimizerPage() {
           </p>
         </Details>
       </Card>
-      <Cols cols="minmax(0, 1fr) minmax(0, 1fr)" gap={14} className="items-stretch">
-        <List
-          title="NORMAL INPUT OPTIMIZATION"
-          sub="Standard pointer and keyboard presets."
-          items={NORMAL_INPUT}
-          guide="input.normal"
-        />
-        <List
-          title="ADVANCED INPUT OPTIMIZATION"
-          sub="Queue, timer and USB configuration."
-          items={ADV_INPUT}
-          guide="input.advanced"
-        />
-      </Cols>
       <Card>
         <SectionTitle
           title="SIMULATED INPUT TEST"
@@ -226,20 +378,12 @@ export function InputOptimizerPage() {
           </Cols>
         </Details>
       </Card>
-      <div className="flex justify-end">
-        <Btn
-          variant="primary"
-          disabled={mode === "CUSTOM" && !sel.size}
-          onClick={() => setRun(true)}
-        >
-          Review input settings
-        </Btn>
-      </div>
       <RunModal
         open={run}
         onClose={() => setRun(false)}
-        profile="Input Optimizer"
-        count={mode === "NORMAL" ? NORMAL_INPUT.length : sel.size}
+        profile={`Input Optimizer · ${MODE_META[mode].t}`}
+        count={picked.length}
+        items={picked.map((o) => ({ id: o.id, title: o.name, risk: o.risk, restart: o.restart }))}
       />
       <Card>
         <Details inline title="Diagnostic telemetry" hint="Native app readback">
