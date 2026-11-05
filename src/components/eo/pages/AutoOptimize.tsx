@@ -593,24 +593,22 @@ export function AutoOptimizePage() {
         Bin, memory, service or Windows setting is read or changed. Lifecycle events are simulated.
       </SimNotice>
 
-      {/* Save bar */}
-      <div className="eo-save-bar" data-visible={dirty || undefined} aria-hidden={!dirty}>
-        <span className="text-[12px] font-semibold">
-          {intervalError ? (
-            <span className="text-destructive">{intervalError}</span>
-          ) : (
-            "You have unsaved changes"
-          )}
-        </span>
-        <div className="flex gap-2">
-          <Btn variant="ghost" disabled={!dirty} onClick={() => setDraft(s.config)}>
-            <RotateCcw aria-hidden="true" className="h-3.5 w-3.5" /> Discard
-          </Btn>
-          <Btn variant="primary" disabled={!dirty || !!intervalError} onClick={save}>
-            <Save aria-hidden="true" className="h-3.5 w-3.5" /> Save & apply
-          </Btn>
+      {/* Save bar — only rendered while there is something to save */}
+      {dirty && (
+        <div className="eo-save-bar eo-swap" role="region" aria-label="Unsaved changes">
+          <span className="text-[12px] font-semibold">
+            {intervalError ? <span className="text-destructive">{intervalError}</span> : "You have unsaved changes"}
+          </span>
+          <div className="flex gap-2">
+            <Btn variant="ghost" onClick={() => setDraft(s.config)}>
+              <RotateCcw aria-hidden="true" className="h-3.5 w-3.5" /> Discard
+            </Btn>
+            <Btn variant="primary" disabled={!!intervalError} onClick={save}>
+              <Save aria-hidden="true" className="h-3.5 w-3.5" /> Save & apply
+            </Btn>
+          </div>
         </div>
-      </div>
+      )}
     </div>
   );
 }

@@ -601,8 +601,7 @@ input[type="range"] { accent-color: var(--cyan); }
 .eo-history-row { display: grid; grid-template-columns: 64px minmax(140px, 200px) minmax(0, 1fr) 100px 28px; align-items: center; gap: 12px; padding: 7px 12px; border-top: 1px solid var(--border); font-size: 12px; }
 .eo-history-head { border-top: 0; background: var(--window); font-size: 9.5px; font-weight: 800; letter-spacing: .12em; color: var(--subtle); }
 .eo-history-items { display: grid; gap: 4px; padding: 0 12px 10px 88px; }
-.eo-save-bar { position: sticky; bottom: 12px; z-index: 20; display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-top: 12px; padding: 10px 14px; border-radius: 12px; border: 1px solid var(--border-strong); background: var(--glass-float); backdrop-filter: var(--glass-blur-float); box-shadow: var(--overlay-shadow); opacity: 0; pointer-events: none; transform: translateY(8px); transition: opacity var(--duration-control) var(--ease-out), transform var(--duration-control) var(--ease-out); }
-.eo-save-bar[data-visible] { opacity: 1; pointer-events: auto; transform: none; }
+.eo-save-bar { position: sticky; bottom: 12px; z-index: 20; display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-top: 12px; padding: 10px 14px; border-radius: 12px; border: 1px solid var(--border-strong); background: var(--glass-float); backdrop-filter: var(--glass-blur-float); box-shadow: var(--overlay-shadow); }
 .eo-sysinfo { display: flex; align-items: center; gap: 16px; }
 .eo-sysinfo-list { display: grid; flex: 1; min-width: 0; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 16px; }
 .eo-sysinfo-list > div { min-width: 0; border-left: 1px solid var(--border); padding-left: 12px; }
