@@ -27,7 +27,7 @@ import { resetRestoreSim, setDevice, useRestore } from "../restoreStore";
 import type { RpOutcome } from "@/lib/eo/restorePoint";
 import { useAppearance } from "../Appearance";
 import { NumberField, RangeSlider, Segmented } from "../controls";
-import { RotateCcw, ShieldCheck, Target } from "lucide-react";
+import { HardDrive, RotateCcw, ShieldCheck, Target } from "lucide-react";
 import { CATALOG, HW, PROFILES } from "@/lib/eo/data";
 import { cn } from "@/lib/utils";
 
