@@ -136,13 +136,20 @@ export function DashboardPage() {
 
 /* ── 4. Important system information — one compact strip, sample values ── */
 const SystemInfo = memo(function SystemInfo() {
+  const { points } = useRestore();
+  const last = points[0];
+  const rows = SYS_INFO.map(([k, v]): [string, string] =>
+    k === "Restore point" && last
+      ? [k, `${new Date(last.at).toLocaleDateString()} (simulated)`]
+      : [k, v],
+  );
   return (
     <section aria-labelledby="eo-sysinfo-title" className="eo-card eo-sysinfo px-4 py-2.5">
       <h2 id="eo-sysinfo-title" className="sr-only">
         System information
       </h2>
       <dl className="eo-sysinfo-list">
-        {SYS_INFO.map(([k, v]) => (
+        {rows.map(([k, v]) => (
           <div key={k}>
             <dt>{k}</dt>
             <dd>{v}</dd>
