@@ -893,8 +893,8 @@ button.eo-check-row:active { transform: translateY(0); box-shadow: var(--shadow-
 .eo-quick-step[data-state="Completed"] .eo-quick-step-state { color: var(--success); }
 .eo-quick-step[data-state="Skipped"] .eo-quick-step-dot { background: var(--warning); }
 .eo-quick-step[data-state="Skipped"] .eo-quick-step-state { color: var(--warning); }
-.eo-quick-step[data-state="Failed"] .eo-quick-step-dot { background: var(--danger); }
-.eo-quick-step[data-state="Failed"] .eo-quick-step-state { color: var(--danger); }
+.eo-quick-step[data-state="Failed"] .eo-quick-step-dot { background: var(--destructive); }
+.eo-quick-step[data-state="Failed"] .eo-quick-step-state { color: var(--destructive); }
 
 @container (max-width: 1050px) {
   .eo-page-content .eo-module-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); }
