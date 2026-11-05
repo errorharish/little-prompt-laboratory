@@ -36,7 +36,6 @@ import {
   StatTiles,
   Toggle,
   Details,
-  DemoBadge,
   KV,
   simulate,
   useSimRun,
