@@ -5,10 +5,12 @@ import { MISSING_REFERENCES, PAGES, hrefFor } from "@/lib/eo/registry";
 import {
   COMPONENT_MAP,
   DEPTH,
+  LAYOUT_RULES,
   MODAL_SPEC,
   MOTION,
   NAVIGATION,
   REDUCED_MOTION,
+  SLIDER_SPEC,
   SPACING,
   STATES,
   TOKENS,
@@ -50,6 +52,7 @@ const SECTIONS = [
   ["dialogs", "Dialogs"],
   ["reduced", "Reduced motion"],
   ["components", "Components"],
+  ["layout", "Layout & sliders"],
   ["patterns", "Patterns"],
   ["missing", "Missing references"],
 ] as const;
@@ -335,6 +338,27 @@ function Blueprint() {
           ])}
         />
       </Section>
+
+      <div className="eo-cols grid grid-cols-2 gap-4">
+        <Section id="layout">
+          <SectionTitle id="layout-title" title="PREMIUM LAYOUT RULES" sub="Dashboard, System Telemetry, AI Optimization and V4 workspaces." />
+          <ul className="space-y-1.5 text-[12.5px] text-muted-foreground">
+            {LAYOUT_RULES.map((r) => (
+              <li key={r}>• {r}</li>
+            ))}
+          </ul>
+        </Section>
+        <section aria-labelledby="slider-title" className="scroll-mt-4">
+          <Card>
+            <SectionTitle id="slider-title" title="SLIDER BEHAVIOUR" sub="RangeSlider + NumberField (RAM Limiter, Settings)." />
+            <ul className="space-y-1.5 text-[12.5px] text-muted-foreground">
+              {SLIDER_SPEC.map((r) => (
+                <li key={r}>• {r}</li>
+              ))}
+            </ul>
+          </Card>
+        </section>
+      </div>
 
       <Section id="patterns">
         <SectionTitle id="patterns-title" title="REUSABLE PATTERNS" />
