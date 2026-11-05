@@ -183,6 +183,7 @@ export function NumberField({
   // so it can never lag behind the slider.
   const [draft, setDraft] = useState<string | null>(null);
   const cancelled = useRef(false);
+  const atFocus = useRef(value);
   const commit = (text: string | null) => {
     if (text === null) return;
     const n = parseFloat(text.replace(",", "."));
@@ -197,6 +198,7 @@ export function NumberField({
         aria-label={label}
         value={draft ?? fmt(value)}
         onFocus={(e) => {
+          atFocus.current = value;
           setDraft(fmt(value));
           e.currentTarget.select();
         }}
@@ -217,6 +219,7 @@ export function NumberField({
           }
           if (e.key === "Escape") {
             cancelled.current = true;
+            onChange(atFocus.current);
             setDraft(null);
             e.currentTarget.blur();
           }
