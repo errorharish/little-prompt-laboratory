@@ -991,3 +991,4 @@ button.eo-check-row:active { transform: translateY(0); box-shadow: var(--shadow-
 .eo-guide-step-title { font-size: 11px; font-weight: 800; letter-spacing: .08em; text-transform: uppercase; color: var(--foreground); }
 .eo-guide-steps p { margin-top: 2px; font-size: 12px; line-height: 1.5; color: var(--muted-foreground); }
 .eo-guide-note { margin-top: 14px; border-top: 1px solid var(--border); padding-top: 10px; font-size: 11px; color: var(--success); }
+.eo-guide-num-sm { height: 22px; width: 22px; flex-shrink: 0; font-size: 10.5px; }

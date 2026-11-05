@@ -777,7 +777,7 @@ export function EmulatorOptimizationPage() {
                 )}
               >
                 <span className="flex items-center gap-2.5">
-                  <span aria-hidden="true" className="eo-guide-num h-6 w-6 shrink-0 text-[11px]">
+                  <span aria-hidden="true" className="eo-guide-num eo-guide-num-sm">
                     {i + 1}
                   </span>
                   <span className="min-w-0">
