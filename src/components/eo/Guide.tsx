@@ -101,6 +101,7 @@ export function GuideTip({
   const facts: [string, string][] = [
     ["When to use", g.when],
     ["Expected benefit", g.benefit],
+    ...(g.compat ? ([["Compatibility", g.compat]] as [string, string][]) : []),
     ...(g.restart ? ([["Restart", g.restart]] as [string, string][]) : []),
     ...(g.reversible ? ([["Reversible", g.reversible]] as [string, string][]) : []),
   ];
