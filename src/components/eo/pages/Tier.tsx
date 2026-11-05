@@ -409,7 +409,7 @@ function TierView({ slug, t }: { slug: string; t: TierInfo }) {
       </Card>
       <SimNotice />
 
-      <div className="sticky bottom-0 -mx-6 flex items-center justify-between border-t border-border bg-window/95 px-6 py-3 backdrop-blur">
+      <div className="sticky bottom-0 flex items-center justify-between border-t border-border">
         <span className="text-xs text-muted-foreground">
           Simulated profile run · Recovery support varies by operation.{" "}
           <b className="text-foreground">{sel.size}</b> selected

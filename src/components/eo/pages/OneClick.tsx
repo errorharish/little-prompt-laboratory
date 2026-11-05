@@ -327,7 +327,7 @@ export function OneClickPage() {
                 id="eo-oneclick-filter"
                 role="group"
                 aria-label="Recommendation filters"
-                className="eo-card eo-enter absolute top-9 right-0 z-20 w-64 space-y-3 p-3"
+                className="eo-pop absolute top-9 right-0 z-20 w-64 space-y-3 rounded-lg border p-3"
               >
                 {Object.entries(FILTERS).map(([h, opts]) => (
                   <div key={h}>
@@ -521,7 +521,7 @@ export function OneClickPage() {
       <SimNotice />
 
       {/* Sticky action bar: cols=*,Auto */}
-      <div className="eo-sticky sticky bottom-0 -mx-6 flex items-center justify-between border-t border-border bg-window/95 px-6 py-3 backdrop-blur">
+      <div className="eo-sticky sticky bottom-0 flex items-center justify-between border-t border-border">
         <span className="text-xs text-muted-foreground" aria-live="polite">
           <b className="text-foreground">{sel.size}</b> selected
           {summary.restart ? ` · ${summary.restart} needs a restart` : ""} · Review risks and

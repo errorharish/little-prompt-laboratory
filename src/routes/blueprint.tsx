@@ -148,17 +148,17 @@ function Blueprint() {
       <Section id="shell">
         <SectionTitle id="shell-title" title="SHELL" />
         <div className="grid grid-cols-2 gap-x-8 gap-y-1 text-[12.5px] text-muted-foreground">
-          <div>Window base 1280 × 820 · custom title bar 56px · footer 36px</div>
+          <div>Window base 1280 × 820 · custom title bar 48px · footer 32px</div>
           <div>
             Title bar: brand tile (cyan→blue gradient) · ERROR OPTIMIZER · V3/V4 pill · subtitle ·
             BLUEPRINT · DEMO DATA · status pill
           </div>
           <div>
-            V3: GlassSidebarDock 84px, items 68px (16px icon + 9.2px label), 3px cyan active bar
+            V3: GlassSidebarDock 84px (60px collapsed), items 68px (16px icon + 9.2px label), 3px cyan active bar
             with glow
           </div>
           <div>
-            V4: dock hidden, 48px top tab strip with 2 tabs + “INDEPENDENT FROM V3 1-CLICK” badge
+            V4: dock hidden, 44px top tab strip with 2 tabs + “INDEPENDENT FROM V3 1-CLICK” badge
           </div>
           <div>
             Content: PageTransitionHost (see Motion), padding 24px, max width 1440px,
