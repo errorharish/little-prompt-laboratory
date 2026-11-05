@@ -1,6 +1,8 @@
 import { createFileRoute, notFound } from "@tanstack/react-router";
 import { pageBySlug } from "@/lib/eo/registry";
 import { PAGE_COMPONENTS } from "@/components/eo/pageMap";
+import { PageGuideContext } from "@/components/eo/Guide";
+import { pageGuide } from "@/lib/eo/guides";
 
 export const Route = createFileRoute("/$page")({
   loader: ({ params }) => {
@@ -31,5 +33,7 @@ export const Route = createFileRoute("/$page")({
 function PageRoute() {
   const { page } = Route.useParams();
   const C = PAGE_COMPONENTS[page];
-  return <>{C ? C() : null}</>;
+  return (
+    <PageGuideContext.Provider value={pageGuide(page)}>{C ? C() : null}</PageGuideContext.Provider>
+  );
 }

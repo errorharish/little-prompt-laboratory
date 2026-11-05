@@ -21,6 +21,7 @@ import {
   Toggle,
   simulate,
 } from "../kit";
+import { GuideButton, GuideSteps, GuideTip } from "../Guide";
 import { useAppearance } from "../Appearance";
 import { NumberField, RangeSlider, Segmented } from "../controls";
 import { RotateCcw, ShieldCheck, Target } from "lucide-react";
@@ -335,7 +336,10 @@ export function AiOptimizationPage() {
             </Card>
             <Card>
               <div className="mb-3 flex items-center gap-2">
-                <Label className="text-foreground">WINDOWS POWER PLANS</Label>
+                <span className="flex items-center gap-1.5">
+                  <Label className="text-foreground">WINDOWS POWER PLANS</Label>
+                  <GuideTip id="ai.power" />
+                </span>
                 <Badge tone="warning">SAMPLE PLANS</Badge>
               </div>
               <div className="space-y-1.5">
@@ -440,6 +444,7 @@ function RamLimiterPanel({
           <div>
             <div className="flex flex-wrap items-center gap-2">
               <h2 className="text-[15px] font-black uppercase">RAM Limiter</h2>
+              <GuideTip id="ai.ram-limiter" />
               <Badge tone="warning">SAMPLE TARGET</Badge>
             </div>
             <p className="mt-0.5 max-w-xl text-[11.5px] text-muted-foreground">
@@ -1009,7 +1014,7 @@ export function SettingsPage() {
         </Row>
       </Card>
       <Card>
-        <SectionTitle title="SAFETY GUARDRAILS & TRANSACTIONAL RECOVERY" />
+        <SectionTitle title="SAFETY GUARDRAILS & TRANSACTIONAL RECOVERY" guide="settings.safety" />
         <Row t="Confirm Medium Risk" s="Prompt before moderate system changes">
           <Tog />
         </Row>
@@ -1235,9 +1240,7 @@ export function PerformanceTuningPage() {
             <Btn variant="ghost" onClick={() => simulate("Revert to stock")}>
               Revert to stock
             </Btn>
-            <Btn variant="ghost" onClick={() => setGuide(true)}>
-              Guide
-            </Btn>
+            <GuideButton onClick={() => setGuide(true)} />
             <Btn onClick={() => simulate("Rescan")}>Rescan</Btn>
           </>
         }
@@ -1320,21 +1323,19 @@ export function PerformanceTuningPage() {
           </Btn>
         }
       >
-        {[
-          ["1. CHECK", "Checks whether your CPU or GPU supports safe tuning controls."],
-          ["2. TEST", "Measures your current baseline performance and temperature."],
-          ["3. TUNE", "Applies one controlled change."],
-          ["4. VERIFY", "Checks stability, temperature and real performance."],
-          [
-            "5. DECIDE",
-            "Keeps the change only if it improves verified stable performance. Otherwise it is reverted.",
-          ],
-        ].map(([a, b]) => (
-          <div key={a} className="mb-2 rounded-lg border border-border bg-window p-3">
-            <div className="eo-label text-foreground">{a}</div>
-            <p className="text-xs text-muted-foreground">{b}</p>
-          </div>
-        ))}
+        <GuideSteps
+          steps={[
+            ["CHECK", "Checks whether your CPU or GPU supports safe tuning controls."],
+            ["TEST", "Measures your current baseline performance and temperature."],
+            ["TUNE", "Applies one controlled change."],
+            ["VERIFY", "Checks stability, temperature and real performance."],
+            [
+              "DECIDE",
+              "Keeps the change only if it improves stable performance. Otherwise it is reverted.",
+            ],
+          ]}
+          note="In this prototype nothing is measured or tuned."
+        />
       </Modal>
     </div>
   );

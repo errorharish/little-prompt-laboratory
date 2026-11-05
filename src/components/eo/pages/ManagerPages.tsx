@@ -533,6 +533,7 @@ export function NetworkPage() {
         </div>
         <SectionTitle
           title="PERSISTENT NETWORK TARGETS"
+          guide="network.targets"
           sub="Simulated backup, apply, and readback; no settings change."
           right={
             <Btn variant="primary" onClick={() => simulate("Batch network optimization")}>
@@ -556,7 +557,7 @@ export function NetworkPage() {
         </div>
       </Card>
       <Card>
-        <SectionTitle title="ONE-TIME NETWORK ACTIONS & MAINTENANCE" />
+        <SectionTitle title="ONE-TIME NETWORK ACTIONS & MAINTENANCE" guide="network.actions" />
         <div
           className="grid items-center gap-4 rounded-lg border border-border bg-window p-3"
           style={{ gridTemplateColumns: "auto 1fr auto auto" }}
@@ -847,6 +848,7 @@ export function StoragePage() {
       <Card>
         <SectionTitle
           title="DEEP CLEAN"
+          guide="storage.clean"
           sub="All applicable cleanup optimizations in this sample."
           right={
             deep.running ? (
@@ -890,6 +892,7 @@ export function StoragePage() {
         <Card>
           <SectionTitle
             title="WINDOWS RECYCLE BIN"
+            guide="storage.recycle"
             sub="Safely empty the Recycle Bin to immediately free up space."
           />
           <div className="grid grid-cols-2 gap-2">
@@ -903,6 +906,7 @@ export function StoragePage() {
         <Card>
           <SectionTitle
             title="FULL FILE EXPLORER"
+            guide="storage.explorer"
             sub="Inspect sample files and simulate storage management."
           />
           <Btn variant="primary" onClick={() => setExplorer(true)}>

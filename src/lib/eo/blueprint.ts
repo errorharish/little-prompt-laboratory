@@ -400,6 +400,21 @@ export const COMPONENT_MAP: { web: string; wpf: string; note: string }[] = [
     note: "Two tabs; sub-pages (Module Hub, Deployer, Low End Steam) keep their parent tab active and show a breadcrumb.",
   },
   {
+    web: "GuideTip (contextual guide popover)",
+    wpf: "Help glyph Button + Popup (StaysOpen=False) bound to a Guide resource",
+    note: "One registry of guides. What / why / when / benefit / restart / reversible, risk line, 'How it works' expander. Esc and outside click close; one open at a time.",
+  },
+  {
+    web: "GuideButton + GuideSteps (full guide dialog)",
+    wpf: "Ghost Button opening the overlay dialog with a numbered ItemsControl",
+    note: "Step-by-step guides on 1-Click, Performance Tuning and the V4 pages share one numbered style.",
+  },
+  {
+    web: "Hidden scrollbars + edge fade",
+    wpf: "ScrollViewer with hidden ScrollBar template and OpacityMask edge fade",
+    note: "Scrollbars are never drawn; wheel, touchpad and keyboard scrolling stay on. Edges fade only where more content exists.",
+  },
+  {
     web: "Suite switcher (V3 / V4)",
     wpf: "Two-segment ToggleButton group with animated thumb (TranslateTransform)",
     note: "Fixed 44px segments so switching never shifts layout.",

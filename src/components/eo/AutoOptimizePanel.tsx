@@ -5,6 +5,7 @@ import { Link } from "@tanstack/react-router";
 import { CalendarClock, Pause, Play, Settings2, Square, Zap } from "lucide-react";
 import type { CSSProperties } from "react";
 import { Badge, Btn, Card, Label } from "./kit";
+import { GuideTip } from "./Guide";
 import { autoOptimize, useAutoOptimize, useNow, type AutoState } from "./autoOptimizeStore";
 import { MAINT_TASKS, formatCountdown, formatInterval } from "@/lib/eo/autoOptimize";
 
@@ -142,6 +143,7 @@ export function AutoOptimizePanel() {
           <div>
             <div className="flex flex-wrap items-center gap-2">
               <h2 className="text-[15px] font-black uppercase">Auto Optimize</h2>
+              <GuideTip id="dashboard.auto" />
               <StatusPill status={status} />
               <Badge tone="warning">SIMULATED</Badge>
             </div>

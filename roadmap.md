@@ -44,3 +44,9 @@
 - [x] Module Hub: Back to Emulator Optimization, state preserved.
 - [x] Dashboard Quick Actions run in place (only One-Click navigates), no duplicate runs.
 - [x] Verify all 34 destinations at 1280×820 / 1024×768, tests.
+
+# Contextual guides & hidden scrollbars (prompt-10)
+- [x] One guide registry + shared help popover; every optimization page has a header guide, key sections have their own.
+- [x] Existing Guide dialogs (1-Click, Performance Tuning, V4 pages, Module Hub, Low End Steam) unified to one style.
+- [x] Scrollbars hidden globally; scrolling kept; edge fades show more content.
+- [x] Verify all 34 destinations at 1280×820 / 1024×768, tests.

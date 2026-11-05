@@ -242,6 +242,7 @@ export function AutoOptimizePage() {
         <Card>
           <SectionTitle
             title="MAINTENANCE TASKS"
+            guide="auto.tasks"
             badge={
               <Badge tone="cyan">
                 {draft.tasks.length}/{MAINT_TASKS.length}
@@ -328,7 +329,7 @@ export function AutoOptimizePage() {
         {/* Schedule · startup · advanced · save */}
         <div className="eo-ao-side">
           <Card>
-            <SectionTitle title="SCHEDULE" />
+            <SectionTitle title="SCHEDULE" guide="auto.schedule" />
             <Segmented
               label="Schedule interval"
               fill

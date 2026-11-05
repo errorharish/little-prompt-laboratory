@@ -22,6 +22,7 @@ import {
   simulate,
   useSimRun,
 } from "../kit";
+import type { GuideId } from "@/lib/eo/guides";
 import { RunModal } from "../RunModal";
 import { TelemetryConsole } from "../Telemetry";
 import { toggleInSet } from "@/lib/eo/selection";
@@ -54,9 +55,24 @@ export function InputOptimizerPage() {
   const test = useSimRun(2500);
   const [run, setRun] = useState(false);
   const [tested, setTested] = useState(false);
-  const List = ({ title, sub, items }: { title: string; sub: string; items: string[] }) => (
+  const List = ({
+    title,
+    sub,
+    items,
+    guide,
+  }: {
+    title: string;
+    sub: string;
+    items: string[];
+    guide: GuideId;
+  }) => (
     <Card>
-      <SectionTitle title={title} sub={sub} right={<Badge>{items.length} sample settings</Badge>} />
+      <SectionTitle
+        title={title}
+        sub={sub}
+        guide={guide}
+        right={<Badge>{items.length} sample settings</Badge>}
+      />
       {mode === "CUSTOM" && (
         <div className="mb-2 flex gap-1.5">
           <Btn size="sm" onClick={() => setSel((s) => new Set([...s, ...items.slice(1)]))}>
@@ -143,16 +159,19 @@ export function InputOptimizerPage() {
           title="NORMAL INPUT OPTIMIZATION"
           sub="Standard pointer and keyboard presets."
           items={NORMAL_INPUT}
+          guide="input.normal"
         />
         <List
           title="ADVANCED INPUT OPTIMIZATION"
           sub="Queue, timer and USB configuration."
           items={ADV_INPUT}
+          guide="input.advanced"
         />
       </Cols>
       <Card>
         <SectionTitle
           title="SIMULATED INPUT TEST"
+          guide="input.test"
           sub="Sample input-test flow — no physical input measurements are captured."
           right={["5 SEC TEST", "10 SEC TEST", "30 SEC TEST"].map((x) => (
             <Btn
@@ -452,6 +471,7 @@ export function RegistryTweakPage() {
           <Card>
             <SectionTitle
               title="RECOMMENDED OPTIMIZATIONS"
+              guide="registry.recommended"
               right={
                 <Btn variant="primary" onClick={() => setRun(true)}>
                   Apply recommended
@@ -701,7 +721,7 @@ export function RegistryValuesRamPage() {
       </Card>
       <Cols cols="minmax(0, 1fr) minmax(0, 1fr)" gap={14} className="items-stretch">
         <Card>
-          <SectionTitle title="CHOOSE YOUR RAM SIZE" />
+          <SectionTitle title="CHOOSE YOUR RAM SIZE" guide="ram.size" />
           <p className="mt-1 mb-3 text-xs text-muted-foreground">
             Select the physical RAM installed in your system.
           </p>
@@ -886,6 +906,7 @@ export function GpuRegistryValuesPage() {
       </Card>
       <SectionTitle
         title="HARDWARE-AWARE OPTIMIZATION GROUPS"
+        guide="gpu.groups"
         right={
           <>
             <Btn size="sm" onClick={gpu.selectAll}>

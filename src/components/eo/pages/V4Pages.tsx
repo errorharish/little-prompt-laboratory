@@ -40,6 +40,8 @@ import {
   simulate,
   useSimRun,
 } from "../kit";
+import { GuideButton, GuideSteps, GuideTip } from "../Guide";
+import type { GuideId } from "@/lib/eo/guides";
 import { cn } from "@/lib/utils";
 import { HW } from "@/lib/eo/data";
 import { Segmented } from "../controls";
@@ -123,9 +125,7 @@ export function V4MaxPerformancePage() {
         sub="Host latency reduction for gaming and focused work — simulated."
         actions={
           <>
-            <Btn variant="ghost" onClick={() => setGuide(true)}>
-              Guide
-            </Btn>
+            <GuideButton onClick={() => setGuide(true)} />
             <Btn
               variant="ghost"
               disabled={!last || r.running}
@@ -163,7 +163,10 @@ export function V4MaxPerformancePage() {
             <div className="eo-v4-head">
               <div className="min-w-0">
                 <Label className="text-cyan">OPTIMIZATION SCOPE</Label>
-                <h2 className="mt-0.5 text-[15px] font-bold">Host latency workflow</h2>
+                <h2 className="mt-0.5 flex items-center gap-1.5 text-[15px] font-bold">
+                  Host latency workflow
+                  <GuideTip id="v4.scope" />
+                </h2>
               </div>
               <SelectionBar
                 count={scope.sel.size}
@@ -347,29 +350,26 @@ export function V4MaxPerformancePage() {
           </Btn>
         }
       >
-        {[
-          [
-            "WHAT MAXIMUM PERFORMANCE OPTIMIZES",
-            "Reduces background CPU contention, releases idle process working sets, and balances priorities.",
-          ],
-          [
-            "WHAT REMAINS SAFEGUARDED (NEVER TOUCHED)",
-            "Core Windows OS binaries, display drivers, audio engines, network controllers and your active apps.",
-          ],
-          [
-            "REVERSIBILITY VIA LOCAL ROLLBACK JOURNAL",
-            "Every applied modification is recorded in a transactional journal before execution.",
-          ],
-          [
-            "BUILT FOR GAMING, EDITING, STREAMING & DAILY USE",
-            "Designed for workload-specific review; no compatibility or performance tests run in this prototype.",
-          ],
-        ].map(([a, b]) => (
-          <div key={a} className="mb-3">
-            <Label className="text-cyan">{a}</Label>
-            <p className="mt-1 text-xs text-muted-foreground">{b}</p>
-          </div>
-        ))}
+        <GuideSteps
+          steps={[
+            [
+              "What Maximum Performance optimizes",
+              "Reduces background CPU contention, releases idle process working sets, and balances priorities.",
+            ],
+            [
+              "What remains safeguarded",
+              "Core Windows OS binaries, display drivers, audio engines, network controllers and your active apps are never touched.",
+            ],
+            [
+              "Reversibility via local rollback journal",
+              "Every applied modification is recorded in a transactional journal before execution.",
+            ],
+            [
+              "Built for gaming, editing, streaming & daily use",
+              "Designed for workload-specific review; no compatibility or performance tests run in this prototype.",
+            ],
+          ]}
+        />
       </Modal>
     </div>
   );
@@ -419,6 +419,11 @@ const ENGINES = [
     needsAdb: true,
   },
 ];
+const MODULE_GUIDE: Record<string, GuideId> = {
+  "EMULATOR OPTIMIZATION": "emulator-optimization",
+  "DEEP DEBLOATER": "hub.debloater",
+  "LOW-END EXTREME": "hub.lowend",
+};
 const GUIDE_SECTIONS = [
   ["1. Getting Started", "Architecture & sequence"],
   ["2. Maximum Performance", "Host Windows tuning suite"],
@@ -512,9 +517,7 @@ export function EmulatorOptimizationPage() {
         sub="MSI App Player 5 scheduling, guest debloat and graphics tuning — simulated."
         actions={
           <>
-            <Btn variant="ghost" onClick={() => setGuide(true)}>
-              Guide
-            </Btn>
+            <GuideButton onClick={() => setGuide(true)} />
             <Btn
               variant="ghost"
               disabled={!applied.size || running !== null}
@@ -676,7 +679,10 @@ export function EmulatorOptimizationPage() {
               ))}
             </div>
             <div className="eo-rail-sep" />
-            <Label className="mb-1.5 text-[10px]">RECOMMENDED SEQUENCE</Label>
+            <span className="mb-1.5 flex items-center gap-1.5">
+              <Label className="text-[10px]">RECOMMENDED SEQUENCE</Label>
+              <GuideTip id="emu.engines" />
+            </span>
             <ol className="eo-v4-seq space-y-1.5 text-[11.5px]">
               {sequence.map((s, i) => (
                 <li key={s.t} data-done={s.done ? "true" : undefined}>
@@ -774,20 +780,38 @@ export function EmulatorOptimizationPage() {
             {GUIDE_SECTIONS.map(([t, s], i) => (
               <button
                 key={t}
+                type="button"
+                aria-current={gs === i ? "step" : undefined}
                 onClick={() => setGs(i)}
                 className={cn(
                   "block w-full rounded-lg border-l-[3px] px-3 py-2 text-left",
                   gs === i ? "border-cyan bg-cyan/10" : "border-transparent hover:bg-elevated",
                 )}
               >
-                <div className="text-[12.5px] font-semibold">{t}</div>
-                <div className="text-[10.5px] text-subtle">{s}</div>
+                <span className="flex items-center gap-2.5">
+                  <span aria-hidden="true" className="eo-guide-num eo-guide-num-sm">
+                    {i + 1}
+                  </span>
+                  <span className="min-w-0">
+                    <span className="eo-guide-step-title block">
+                      {(t ?? "").replace(/^\d+\.\s*/, "")}
+                    </span>
+                    <span className="block text-[10.5px] text-subtle">{s}</span>
+                  </span>
+                </span>
               </button>
             ))}
           </div>
           <div className="rounded-xl border border-border bg-window p-5">
-            <div className="text-lg font-bold">{GUIDE_SECTIONS[gs]?.[0]}</div>
-            <p className="mt-2 text-sm text-muted-foreground">
+            <div className="flex items-center gap-3">
+              <span aria-hidden="true" className="eo-guide-num">
+                {gs + 1}
+              </span>
+              <div className="text-[15px] font-bold uppercase">
+                {GUIDE_SECTIONS[gs]?.[0]?.replace(/^\d+\.\s*/, "")}
+              </div>
+            </div>
+            <p className="mt-3 text-[12.5px] leading-relaxed text-muted-foreground">
               {
                 [
                   "Recommended sequence: 1) Host Maximum Performance, 2) Launch MSI App Player 5 & verify ADB, 3) Engine 1, 4) Engine 2, 5) Engine 3.",
@@ -934,9 +958,7 @@ export function EmulatorModulesPage() {
         }
         actions={
           <>
-            <Btn variant="ghost" onClick={() => setGuide(true)}>
-              Guide
-            </Btn>
+            <GuideButton onClick={() => setGuide(true)} />
             {active && (
               <Btn size="sm" onClick={() => simulate("Rescan")}>
                 Rescan
@@ -972,7 +994,10 @@ export function EmulatorModulesPage() {
                 </Label>
                 <Badge tone="success">{m.tag}</Badge>
               </div>
-              <h2 className="mt-2 text-[15px] font-bold">{m.n}</h2>
+              <h2 className="mt-2 flex items-center gap-1.5 text-[15px] font-bold">
+                {m.n}
+                <GuideTip id={MODULE_GUIDE[m.k] ?? "emulator-modules"} />
+              </h2>
               <p className="text-[12px] text-muted-foreground">{m.sub}</p>
               <div className="mt-2 text-[11px] text-subtle">{m.suit}</div>
               <ul className="mt-3 flex-1 space-y-1 text-[11.5px] text-muted-foreground">
@@ -1083,7 +1108,10 @@ export function EmulatorModulesPage() {
         <Card>
           <div className="eo-v4-head">
             <div className="min-w-0">
-              <Label className="text-cyan">EMULATOR COMPONENTS</Label>
+              <span className="flex items-center gap-1.5">
+                <Label className="text-cyan">EMULATOR COMPONENTS</Label>
+                <GuideTip id="hub.debloater" />
+              </span>
               <p className="mt-0.5 text-[11px] text-success">
                 Read-only protected configs · reversible package disabling
               </p>
@@ -1141,7 +1169,10 @@ export function EmulatorModulesPage() {
         <Card>
           <div className="eo-v4-head">
             <div className="min-w-0">
-              <Label className="text-cyan">LOW-END EXTREME TARGETING</Label>
+              <span className="flex items-center gap-1.5">
+                <Label className="text-cyan">LOW-END EXTREME TARGETING</Label>
+                <GuideTip id="hub.lowend" />
+              </span>
               <p className="mt-0.5 text-[11px] text-muted-foreground">
                 Dual/quad-core CPUs, Intel HD/UHD graphics, 4–8 GB RAM · unprivileged
               </p>
@@ -1331,23 +1362,20 @@ export function EmulatorModulesPage() {
           </Btn>
         }
       >
-        {[
-          [
-            "1. THREE DEDICATED MODULES",
-            "Emulator Optimization for balanced daily tuning, Deep Debloater for cleanup, Low-End Extreme for weak hardware.",
-          ],
-          [
-            "2. EVERYTHING ELIGIBLE IS PRE-SELECTED",
-            "Protected packages and advanced risky tweaks are never selected for you. Each profile keeps its own selection.",
-          ],
-          ["3. REVIEW BEFORE APPLYING", "Review & apply lists exactly the selected changes."],
-          ["4. REVERSIBILITY & ROLLBACK", "Every applied change can be rolled back at any time."],
-        ].map(([a, b]) => (
-          <div key={a} className="mb-3">
-            <Label className="text-cyan">{a}</Label>
-            <p className="text-xs text-muted-foreground">{b}</p>
-          </div>
-        ))}
+        <GuideSteps
+          steps={[
+            [
+              "Three dedicated modules",
+              "Emulator Optimization for balanced daily tuning, Deep Debloater for cleanup, Low-End Extreme for weak hardware.",
+            ],
+            [
+              "Everything eligible is pre-selected",
+              "Protected packages and advanced risky tweaks are never selected for you. Each profile keeps its own selection.",
+            ],
+            ["Review before applying", "Review & apply lists exactly the selected changes."],
+            ["Reversibility & rollback", "Every applied change can be rolled back at any time."],
+          ]}
+        />
       </Modal>
     </div>
   );
@@ -1633,9 +1661,7 @@ export function LowEndSteamPage() {
         sub="Simulated emulator tuning for dual-core, quad-core and integrated graphics."
         actions={
           <>
-            <Btn variant="ghost" onClick={() => setGuide(true)}>
-              Guide
-            </Btn>
+            <GuideButton onClick={() => setGuide(true)} />
             <Btn onClick={() => simulate("Scan candidates")}>Scan candidates</Btn>
           </>
         }
@@ -1703,12 +1729,27 @@ export function LowEndSteamPage() {
         onClose={() => setGuide(false)}
         title="Low End Steam guide"
         sub="Simulated low-spec emulator review."
-        footer={<Btn onClick={() => setGuide(false)}>Close</Btn>}
+        footer={
+          <Btn variant="primary" onClick={() => setGuide(false)}>
+            Got it
+          </Btn>
+        }
       >
-        <p className="text-sm text-muted-foreground">
-          Review compositor timing and guest memory options. The original operations require an
-          emulator connection; this prototype does not connect or measure performance.
-        </p>
+        <GuideSteps
+          steps={[
+            ["Connect", "The original operations need MSI App Player running with ADB turned on."],
+            [
+              "Review",
+              "Check the compositor (SurfaceFlinger) timing and guest memory (Dalvik) options for your hardware.",
+            ],
+            [
+              "Optimize",
+              "Apply the eligible items; advanced risky tweaks stay off unless you allow them.",
+            ],
+            ["Restore", "Restore returns every item to its previous value."],
+          ]}
+          note="This prototype does not connect to an emulator or measure performance."
+        />
       </Modal>
     </div>
   );

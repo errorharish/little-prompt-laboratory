@@ -177,20 +177,19 @@
     font-family: var(--font-sans);
     -webkit-font-smoothing: antialiased;
   }
-  ::-webkit-scrollbar {
-    width: 8px;
-    height: 8px;
+  /* Hidden scrollbars, everywhere (Firefox + Chromium/WebKit). Scrolling itself is untouched:
+   * wheel, touchpad, keyboard and scroll-into-view all keep working. `.eo-scroll-fade` adds an
+   * edge fade so users can still tell more content is available. */
+  * {
+    scrollbar-width: none;
+    -ms-overflow-style: none;
   }
-  ::-webkit-scrollbar-thumb {
-    background: var(--border-strong);
-    border-radius: 8px;
-    border: 2px solid transparent;
-    background-clip: padding-box;
-  }
-  ::-webkit-scrollbar-thumb:hover {
-    background-color: color-mix(in oklab, var(--cyan) 35%, var(--border-strong));
-  }
-  ::-webkit-scrollbar-track {
+  *::-webkit-scrollbar,
+  *::-webkit-scrollbar-button,
+  *::-webkit-scrollbar-corner {
+    display: none;
+    width: 0;
+    height: 0;
     background: transparent;
   }
   ::selection {
@@ -256,8 +255,7 @@ input[type="range"] { accent-color: var(--cyan); }
   radial-gradient(500px 400px at 0% 100%, oklch(0.546 0.215 263 / 0.07), transparent 70%); }
 .eo-shell-header, .eo-shell-footer, .eo-shell-tabs { background: var(--glass-chrome); backdrop-filter: var(--glass-blur-chrome); }
 .eo-shell-header { box-shadow: inset 0 -1px 0 var(--border), 0 1px 0 var(--surface-edge) inset; }
-.eo-dock { background: linear-gradient(180deg, var(--surface-light), transparent 30%), var(--glass-chrome); backdrop-filter: var(--glass-blur-chrome); scrollbar-width: none; transition: width var(--duration-slow) var(--ease-out); }
-.eo-dock::-webkit-scrollbar { display: none; }
+.eo-dock { background: linear-gradient(180deg, var(--surface-light), transparent 30%), var(--glass-chrome); backdrop-filter: var(--glass-blur-chrome); transition: width var(--duration-slow) var(--ease-out); }
 .eo-dock-indicator { position: absolute; left: 0; top: 0; pointer-events: none; border-radius: 8px; background: linear-gradient(180deg, color-mix(in oklab, var(--cyan) 16%, transparent), color-mix(in oklab, var(--primary) 12%, transparent)); box-shadow: inset 0 1px 0 var(--surface-edge), 0 0 0 1px color-mix(in oklab, var(--cyan) 22%, transparent); transition: transform var(--duration-slow) var(--ease-spring), height var(--duration-slow) var(--ease-out), width var(--duration-slow) var(--ease-out), opacity var(--duration-control); }
 .eo-dock-indicator::before { content: ""; position: absolute; left: -8px; top: 8px; bottom: 8px; width: 3px; border-radius: 0 3px 3px 0; background: var(--cyan); box-shadow: 0 0 10px var(--cyan); }
 .eo-tab-indicator { position: absolute; left: 0; pointer-events: none; border-radius: 8px; background: color-mix(in oklab, var(--primary) 15%, transparent); box-shadow: inset 0 -2px 0 var(--cyan), inset 0 1px 0 var(--surface-edge); transition: transform var(--duration-slow) var(--ease-spring), width var(--duration-slow) var(--ease-out); }
@@ -462,7 +460,6 @@ input[type="range"] { accent-color: var(--cyan); }
 .eo-auto-profile { border-radius: 8px; border: 1px solid var(--border); background: linear-gradient(180deg, var(--surface-light), transparent), var(--window); padding: 10px 12px; }
 .eo-auto-rec { display: flex; align-items: center; gap: 10px; min-height: 32px; padding: 4px 10px; border-radius: 8px; border: 1px solid var(--border); background: var(--window); transition: border-color var(--duration-control), background-color var(--duration-fast); }
 .eo-auto-rec[data-selected="true"] { border-color: color-mix(in oklab, var(--cyan) 40%, transparent); background: color-mix(in oklab, var(--cyan) 5%, var(--window)); }
-.eo-auto-list { scrollbar-width: thin; }
 .eo-scan { overflow: hidden; }
 .eo-scan::after { content: ""; position: absolute; left: 0; right: 0; top: 0; height: 40%; pointer-events: none; background: linear-gradient(180deg, transparent, color-mix(in oklab, var(--cyan) 10%, transparent), transparent); animation: eo-scan 1.4s var(--ease-out) infinite; }
 
@@ -514,7 +511,7 @@ input[type="range"] { accent-color: var(--cyan); }
 .eo-v4-seq li[data-done="true"] > span:first-child { border-color: var(--success); color: var(--success); background: color-mix(in oklab, var(--success) 12%, transparent); }
 .eo-quick-arrow { transition: transform var(--duration-control) var(--ease-spring); }
 .eo-quick-link:hover .eo-quick-arrow { transform: translate(2px, -2px); }
-.eo-activity { max-height: 236px; overflow-y: auto; scrollbar-width: thin; }
+.eo-activity { max-height: 236px; overflow-y: auto; }
 
 @keyframes eo-shimmer { from { background-position: 120% 0; } to { background-position: -120% 0; } }
 @keyframes eo-pulse { 50% { opacity: .35; } }
@@ -915,3 +912,83 @@ button.eo-check-row:active { transform: translateY(0); box-shadow: var(--shadow-
 @container (max-width: 1050px) {
   .eo-page-content .eo-v4-scope-grid { grid-template-columns: minmax(0, 1fr); }
 }
+
+/* ── Hidden-scrollbar affordance: edge fades on scroll containers ──
+ * Scroll-driven (no JS). The fade appears only on edges that have more content; when a box
+ * doesn't overflow, the timeline is inactive and no fade is drawn. Not motion, so it is kept
+ * under reduced-motion settings. Browsers without scroll timelines simply show no fade. */
+@property --fade-start { syntax: "<length>"; inherits: false; initial-value: 0px; }
+@property --fade-end { syntax: "<length>"; inherits: false; initial-value: 0px; }
+@keyframes eo-scroll-fade {
+  0% { --fade-start: 0px; --fade-end: 22px; }
+  6%, 94% { --fade-start: 22px; --fade-end: 22px; }
+  100% { --fade-start: 22px; --fade-end: 0px; }
+}
+@supports (animation-timeline: scroll()) {
+  .eo-scroll-fade, .eo-activity {
+    mask-image: linear-gradient(to bottom, transparent, black var(--fade-start), black calc(100% - var(--fade-end)), transparent);
+    animation: eo-scroll-fade linear both !important;
+    animation-timeline: scroll(self block) !important;
+  }
+  .eo-scroll-fade-x, .eo-data-table {
+    mask-image: linear-gradient(to right, transparent, black var(--fade-start), black calc(100% - var(--fade-end)), transparent);
+    animation: eo-scroll-fade linear both !important;
+    animation-timeline: scroll(self inline) !important;
+  }
+}
+@media (prefers-reduced-motion: no-preference) {
+  html:not([data-motion="reduced"]) :is(#main-content, .eo-scroll-fade, .eo-activity) { scroll-behavior: smooth; }
+}
+
+/* ── Contextual guides (GuideTip popover, GuideButton, GuideSteps) ── */
+.eo-guide-tip { display: inline-flex; height: 18px; width: 18px; flex-shrink: 0; align-items: center; justify-content: center; border-radius: 999px; color: var(--subtle); border: 1px solid transparent; background: transparent; vertical-align: middle; }
+.eo-guide-tip svg { height: 13px; width: 13px; transition: transform var(--duration-control) var(--ease-spring); }
+.eo-guide-tip-md { height: 22px; width: 22px; }
+.eo-guide-tip-md svg { height: 15px; width: 15px; }
+.eo-guide-tip:hover, .eo-guide-tip[data-open="true"] { color: var(--cyan); border-color: color-mix(in oklab, var(--cyan) 30%, transparent); background: color-mix(in oklab, var(--cyan) 10%, transparent); }
+.eo-guide-tip:hover svg { transform: scale(1.08); }
+.eo-guide-tip:focus-visible, .eo-guide-pop button:focus-visible, .eo-guide-btn:focus-visible { outline: 2px solid var(--cyan); outline-offset: 2px; }
+
+.eo-guide-pop { position: fixed; z-index: 70; max-height: min(72vh, 540px); overflow-y: auto; overscroll-behavior: contain; border-radius: 12px; border: 1px solid var(--border-strong); padding: 12px 14px 10px; color: var(--foreground); text-align: left; text-transform: none; letter-spacing: normal; font-weight: 400; background: linear-gradient(160deg, var(--surface-light), transparent 40%), var(--glass-float); backdrop-filter: var(--glass-blur-float); box-shadow: var(--overlay-shadow); transform-origin: top center; animation: eo-pop-in 160ms var(--ease-out) both; outline: none; }
+.eo-guide-pop[data-above] { transform-origin: bottom center; }
+.eo-guide-head { display: flex; align-items: flex-start; gap: 10px; }
+.eo-guide-icon { display: inline-flex; height: 28px; width: 28px; flex-shrink: 0; align-items: center; justify-content: center; border-radius: 8px; color: var(--cyan); background: color-mix(in oklab, var(--cyan) 12%, transparent); box-shadow: inset 0 0 0 1px color-mix(in oklab, var(--cyan) 24%, transparent); }
+.eo-guide-icon svg { height: 15px; width: 15px; }
+.eo-guide-title { font-size: 13px; font-weight: 800; line-height: 1.25; text-transform: uppercase; letter-spacing: .02em; }
+.eo-guide-risk { display: inline-block; margin-top: 3px; font-size: 9.5px; font-weight: 800; letter-spacing: .1em; text-transform: uppercase; color: var(--muted-foreground); }
+.eo-guide-risk[data-risk="low"] { color: var(--success); }
+.eo-guide-risk[data-risk="medium"] { color: var(--warning); }
+.eo-guide-risk[data-risk="high"] { color: var(--destructive); }
+.eo-guide-risk[data-risk="info"] { color: var(--cyan); }
+.eo-guide-close { display: inline-flex; height: 24px; width: 24px; flex-shrink: 0; align-items: center; justify-content: center; border-radius: 6px; color: var(--muted-foreground); }
+.eo-guide-close:hover { color: var(--foreground); background: var(--highlight); }
+.eo-guide-close svg { height: 14px; width: 14px; }
+.eo-guide-what { margin-top: 10px; font-size: 12.5px; font-weight: 600; line-height: 1.45; }
+.eo-guide-why { margin-top: 3px; font-size: 11.5px; line-height: 1.45; color: var(--muted-foreground); }
+.eo-guide-facts { margin-top: 10px; display: grid; gap: 6px; border-top: 1px solid var(--border); padding-top: 9px; }
+.eo-guide-facts > div { display: grid; grid-template-columns: 96px 1fr; gap: 8px; font-size: 11.5px; line-height: 1.4; }
+.eo-guide-facts dt { font-size: 9.5px; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; color: var(--subtle); padding-top: 1px; }
+.eo-guide-facts dd { color: var(--foreground); }
+.eo-guide-limits { margin-top: 9px; display: flex; gap: 7px; border-radius: 8px; border: 1px solid var(--border); background: color-mix(in oklab, var(--window) 70%, transparent); padding: 7px 9px; font-size: 11px; line-height: 1.45; color: var(--muted-foreground); }
+.eo-guide-limits[data-warn] { border-color: color-mix(in oklab, var(--warning) 32%, transparent); background: color-mix(in oklab, var(--warning) 6%, transparent); color: var(--foreground); }
+.eo-guide-limits svg { height: 13px; width: 13px; flex-shrink: 0; margin-top: 1px; color: var(--muted-foreground); }
+.eo-guide-limits[data-warn] svg { color: var(--warning); }
+.eo-guide-more { margin-top: 8px; display: flex; width: 100%; align-items: center; justify-content: space-between; border-radius: 6px; padding: 4px 0; font-size: 10px; font-weight: 800; letter-spacing: .1em; text-transform: uppercase; color: var(--muted-foreground); }
+.eo-guide-more:hover { color: var(--cyan); }
+.eo-guide-more svg { height: 14px; width: 14px; transition: transform var(--duration-control) var(--ease-out); }
+.eo-guide-more svg[data-open="true"] { transform: rotate(180deg); color: var(--cyan); }
+.eo-guide-how { padding: 2px 0 6px; font-size: 11.5px; line-height: 1.5; color: var(--muted-foreground); }
+.eo-guide-how ul { margin-top: 4px; list-style: disc; padding-left: 16px; }
+.eo-guide-foot { margin-top: 4px; display: flex; align-items: center; gap: 6px; border-top: 1px solid var(--border); padding-top: 8px; font-size: 10.5px; font-weight: 600; color: var(--warning); }
+.eo-guide-foot svg { height: 12px; width: 12px; }
+
+.eo-guide-btn { display: inline-flex; height: 32px; align-items: center; gap: 6px; border-radius: 8px; border: 1px solid var(--border); padding: 0 12px; font-size: 10.5px; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; color: var(--muted-foreground); background: transparent; }
+.eo-guide-btn:hover { color: var(--cyan); border-color: color-mix(in oklab, var(--cyan) 40%, var(--border)); background: color-mix(in oklab, var(--cyan) 6%, transparent); }
+.eo-guide-btn svg { height: 14px; width: 14px; }
+.eo-guide-steps { display: grid; gap: 12px; }
+.eo-guide-steps > li { display: grid; grid-template-columns: 30px 1fr; gap: 12px; align-items: start; }
+.eo-guide-num { display: inline-flex; height: 28px; width: 28px; align-items: center; justify-content: center; border-radius: 999px; font-size: 12px; font-weight: 900; color: var(--cyan); background: color-mix(in oklab, var(--cyan) 12%, transparent); box-shadow: inset 0 0 0 1px color-mix(in oklab, var(--cyan) 28%, transparent); }
+.eo-guide-step-title { font-size: 11px; font-weight: 800; letter-spacing: .08em; text-transform: uppercase; color: var(--foreground); }
+.eo-guide-steps p { margin-top: 2px; font-size: 12px; line-height: 1.5; color: var(--muted-foreground); }
+.eo-guide-note { margin-top: 14px; border-top: 1px solid var(--border); padding-top: 10px; font-size: 11px; color: var(--success); }
+.eo-guide-num-sm { height: 22px; width: 22px; flex-shrink: 0; font-size: 10.5px; }

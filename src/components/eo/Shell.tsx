@@ -257,7 +257,7 @@ export function Shell({ children }: { children: ReactNode }) {
             <nav
               ref={dockBox.ref}
               aria-label="V3 pages"
-              className="relative flex min-h-0 flex-1 flex-col items-center gap-0.5 overflow-y-auto py-2"
+              className="eo-scroll-fade relative flex min-h-0 flex-1 flex-col items-center gap-0.5 overflow-y-auto py-2"
             >
               {dockBox.box && (
                 <span

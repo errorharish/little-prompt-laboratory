@@ -41,6 +41,7 @@ import {
   simulate,
   useSimRun,
 } from "../kit";
+import { GuideTip } from "../Guide";
 import { OpProgress } from "../RunModal";
 import {
   QUICK_ACTIONS,
@@ -158,9 +159,12 @@ const ScoreCard = memo(function ScoreCard() {
   return (
     <Card className="eo-hero eo-score-card flex flex-col">
       <div className="flex items-center justify-between gap-2">
-        <Label as="h2" className="text-foreground">
-          OVERALL OPTIMIZATION SCORE
-        </Label>
+        <span className="flex items-center gap-1.5">
+          <Label as="h2" className="text-foreground">
+            OVERALL OPTIMIZATION SCORE
+          </Label>
+          <GuideTip id="dashboard.score" />
+        </span>
         <DemoBadge label="ILLUSTRATIVE" />
       </div>
       <div className="mt-2 flex justify-center">
@@ -353,6 +357,7 @@ const QuickActions = memo(function QuickActions() {
       <SectionTitle
         id="eo-quick-title"
         title="QUICK ACTIONS"
+        guide="dashboard.quick-actions"
         sub="Run a single optimization right here — One-Click opens its review page"
         right={<Badge tone="warning">SIMULATED</Badge>}
       />

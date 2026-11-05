@@ -14,6 +14,8 @@ import {
   Lock,
 } from "lucide-react";
 import { toast } from "sonner";
+import { GuideTip, usePageGuide } from "./Guide";
+import type { GuideId } from "@/lib/eo/guides";
 
 /* ── Card (FigmaCardStyle / GlassCard) ──
  * Pointer light follows the mouse on every card; the gentle tilt (max ±0.8°) is limited to
@@ -101,12 +103,15 @@ export function SectionTitle({
   right,
   badge,
   id,
+  guide,
 }: {
   title: string;
   sub?: string | undefined;
   right?: ReactNode | undefined;
   badge?: ReactNode | undefined;
   id?: string | undefined;
+  /** Contextual guide shown as a help icon beside the title. */
+  guide?: GuideId | undefined;
 }) {
   return (
     <div className="eo-section-title mb-3 flex flex-wrap items-start justify-between gap-3">
@@ -116,6 +121,7 @@ export function SectionTitle({
           <h2 id={id} className="eo-label text-[11.5px] text-foreground">
             {title}
           </h2>
+          {guide && <GuideTip id={guide} />}
           {badge}
         </div>
         {sub && <p className="mt-0.5 pl-3 text-xs text-muted-foreground">{sub}</p>}
@@ -267,6 +273,7 @@ export function PageHeader({
   actions,
   accent = "bg-cyan",
   back,
+  guide,
 }: {
   title: string;
   sub?: string | undefined;
@@ -275,7 +282,11 @@ export function PageHeader({
   accent?: string | undefined;
   /** Rendered before the title block — used by pages reached from another page. */
   back?: ReactNode | undefined;
+  /** Contextual guide; defaults to the current registry page's guide. `null` hides it. */
+  guide?: GuideId | null | undefined;
 }) {
+  const pageGuide = usePageGuide();
+  const g = guide === undefined ? pageGuide : guide;
   return (
     <div className="eo-page-header flex flex-wrap items-center justify-between gap-3">
       <div className="flex min-w-0 items-center gap-3">
@@ -284,6 +295,7 @@ export function PageHeader({
         <div className="min-w-0">
           <div className="flex flex-wrap items-center gap-2">
             <h1 className="font-bold uppercase">{title}</h1>
+            {g && <GuideTip id={g} size="md" />}
             {badges}
           </div>
           {sub && <p className="max-w-3xl text-muted-foreground">{sub}</p>}
@@ -777,7 +789,7 @@ export function Modal({
             <X aria-hidden="true" className="h-4 w-4" />
           </Btn>
         </div>
-        <div className="min-h-0 overflow-y-auto px-5 py-4">{children}</div>
+        <div className="eo-scroll-fade min-h-0 overflow-y-auto px-5 py-4">{children}</div>
         {footer && (
           <div className="flex flex-wrap items-center justify-end gap-2 border-t border-border bg-window/40 px-5 py-3">
             {footer}
