@@ -787,7 +787,7 @@ function RegTableHead() {
   );
 }
 
-const REG_ROW_COLS = "minmax(0, 1.25fr) minmax(0, 1fr) 92px";
+const REG_ROW_COLS = "minmax(0, 1.35fr) minmax(0, 1fr) 84px";
 
 function RegRow({ v, onOpen }: { v: RegistryValueEntry; onOpen: (v: RegistryValueEntry) => void }) {
   const off = v.status !== "applicable";
@@ -804,7 +804,10 @@ function RegRow({ v, onOpen }: { v: RegistryValueEntry; onOpen: (v: RegistryValu
         style={{ gridTemplateColumns: REG_ROW_COLS }}
       >
         <span className="min-w-0">
-          <span className={cn("block truncate text-[12px] font-semibold", !off && "text-foreground")}>
+          <span
+            className={cn("block truncate text-[12px] font-semibold", !off && "text-foreground")}
+            title={v.title}
+          >
             {v.title}
           </span>
           <span className="flex min-w-0 items-center gap-1.5 font-mono text-[10.5px] text-muted-foreground">
@@ -926,7 +929,9 @@ export function RegistryValuesPage() {
           },
         ]}
       />
-      <div className="grid grid-cols-1 items-start gap-3.5 lg:grid-cols-2">
+      {/* Two columns once the content area (not the window) is wide enough to keep values readable. */}
+      <div className="@container">
+        <div className="grid grid-cols-1 items-start gap-3.5 @min-[60rem]:grid-cols-2">
         <div className="space-y-3.5">
           <Card>
             <SectionTitle
@@ -1062,7 +1067,8 @@ export function RegistryValuesPage() {
               </Details>
             </div>
           )}
-        </Card>
+          </Card>
+        </div>
       </div>
       <Modal
         open={!!detail}
