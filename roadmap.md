@@ -50,3 +50,11 @@
 - [x] Existing Guide dialogs (1-Click, Performance Tuning, V4 pages, Module Hub, Low End Steam) unified to one style.
 - [x] Scrollbars hidden globally; scrolling kept; edge fades show more content.
 - [x] Verify all 34 destinations at 1280×820 / 1024×768, tests.
+
+# Restore point, quick actions split, input modes, health score (prompt-13)
+- [ ] Restore Point: System Protection status check, "System Protection Is Disabled" dialog, explicit enable → verify → retry (simulated); native plan in Blueprint.
+- [ ] Dashboard: Navigation Shortcuts (Telemetry, Startup, Boost Performance, One-Click) separate from Quick Optimize (run in place).
+- [ ] Input Optimization: Normal / Advanced / Custom modes; per-mode recommended defaults; Custom-only editing with save + reset.
+- [ ] Global rule: default = applicable AND recommended AND eligible.
+- [ ] System Telemetry: System Health Check with documented, reproducible score, missing-data handling, category breakdown, recommendations.
+- [ ] Verify all 34 destinations at 1280×820 / 1024×768, tests.
