@@ -157,7 +157,7 @@ export function OneClickPage() {
                       <p className="text-[12px] text-muted-foreground">{a.desc}</p>
                       <p className="mt-0.5 text-[10.5px] text-success">{a.safety}</p>
                     </div>
-                    <Btn size="sm" variant="ghost" onClick={() => setDetail(a.id)} title={`Details for ${a.title}`}>Details</Btn>
+                    <Btn size="sm" variant="ghost" onClick={() => setDetail(a.id)} label={`Details for ${a.title}`}>Details</Btn>
                   </li>
                 ))}
               </ul>
