@@ -327,7 +327,7 @@ export function InputOptimizerPage() {
       <RunModal
         open={run}
         onClose={() => setRun(false)}
-        profile={`Input ${MODE_META[mode].title}`}
+        profile={`Input ${mode === "CUSTOM" ? "Custom" : mode === "ADVANCED" ? "Advanced" : "Normal"}`}
         count={runItems.length}
         items={runItems}
       />
