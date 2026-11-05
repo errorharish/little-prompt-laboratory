@@ -96,7 +96,6 @@ export function StartupManagerPage() {
       <Card>
         <div className="mb-3">
           <SearchBox placeholder="Search startup items…" value={q} onChange={setQ} />
-
         </div>
         <Chips
           options={[
@@ -114,7 +113,10 @@ export function StartupManagerPage() {
           onChange={setF}
         />
         <div className="mt-3 overflow-hidden rounded-lg border border-border">
-          <div className="grid items-center gap-3 bg-window px-3 py-2 text-[10px] font-bold tracking-wide text-subtle" style={{ gridTemplateColumns: "minmax(0, 1fr) 110px 100px 70px 40px" }}>
+          <div
+            className="grid items-center gap-3 bg-window px-3 py-2 text-[10px] font-bold tracking-wide text-subtle"
+            style={{ gridTemplateColumns: "minmax(0, 1fr) 110px 100px 70px 40px" }}
+          >
             <span>APPLICATION</span>
             <span>PUBLISHER</span>
             <span>IMPACT</span>
@@ -315,7 +317,10 @@ export function ServiceManagerPage() {
           onChange={setF}
         />
         <div className="mt-3 overflow-hidden rounded-lg border border-border">
-          <div className="grid items-center gap-3 bg-window px-3 py-2 text-[10px] font-bold tracking-wide text-subtle" style={{ gridTemplateColumns: "minmax(0, 1fr) 80px 130px 115px" }}>
+          <div
+            className="grid items-center gap-3 bg-window px-3 py-2 text-[10px] font-bold tracking-wide text-subtle"
+            style={{ gridTemplateColumns: "minmax(0, 1fr) 80px 130px 115px" }}
+          >
             <span>SERVICE</span>
             <span>STATUS</span>
             <span>STARTUP</span>
@@ -491,15 +496,21 @@ export function NetworkPage() {
       />
       {t.running && <Bar value={t.progress ?? 0} />}
       <Card>
-        <SectionTitle title="SAMPLE NETWORK OVERVIEW" sub="Ethernet · Realtek 2.5GbE · Connected" right={<Badge tone="success">ONLINE</Badge>} />
-        <StatTiles items={[
-          { label: "LATENCY", value: tested ? "11 ms" : "—" },
-          { label: "JITTER", value: tested ? "1.4 ms" : "—" },
-          { label: "LOSS", value: tested ? "0%" : "—" },
-          { label: "DNS TIME", value: tested ? "9 ms" : "—" },
-          { label: "DOWN · Mbps", value: tested ? "912" : "—", tone: "cyan" },
-          { label: "UP · Mbps", value: tested ? "486" : "—", tone: "cyan" },
-        ]} />
+        <SectionTitle
+          title="SAMPLE NETWORK OVERVIEW"
+          sub="Ethernet · Realtek 2.5GbE · Connected"
+          right={<Badge tone="success">ONLINE</Badge>}
+        />
+        <StatTiles
+          items={[
+            { label: "LATENCY", value: tested ? "11 ms" : "—" },
+            { label: "JITTER", value: tested ? "1.4 ms" : "—" },
+            { label: "LOSS", value: tested ? "0%" : "—" },
+            { label: "DNS TIME", value: tested ? "9 ms" : "—" },
+            { label: "DOWN · Mbps", value: tested ? "912" : "—", tone: "cyan" },
+            { label: "UP · Mbps", value: tested ? "486" : "—", tone: "cyan" },
+          ]}
+        />
         <Details inline title="Interface & target inventory" hint="2.5 Gbps · MTU 1500">
           <div className="grid grid-cols-2 gap-x-3.5">
             <KV k="Gateway · reachable" v="192.168.1.1" />
@@ -519,11 +530,15 @@ export function NetworkPage() {
             onChange={setF}
           />
         </div>
-        <SectionTitle title="PERSISTENT NETWORK TARGETS" sub="Simulated backup, apply, and readback; no settings change." right={
-          <Btn variant="primary" onClick={() => simulate("Batch network optimization")}>
-            Optimize all pending
-          </Btn>
-        } />
+        <SectionTitle
+          title="PERSISTENT NETWORK TARGETS"
+          sub="Simulated backup, apply, and readback; no settings change."
+          right={
+            <Btn variant="primary" onClick={() => simulate("Batch network optimization")}>
+              Optimize all pending
+            </Btn>
+          }
+        />
         <div className="space-y-1.5">
           {vis.map((n) => (
             <div
@@ -1028,11 +1043,7 @@ export function ToolsPage() {
           <Btn onClick={() => simulate("Re-scan health")}>Re-scan health</Btn>
         </div>
       </Card>
-      <SearchBox
-        placeholder="Search tools, categories, or components…"
-        value={q}
-        onChange={setQ}
-      />
+      <SearchBox placeholder="Search tools, categories, or components…" value={q} onChange={setQ} />
       <Chips
         options={[
           "ALL TOOLS",
@@ -1308,7 +1319,10 @@ export function ProcessReductionPage() {
         <div className="eo-data-table rounded-lg border border-border">
           <div
             className="grid bg-window px-3 py-2 eo-label text-[10px] text-subtle"
-            style={{ gridTemplateColumns: "26px 60px minmax(130px, 1fr) 45px 145px minmax(90px, 1fr) 45px 50px" }}
+            style={{
+              gridTemplateColumns:
+                "26px 60px minmax(130px, 1fr) 45px 145px minmax(90px, 1fr) 45px 50px",
+            }}
           >
             <span>SEL</span>
             <span>MEMORY</span>
@@ -1323,7 +1337,10 @@ export function ProcessReductionPage() {
             <div
               key={p.pid}
               className="grid items-center border-t border-border px-3 py-2 text-[12px]"
-              style={{ gridTemplateColumns: "26px 60px minmax(130px, 1fr) 45px 145px minmax(90px, 1fr) 45px 50px" }}
+              style={{
+                gridTemplateColumns:
+                  "26px 60px minmax(130px, 1fr) 45px 145px minmax(90px, 1fr) 45px 50px",
+              }}
             >
               {p.s === "SAFE TO TERMINATE" ? (
                 <Check

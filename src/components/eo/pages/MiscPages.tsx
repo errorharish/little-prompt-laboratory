@@ -84,7 +84,8 @@ export function AiOptimizationPage() {
       />
       <Card className="flex flex-wrap items-center justify-between gap-3 py-3">
         <div className="text-[12px] text-muted-foreground">
-          <span className="font-semibold text-foreground">{mod}</span> · Passive monitoring · Foreground shield
+          <span className="font-semibold text-foreground">{mod}</span> · Passive monitoring ·
+          Foreground shield
         </div>
         <Badge tone="success">AI READY</Badge>
       </Card>
@@ -656,10 +657,15 @@ export function BackupRestorePage() {
             ["Input Optimizer", 2],
             ["Network", 1],
           ].map(([n, c]) => (
-            <div key={n as string} className="flex items-center justify-between gap-3 border-r border-border px-3 py-2 last:border-r-0">
+            <div
+              key={n as string}
+              className="flex items-center justify-between gap-3 border-r border-border px-3 py-2 last:border-r-0"
+            >
               <div>
                 <div className="text-[13px] font-bold">{n}</div>
-                <div className="text-[11.5px] text-muted-foreground">{c} transactions · restorable</div>
+                <div className="text-[11.5px] text-muted-foreground">
+                  {c} transactions · restorable
+                </div>
               </div>
               <Btn size="sm" onClick={() => setRestore(true)}>
                 Restore profile
@@ -887,15 +893,15 @@ export function SettingsPage() {
           <Tog init={false} />
         </Row>
         <Details inline title="STARTUP STATUS" hint="Sample registration & bootstrap">
-        <div className="grid grid-cols-3 gap-3.5">
-          {[
-            ["Windows Startup", "Not registered"],
-            ["Startup Bootstrap", "Idle"],
-            ["Last Startup", "—"],
-          ].map(([k, v]) => (
-            <KV key={k} k={k} v={v} />
-          ))}
-        </div>
+          <div className="grid grid-cols-3 gap-3.5">
+            {[
+              ["Windows Startup", "Not registered"],
+              ["Startup Bootstrap", "Idle"],
+              ["Last Startup", "—"],
+            ].map(([k, v]) => (
+              <KV key={k} k={k} v={v} />
+            ))}
+          </div>
         </Details>
       </Card>
       <Card>
@@ -935,24 +941,24 @@ export function SettingsPage() {
           </div>
         </Row>
         <Details inline title="ACCENT & GLASS" hint="Fine-tuning and gradient direction">
-        <Row t="Hue / Saturation / Brightness" s="Fine-tune the accent">
-          <Rng label="Accent hue, saturation and brightness" />
-        </Row>
-        <Row t="Gradient Theme Studio" s="Multi-color atmospheric spectrum">
-          <Seg
-            o={["LEFT → RIGHT", "TOP → BOTTOM", "DIAGONAL", "DIAGONAL REV", "RADIAL"]}
-            d="DIAGONAL"
-          />
-        </Row>
-        <Row t="Gradient Animation" s="Slow atmospheric motion">
-          <Seg o={["OFF", "SUBTLE (SLOW)", "DYNAMIC"]} d="SUBTLE (SLOW)" />
-        </Row>
-        <Row t="Window Glass Transparency" s="How much of the window behind is visible">
-          <Rng d={20} label="Window glass transparency" />
-        </Row>
-        <Row t="Card / Panel Opacity" s="Opacity of internal cards and panels">
-          <Rng d={90} label="Card and panel opacity" />
-        </Row>
+          <Row t="Hue / Saturation / Brightness" s="Fine-tune the accent">
+            <Rng label="Accent hue, saturation and brightness" />
+          </Row>
+          <Row t="Gradient Theme Studio" s="Multi-color atmospheric spectrum">
+            <Seg
+              o={["LEFT → RIGHT", "TOP → BOTTOM", "DIAGONAL", "DIAGONAL REV", "RADIAL"]}
+              d="DIAGONAL"
+            />
+          </Row>
+          <Row t="Gradient Animation" s="Slow atmospheric motion">
+            <Seg o={["OFF", "SUBTLE (SLOW)", "DYNAMIC"]} d="SUBTLE (SLOW)" />
+          </Row>
+          <Row t="Window Glass Transparency" s="How much of the window behind is visible">
+            <Rng d={20} label="Window glass transparency" />
+          </Row>
+          <Row t="Card / Panel Opacity" s="Opacity of internal cards and panels">
+            <Rng d={90} label="Card and panel opacity" />
+          </Row>
         </Details>
         <Row t="UI Animations" s="Tactile controls and depth transitions">
           <Toggle
@@ -972,12 +978,12 @@ export function SettingsPage() {
           <Toggle label="Reduced Motion" on={appearance.reduced} onChange={appearance.setReduced} />
         </Row>
         <Details inline title="AMBIENT EFFECTS" hint="Particles and background motion">
-        <Row t="Particle Density" s="Background & intelligence orb particles">
-          <Seg o={["OFF", "LOW (30)", "MED (80)", "HIGH (150)"]} d="MED (80)" />
-        </Row>
-        <Row t="Background Motion Mode" s="Ambient gradient drift & light sweep">
-          <Seg o={["STATIC", "SUBTLE", "DYNAMIC"]} d="SUBTLE" />
-        </Row>
+          <Row t="Particle Density" s="Background & intelligence orb particles">
+            <Seg o={["OFF", "LOW (30)", "MED (80)", "HIGH (150)"]} d="MED (80)" />
+          </Row>
+          <Row t="Background Motion Mode" s="Ambient gradient drift & light sweep">
+            <Seg o={["STATIC", "SUBTLE", "DYNAMIC"]} d="SUBTLE" />
+          </Row>
         </Details>
         <Row t="3D Spatial Depth" s="Restrained surface tilt and elevation">
           <Chips
@@ -1082,7 +1088,10 @@ export function AboutPage() {
             ["INSTAGRAM", "@errorexeff", "OPEN INSTAGRAM →"],
             ["KICK", "Live Streaming", "WATCH ON KICK →"],
           ].map(([a, b, c]) => (
-            <div key={a} className="flex flex-wrap items-center justify-between gap-3 border-b border-border px-3 py-2">
+            <div
+              key={a}
+              className="flex flex-wrap items-center justify-between gap-3 border-b border-border px-3 py-2"
+            >
               <Label className="text-cyan">{a}</Label>
               <div className="mt-1 text-sm font-bold">{b}</div>
               <Btn size="sm" onClick={() => simulate(c)}>

@@ -96,7 +96,9 @@ export function AutoOptimizePage() {
     presetIdx === -1 && draft.intervalMin % 60 === 0 ? "hours" : "minutes",
   );
   const [customText, setCustomText] = useState(
-    String(presetIdx === -1 && draft.intervalMin % 60 === 0 ? draft.intervalMin / 60 : draft.intervalMin),
+    String(
+      presetIdx === -1 && draft.intervalMin % 60 === 0 ? draft.intervalMin / 60 : draft.intervalMin,
+    ),
   );
   useEffect(() => {
     if (dirtyRef.current) return;
@@ -271,7 +273,10 @@ export function AutoOptimizePage() {
                   <span aria-hidden="true" className="eo-ao-icon">
                     <Icon className="h-3.5 w-3.5" />
                   </span>
-                  <h3 id={`eo-cat-${cat.key}`} className="min-w-0 flex-1 truncate text-[12px] font-bold">
+                  <h3
+                    id={`eo-cat-${cat.key}`}
+                    className="min-w-0 flex-1 truncate text-[12px] font-bold"
+                  >
                     {cat.title}
                     {cat.key === "BROWSER" && (
                       <span className="ml-2 text-[10px] font-semibold text-success">
@@ -493,8 +498,8 @@ export function AutoOptimizePage() {
         }
       >
         <p className="text-[12.5px] text-muted-foreground">
-          Your saved schedule keeps running either way. Discarding only drops the edits you made
-          on this page.
+          Your saved schedule keeps running either way. Discarding only drops the edits you made on
+          this page.
         </p>
       </Modal>
     </div>

@@ -316,9 +316,7 @@ export function StatTiles({
           <div key={s.label} className="eo-metric" data-tone={s.tone ?? "muted"}>
             <dt className="eo-label text-[9.5px] text-muted-foreground">{s.label}</dt>
             <dd
-              key={
-                typeof s.value === "string" || typeof s.value === "number" ? s.value : undefined
-              }
+              key={typeof s.value === "string" || typeof s.value === "number" ? s.value : undefined}
               className={cn("eo-stat-value tabular-nums", tc[s.tone ?? "muted"])}
             >
               {s.value}
@@ -540,7 +538,10 @@ export function Details({
           )}
           <ChevronDown
             aria-hidden="true"
-            className={cn("eo-chevron h-4 w-4 shrink-0 text-muted-foreground", open && "rotate-180 text-cyan")}
+            className={cn(
+              "eo-chevron h-4 w-4 shrink-0 text-muted-foreground",
+              open && "rotate-180 text-cyan",
+            )}
           />
         </span>
       </button>
