@@ -239,7 +239,7 @@ export function RunModal({
           <KV k="Restore point" v={`“${rpName}” (simulated)`} />
           <KV k="Verification" v={summary.verification} />
           {items && items.length > 0 && (
-            <ul aria-label="Simulated items" className="max-h-44 space-y-1 overflow-y-auto">
+            <ul aria-label="Simulated items" className="eo-scroll-fade max-h-44 space-y-1 overflow-y-auto">
               {items.map((i) => (
                 <li
                   key={i.id}

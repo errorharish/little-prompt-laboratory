@@ -789,7 +789,7 @@ export function Modal({
             <X aria-hidden="true" className="h-4 w-4" />
           </Btn>
         </div>
-        <div className="min-h-0 overflow-y-auto px-5 py-4">{children}</div>
+        <div className="eo-scroll-fade min-h-0 overflow-y-auto px-5 py-4">{children}</div>
         {footer && (
           <div className="flex flex-wrap items-center justify-end gap-2 border-t border-border bg-window/40 px-5 py-3">
             {footer}
