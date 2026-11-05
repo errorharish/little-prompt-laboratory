@@ -62,7 +62,7 @@ export function InputOptimizerPage() {
           <Btn
             size="sm"
             onClick={() =>
-              setSel((s) => new Set([...s, ...items.filter((x, n) => n > 0 || !s.has(x))]))
+              setSel((s) => new Set([...s, ...items.slice(1)]))
             }
           >
             Select all
@@ -553,15 +553,15 @@ export function RegistryTweakPage() {
                     key={i.id}
                     className="flex items-center gap-3 rounded-lg border border-border bg-window px-3 py-2 text-[12.5px]"
                   >
-                    <Check
-                      label={`Select ${i.name}`}
-                      on={sel.has(i.id)}
-                      onChange={() =>
-                        setSel((s) => {
-                          return toggleInSet(s, i.id);
-                        })
-                      }
-                    />
+                    {i.state === "NOT APPLICABLE" ? (
+                      <span className="w-4.5 shrink-0" aria-hidden="true" />
+                    ) : (
+                      <Check
+                        label={`Select ${i.name}`}
+                        on={sel.has(i.id)}
+                        onChange={() => setSel((s) => toggleInSet(s, i.id))}
+                      />
+                    )}
                     <button
                       className="flex-1 text-left hover:text-cyan"
                       onClick={() => setDetail(i)}
@@ -805,9 +805,14 @@ export function RegistryValuesRamPage() {
 
 export function GpuRegistryValuesPage() {
   const [policy, setPolicy] = useState("Recommended");
-  const [sel, setSel] = useState<Set<string>>(new Set());
+  // Each profile policy keeps its own selection; undetected vendors are never selectable.
+  const gpu = usePersistedSelection(`gpu:${policy}`, GPU_ITEMS);
+  const { sel, setSel } = gpu;
   const [detail, setDetail] = useState<string | null>(null);
-  const groups = [
+  const groups = GPU_GROUPS;
+  void groups;
+}
+const GPU_GROUPS_DEF = [
     {
       name: "UNIVERSAL GPU",
       tag: "SYSTEM-WIDE",
