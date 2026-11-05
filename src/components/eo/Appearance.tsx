@@ -17,10 +17,10 @@ export function AppearanceProvider({ children }: { children: ReactNode }) {
   }, []);
   useEffect(() => {
     const root = document.documentElement;
-    root.dataset.motion = reduced || systemReduced || !animations ? "reduced" : "full";
-    root.dataset.transitions = transitions ? "on" : "off";
-    root.dataset.depth = depth.startsWith("LOW") ? "flat" : depth.startsWith("HIGH") ? "deep" : "subtle";
-    root.dataset.accent = String(accent);
+    root.dataset["motion"] = reduced || systemReduced || !animations ? "reduced" : "full";
+    root.dataset["transitions"] = transitions ? "on" : "off";
+    root.dataset["depth"] = depth.startsWith("LOW") ? "flat" : depth.startsWith("HIGH") ? "deep" : "subtle";
+    root.dataset["accent"] = String(accent);
   }, [reduced, systemReduced, animations, transitions, depth, accent]);
   return <AppearanceContext.Provider value={{ reduced, animations, transitions, depth, accent, setReduced, setAnimations, setTransitions, setDepth, setAccent }}>{children}</AppearanceContext.Provider>;
 }

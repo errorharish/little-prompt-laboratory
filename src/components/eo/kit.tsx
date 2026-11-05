@@ -10,7 +10,7 @@ export function Card({ className, children, glow, style }: { className?: string 
   const ref = useRef<HTMLDivElement>(null);
   return <div ref={ref} style={style} onPointerMove={(e) => {
     const node = ref.current;
-    if (!node || e.pointerType !== "mouse" || node.querySelector("input, select") || document.documentElement.dataset.motion === "reduced" || document.documentElement.dataset.depth === "flat") return;
+    if (!node || e.pointerType !== "mouse" || node.querySelector("input, select") || document.documentElement.dataset["motion"] === "reduced" || document.documentElement.dataset["depth"] === "flat") return;
     const box = node.getBoundingClientRect();
     const x = (e.clientX - box.left) / box.width, y = (e.clientY - box.top) / box.height;
     node.style.setProperty("--tilt-x", `${(0.5 - y) * 1.8}deg`);
@@ -73,7 +73,7 @@ const btnCls: Record<BtnVariant, string> = {
   danger: "bg-destructive/10 text-destructive border-destructive/40 hover:bg-destructive/20",
   success: "bg-success/10 text-success border-success/40 hover:bg-success/20",
 };
-export function Btn({ variant = "secondary", children, onClick, className, size = "md", title, disabled }: { variant?: BtnVariant | undefined; children: ReactNode; onClick?: () => void | undefined; className?: string | undefined; size?: "sm" | "md" | "lg" | undefined; title?: string | undefined; disabled?: boolean | undefined }) {
+export function Btn({ variant = "secondary", children, onClick, className, size = "md", title, disabled }: { variant?: BtnVariant | undefined; children: ReactNode; onClick?: (() => void) | undefined; className?: string | undefined; size?: "sm" | "md" | "lg" | undefined; title?: string | undefined; disabled?: boolean | undefined }) {
   return (
     <button
       type="button"
