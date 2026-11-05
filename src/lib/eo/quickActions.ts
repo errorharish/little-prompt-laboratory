@@ -1,7 +1,8 @@
-// Dashboard Quick Actions. One-Click is the only action that opens its own page; every other
-// action runs its own, single task in place on the Dashboard. Steps reuse operations that
-// already exist elsewhere in the prototype (Auto Optimize tasks, Storage, Startup Manager,
-// Network, Backup). Pure data + rules — the run itself is simulated and changes nothing.
+// Dashboard actions, in two separate groups (user-directed):
+// • Navigation Shortcuts open an existing page and never run anything.
+// • Quick Optimize runs one single action in place on the Dashboard and never navigates.
+// Steps reuse operations that already exist elsewhere in the prototype (Auto Optimize tasks,
+// Storage, Network, Backup). Pure data + rules — every run is simulated and changes nothing.
 import { MAINT_TASKS } from "./autoOptimize";
 
 export type QuickOutcome = "Completed" | "Skipped" | "Failed";
@@ -19,11 +20,15 @@ export interface QuickAction {
   cat: string;
   title: string;
   desc: string;
-  /** Only One-Click navigates. */
+  /** "navigate" opens `to`; "run" executes in place. */
+  kind: "navigate" | "run";
+  /** Page slug for navigation shortcuts. */
   to?: string;
   /** Where the underlying operation exists in the prototype. */
   source: string;
   steps: QuickStep[];
+  /** Runs a dedicated workflow instead of the step list. */
+  flow?: "restore-point";
 }
 
 const task = (id: string): QuickStep => {
