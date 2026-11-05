@@ -1,6 +1,11 @@
 import { describe, expect, it } from "vitest";
 import { ONE_CLICK_ACTIONS } from "@/lib/eo/data";
-import { recommendedSelection, simulatedRunSummary, summarizeSelection, toggleInSet } from "@/lib/eo/selection";
+import {
+  recommendedSelection,
+  simulatedRunSummary,
+  summarizeSelection,
+  toggleInSet,
+} from "@/lib/eo/selection";
 
 describe("One-Click workflow rules", () => {
   it("never selects protected items automatically", () => {

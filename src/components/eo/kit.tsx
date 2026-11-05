@@ -6,31 +6,90 @@ import { X, ChevronDown, FlaskConical, Search, Check as CheckIcon } from "lucide
 import { toast } from "sonner";
 
 /* ── Card (FigmaCardStyle / GlassCard) ── */
-export function Card({ className, children, glow, style }: { className?: string | undefined; children: ReactNode; glow?: boolean | undefined; style?: React.CSSProperties | undefined }) {
+export function Card({
+  className,
+  children,
+  glow,
+  style,
+}: {
+  className?: string | undefined;
+  children: ReactNode;
+  glow?: boolean | undefined;
+  style?: React.CSSProperties | undefined;
+}) {
   const ref = useRef<HTMLDivElement>(null);
-  return <div ref={ref} style={style} onPointerMove={(e) => {
-    const node = ref.current;
-    if (!node || e.pointerType !== "mouse" || node.querySelector("input, select") || document.documentElement.dataset["motion"] === "reduced" || document.documentElement.dataset["depth"] === "flat") return;
-    const box = node.getBoundingClientRect();
-    const x = (e.clientX - box.left) / box.width, y = (e.clientY - box.top) / box.height;
-    node.style.setProperty("--tilt-x", `${(0.5 - y) * 1.8}deg`);
-    node.style.setProperty("--tilt-y", `${(x - 0.5) * 1.8}deg`);
-    node.style.setProperty("--light-x", `${x * 100}%`);
-  }} onPointerLeave={() => { ref.current?.style.setProperty("--tilt-x", "0deg"); ref.current?.style.setProperty("--tilt-y", "0deg"); }} className={cn("eo-card eo-depth p-5", glow && "eo-glow", className)}>{children}</div>;
+  return (
+    <div
+      ref={ref}
+      style={style}
+      onPointerMove={(e) => {
+        const node = ref.current;
+        if (
+          !node ||
+          e.pointerType !== "mouse" ||
+          node.querySelector("input, select") ||
+          document.documentElement.dataset["motion"] === "reduced" ||
+          document.documentElement.dataset["depth"] === "flat"
+        )
+          return;
+        const box = node.getBoundingClientRect();
+        const x = (e.clientX - box.left) / box.width,
+          y = (e.clientY - box.top) / box.height;
+        node.style.setProperty("--tilt-x", `${(0.5 - y) * 1.8}deg`);
+        node.style.setProperty("--tilt-y", `${(x - 0.5) * 1.8}deg`);
+        node.style.setProperty("--light-x", `${x * 100}%`);
+      }}
+      onPointerLeave={() => {
+        ref.current?.style.setProperty("--tilt-x", "0deg");
+        ref.current?.style.setProperty("--tilt-y", "0deg");
+      }}
+      className={cn("eo-card eo-depth p-5", glow && "eo-glow", className)}
+    >
+      {children}
+    </div>
+  );
 }
 
 /** Small uppercase caption. Pass `as="h2"`/`"h3"` when it titles a page section. */
-export function Label({ children, className, as: Tag = "div", id }: { children: ReactNode; className?: string | undefined; as?: "div" | "h2" | "h3" | undefined; id?: string | undefined }) {
-  return <Tag id={id} className={cn("eo-label text-muted-foreground", className)}>{children}</Tag>;
+export function Label({
+  children,
+  className,
+  as: Tag = "div",
+  id,
+}: {
+  children: ReactNode;
+  className?: string | undefined;
+  as?: "div" | "h2" | "h3" | undefined;
+  id?: string | undefined;
+}) {
+  return (
+    <Tag id={id} className={cn("eo-label text-muted-foreground", className)}>
+      {children}
+    </Tag>
+  );
 }
 
-export function SectionTitle({ title, sub, right, badge, id }: { title: string; sub?: string | undefined; right?: ReactNode | undefined; badge?: ReactNode | undefined; id?: string | undefined }) {
+export function SectionTitle({
+  title,
+  sub,
+  right,
+  badge,
+  id,
+}: {
+  title: string;
+  sub?: string | undefined;
+  right?: ReactNode | undefined;
+  badge?: ReactNode | undefined;
+  id?: string | undefined;
+}) {
   return (
     <div className="eo-section-title mb-4 flex flex-wrap items-start justify-between gap-4">
       <div>
         <div className="flex items-center gap-2">
           <span className="h-3.5 w-1 rounded-full bg-cyan" />
-          <h2 id={id} className="eo-label text-[11.5px] text-foreground">{title}</h2>
+          <h2 id={id} className="eo-label text-[11.5px] text-foreground">
+            {title}
+          </h2>
           {badge}
         </div>
         {sub && <p className="mt-1 pl-3 text-xs text-muted-foreground">{sub}</p>}
@@ -50,14 +109,35 @@ const toneCls: Record<Tone, string> = {
   danger: "border-destructive/30 bg-destructive/10 text-destructive",
   muted: "border-border bg-elevated text-muted-foreground",
 };
-export function Badge({ tone = "muted", children, className }: { tone?: Tone | undefined; children: ReactNode; className?: string | undefined }) {
+export function Badge({
+  tone = "muted",
+  children,
+  className,
+}: {
+  tone?: Tone | undefined;
+  children: ReactNode;
+  className?: string | undefined;
+}) {
   return (
-    <span className={cn("inline-flex items-center gap-1 whitespace-nowrap rounded-[4px] border px-1.5 py-0.5 text-[9.5px] font-bold tracking-[0.1em] uppercase", toneCls[tone], className)}>
+    <span
+      className={cn(
+        "inline-flex items-center gap-1 whitespace-nowrap rounded-[4px] border px-1.5 py-0.5 text-[9.5px] font-bold tracking-[0.1em] uppercase",
+        toneCls[tone],
+        className,
+      )}
+    >
       {children}
     </span>
   );
 }
-export const riskTone = (r: Risk): Tone => (r === "SAFE" || r === "LOW" ? "success" : r === "MEDIUM" ? "warning" : r === "HIGH" ? "danger" : "cyan");
+export const riskTone = (r: Risk): Tone =>
+  r === "SAFE" || r === "LOW"
+    ? "success"
+    : r === "MEDIUM"
+      ? "warning"
+      : r === "HIGH"
+        ? "danger"
+        : "cyan";
 export function RiskBadge({ risk }: { risk: Risk }) {
   return <Badge tone={riskTone(risk)}>{risk === "LOW" ? "LOW RISK" : risk}</Badge>;
 }
@@ -68,9 +148,12 @@ export function DemoBadge({ label = "DEMO" }: { label?: string | undefined }) {
 /* ── Buttons (Theme/Buttons.xaml: Primary / Secondary / Ghost / Danger) ── */
 type BtnVariant = "primary" | "secondary" | "ghost" | "danger" | "success";
 const btnCls: Record<BtnVariant, string> = {
-  primary: "eo-brand text-primary-foreground border-transparent hover:brightness-110 shadow-[var(--shadow-glow)]",
-  secondary: "bg-elevated text-foreground border-border-strong hover:border-cyan/50 hover:bg-highlight",
-  ghost: "bg-transparent text-muted-foreground border-border hover:text-foreground hover:border-border-strong",
+  primary:
+    "eo-brand text-primary-foreground border-transparent hover:brightness-110 shadow-[var(--shadow-glow)]",
+  secondary:
+    "bg-elevated text-foreground border-border-strong hover:border-cyan/50 hover:bg-highlight",
+  ghost:
+    "bg-transparent text-muted-foreground border-border hover:text-foreground hover:border-border-strong",
   danger: "bg-destructive/10 text-destructive border-destructive/40 hover:bg-destructive/20",
   success: "bg-success/10 text-success border-success/40 hover:bg-success/20",
 };
@@ -78,7 +161,31 @@ const btnCls: Record<BtnVariant, string> = {
  * `title` is the tooltip. The accessible name is the visible text; icon-only buttons
  * pass `label` (the browser also falls back to `title` when there is no text).
  */
-export function Btn({ variant = "secondary", children, onClick, className, size = "md", title, disabled, label, pressed, expanded, controls }: { variant?: BtnVariant | undefined; children: ReactNode; onClick?: (() => void) | undefined; className?: string | undefined; size?: "sm" | "md" | "lg" | undefined; title?: string | undefined; disabled?: boolean | undefined; label?: string | undefined; pressed?: boolean | undefined; expanded?: boolean | undefined; controls?: string | undefined }) {
+export function Btn({
+  variant = "secondary",
+  children,
+  onClick,
+  className,
+  size = "md",
+  title,
+  disabled,
+  label,
+  pressed,
+  expanded,
+  controls,
+}: {
+  variant?: BtnVariant | undefined;
+  children: ReactNode;
+  onClick?: (() => void) | undefined;
+  className?: string | undefined;
+  size?: "sm" | "md" | "lg" | undefined;
+  title?: string | undefined;
+  disabled?: boolean | undefined;
+  label?: string | undefined;
+  pressed?: boolean | undefined;
+  expanded?: boolean | undefined;
+  controls?: string | undefined;
+}) {
   return (
     <button
       type="button"
@@ -91,7 +198,11 @@ export function Btn({ variant = "secondary", children, onClick, className, size 
       onClick={onClick}
       className={cn(
         "eo-btn inline-flex items-center justify-center gap-1.5 whitespace-nowrap rounded-lg border font-bold tracking-[0.08em] uppercase transition-all active:scale-[0.98] disabled:opacity-40 disabled:pointer-events-none",
-        size === "sm" ? "h-7 px-2.5 text-[10px]" : size === "lg" ? "h-11 px-5 text-xs" : "h-9 px-3.5 text-[10.5px]",
+        size === "sm"
+          ? "h-7 px-2.5 text-[10px]"
+          : size === "lg"
+            ? "h-11 px-5 text-xs"
+            : "h-9 px-3.5 text-[10.5px]",
         btnCls[variant],
         className,
       )}
@@ -102,7 +213,19 @@ export function Btn({ variant = "secondary", children, onClick, className, size 
 }
 
 /* ── Page header (every View starts with Grid cols=*,Auto: title block + actions) ── */
-export function PageHeader({ title, sub, badges, actions, accent = "bg-cyan" }: { title: string; sub?: string | undefined; badges?: ReactNode | undefined; actions?: ReactNode | undefined; accent?: string | undefined }) {
+export function PageHeader({
+  title,
+  sub,
+  badges,
+  actions,
+  accent = "bg-cyan",
+}: {
+  title: string;
+  sub?: string | undefined;
+  badges?: ReactNode | undefined;
+  actions?: ReactNode | undefined;
+  accent?: string | undefined;
+}) {
   return (
     <div className="eo-page-header mb-5 flex flex-wrap items-start justify-between gap-4">
       <div className="flex gap-3">
@@ -121,14 +244,32 @@ export function PageHeader({ title, sub, badges, actions, accent = "bg-cyan" }: 
 }
 
 /* ── Stat strip (UniformGrid / cols=*,10,* tile rows) ── */
-export function StatTiles({ items, cols }: { items: { label: string; value: ReactNode; sub?: string | undefined; tone?: Tone | undefined }[]; cols?: number | undefined }) {
-  const tc: Record<Tone, string> = { cyan: "text-cyan", primary: "text-primary-hover", success: "text-success", warning: "text-warning", danger: "text-destructive", muted: "text-foreground" };
+export function StatTiles({
+  items,
+  cols,
+}: {
+  items: { label: string; value: ReactNode; sub?: string | undefined; tone?: Tone | undefined }[];
+  cols?: number | undefined;
+}) {
+  const tc: Record<Tone, string> = {
+    cyan: "text-cyan",
+    primary: "text-primary-hover",
+    success: "text-success",
+    warning: "text-warning",
+    danger: "text-destructive",
+    muted: "text-foreground",
+  };
   return (
-    <div className="eo-stat-grid grid gap-2.5" style={{ gridTemplateColumns: `repeat(${cols ?? items.length}, minmax(0,1fr))` }}>
+    <div
+      className="eo-stat-grid grid gap-2.5"
+      style={{ gridTemplateColumns: `repeat(${cols ?? items.length}, minmax(0,1fr))` }}
+    >
       {items.map((s) => (
         <div key={s.label} className="eo-card eo-stat p-3.5">
           <Label className="text-[9.5px]">{s.label}</Label>
-          <div className={cn("mt-1.5 text-2xl font-bold tabular-nums", tc[s.tone ?? "muted"])}>{s.value}</div>
+          <div className={cn("mt-1.5 text-2xl font-bold tabular-nums", tc[s.tone ?? "muted"])}>
+            {s.value}
+          </div>
           {s.sub && <div className="mt-0.5 text-[11px] text-subtle">{s.sub}</div>}
         </div>
       ))}
@@ -137,7 +278,19 @@ export function StatTiles({ items, cols }: { items: { label: string; value: Reac
 }
 
 /* ── Filter chips (rows of RadioButton/Button filters) ── */
-export function Chips({ options, value, onChange, className, label }: { options: string[]; value: string; onChange: (v: string) => void; className?: string | undefined; label?: string | undefined }) {
+export function Chips({
+  options,
+  value,
+  onChange,
+  className,
+  label,
+}: {
+  options: string[];
+  value: string;
+  onChange: (v: string) => void;
+  className?: string | undefined;
+  label?: string | undefined;
+}) {
   return (
     <div role="group" aria-label={label} className={cn("flex flex-wrap gap-1.5", className)}>
       {options.map((o) => (
@@ -148,7 +301,9 @@ export function Chips({ options, value, onChange, className, label }: { options:
           onClick={() => onChange(o)}
           className={cn(
             "h-7 rounded-md border px-2.5 text-[10px] font-bold tracking-[0.08em] uppercase transition-colors",
-            value === o ? "border-cyan/50 bg-cyan/15 text-cyan" : "border-border bg-window text-muted-foreground hover:text-foreground",
+            value === o
+              ? "border-cyan/50 bg-cyan/15 text-cyan"
+              : "border-border bg-window text-muted-foreground hover:text-foreground",
           )}
         >
           {o}
@@ -158,45 +313,132 @@ export function Chips({ options, value, onChange, className, label }: { options:
   );
 }
 
-export function SearchBox({ placeholder, value, onChange }: { placeholder: string; value: string; onChange: (v: string) => void }) {
+export function SearchBox({
+  placeholder,
+  value,
+  onChange,
+}: {
+  placeholder: string;
+  value: string;
+  onChange: (v: string) => void;
+}) {
   return (
-    <div className="eo-search relative"><Search className="pointer-events-none absolute left-3 top-3 h-3.5 w-3.5 text-subtle" /><input
-      aria-label={placeholder}
-      value={value}
-      onChange={(e) => onChange(e.target.value)}
-      placeholder={placeholder}
-      className="h-9 w-full rounded-lg border border-border bg-window pl-9 pr-3 text-sm text-foreground placeholder:text-subtle outline-none focus:border-cyan/60"
-    /></div>
+    <div className="eo-search relative">
+      <Search className="pointer-events-none absolute left-3 top-3 h-3.5 w-3.5 text-subtle" />
+      <input
+        aria-label={placeholder}
+        value={value}
+        onChange={(e) => onChange(e.target.value)}
+        placeholder={placeholder}
+        className="h-9 w-full rounded-lg border border-border bg-window pl-9 pr-3 text-sm text-foreground placeholder:text-subtle outline-none focus:border-cyan/60"
+      />
+    </div>
   );
 }
 
-export function Bar({ value, tone = "cyan", className }: { value: number; tone?: Tone | undefined; className?: string | undefined }) {
-  const bg: Record<Tone, string> = { cyan: "bg-cyan", primary: "bg-primary", success: "bg-success", warning: "bg-warning", danger: "bg-destructive", muted: "bg-subtle" };
+export function Bar({
+  value,
+  tone = "cyan",
+  className,
+}: {
+  value: number;
+  tone?: Tone | undefined;
+  className?: string | undefined;
+}) {
+  const bg: Record<Tone, string> = {
+    cyan: "bg-cyan",
+    primary: "bg-primary",
+    success: "bg-success",
+    warning: "bg-warning",
+    danger: "bg-destructive",
+    muted: "bg-subtle",
+  };
   return (
-    <div role="progressbar" aria-label="Progress" aria-valuenow={Math.round(value)} aria-valuemin={0} aria-valuemax={100} className={cn("h-1.5 w-full overflow-hidden rounded-full bg-window", className)}>
-      <div className={cn("h-full rounded-full transition-all duration-500", bg[tone])} style={{ width: `${Math.min(100, Math.max(0, value))}%` }} />
+    <div
+      role="progressbar"
+      aria-label="Progress"
+      aria-valuenow={Math.round(value)}
+      aria-valuemin={0}
+      aria-valuemax={100}
+      className={cn("h-1.5 w-full overflow-hidden rounded-full bg-window", className)}
+    >
+      <div
+        className={cn("h-full rounded-full transition-all duration-500", bg[tone])}
+        style={{ width: `${Math.min(100, Math.max(0, value))}%` }}
+      />
     </div>
   );
 }
 
 /* ── Toggle (PremiumToggle) & Check ── */
-export function Toggle({ on, onChange, label = "Toggle setting" }: { on: boolean; onChange: (v: boolean) => void; label?: string }) {
+export function Toggle({
+  on,
+  onChange,
+  label = "Toggle setting",
+}: {
+  on: boolean;
+  onChange: (v: boolean) => void;
+  label?: string;
+}) {
   return (
-    <button type="button" role="switch" aria-checked={on} aria-label={label} onClick={() => onChange(!on)} className={cn("relative h-5 w-9 shrink-0 rounded-full border transition-colors", on ? "border-cyan/60 bg-cyan/30" : "border-border-strong bg-window")}>
-      <span className={cn("absolute top-0.5 h-3.5 w-3.5 rounded-full transition-all", on ? "left-[18px] bg-cyan" : "left-0.5 bg-subtle")} />
+    <button
+      type="button"
+      role="switch"
+      aria-checked={on}
+      aria-label={label}
+      onClick={() => onChange(!on)}
+      className={cn(
+        "relative h-5 w-9 shrink-0 rounded-full border transition-colors",
+        on ? "border-cyan/60 bg-cyan/30" : "border-border-strong bg-window",
+      )}
+    >
+      <span
+        className={cn(
+          "absolute top-0.5 h-3.5 w-3.5 rounded-full transition-all",
+          on ? "left-[18px] bg-cyan" : "left-0.5 bg-subtle",
+        )}
+      />
     </button>
   );
 }
-export function Check({ on, onChange, label = "Select item" }: { on: boolean; onChange: (v: boolean) => void; label?: string }) {
+export function Check({
+  on,
+  onChange,
+  label = "Select item",
+}: {
+  on: boolean;
+  onChange: (v: boolean) => void;
+  label?: string;
+}) {
   return (
-    <button type="button" role="checkbox" aria-checked={on} aria-label={label} onClick={() => onChange(!on)} className={cn("eo-check flex h-4.5 w-4.5 shrink-0 items-center justify-center rounded border text-[10px] font-black", on ? "border-cyan bg-cyan text-sidebar-primary-foreground" : "border-border-strong bg-window")}>
+    <button
+      type="button"
+      role="checkbox"
+      aria-checked={on}
+      aria-label={label}
+      onClick={() => onChange(!on)}
+      className={cn(
+        "eo-check flex h-4.5 w-4.5 shrink-0 items-center justify-center rounded border text-[10px] font-black",
+        on
+          ? "border-cyan bg-cyan text-sidebar-primary-foreground"
+          : "border-border-strong bg-window",
+      )}
+    >
       {on && <CheckIcon aria-hidden="true" className="h-3 w-3" strokeWidth={3.5} />}
     </button>
   );
 }
 
 /* ── Key / value row ── */
-export function KV({ k, v, mono }: { k: string | undefined; v: ReactNode; mono?: boolean | undefined }) {
+export function KV({
+  k,
+  v,
+  mono,
+}: {
+  k: string | undefined;
+  v: ReactNode;
+  mono?: boolean | undefined;
+}) {
   return (
     <div className="flex items-baseline justify-between gap-3 border-b border-border/60 py-1.5 text-[12.5px] last:border-0">
       <span className="text-muted-foreground">{k}</span>
@@ -206,22 +448,57 @@ export function KV({ k, v, mono }: { k: string | undefined; v: ReactNode; mono?:
 }
 
 /* ── DETAILS expander: hides raw technical inventories (build report §1 rule) ── */
-export function Details({ title = "ADVANCED DETAILS", children }: { title?: string | undefined; children: ReactNode }) {
+export function Details({
+  title = "ADVANCED DETAILS",
+  children,
+}: {
+  title?: string | undefined;
+  children: ReactNode;
+}) {
   const [open, setOpen] = useState(false);
   const panelId = useId();
   return (
     <div className="eo-card overflow-hidden">
-      <button type="button" aria-expanded={open} aria-controls={panelId} onClick={() => setOpen(!open)} className="flex w-full items-center justify-between px-5 py-3.5 text-left hover:bg-highlight/40">
+      <button
+        type="button"
+        aria-expanded={open}
+        aria-controls={panelId}
+        onClick={() => setOpen(!open)}
+        className="flex w-full items-center justify-between px-5 py-3.5 text-left hover:bg-highlight/40"
+      >
         <span className="eo-label text-muted-foreground">{title}</span>
-        <ChevronDown aria-hidden="true" className={cn("h-4 w-4 text-muted-foreground transition-transform", open && "rotate-180")} />
+        <ChevronDown
+          aria-hidden="true"
+          className={cn("h-4 w-4 text-muted-foreground transition-transform", open && "rotate-180")}
+        />
       </button>
-      {open && <div id={panelId} className="border-t border-border px-5 py-4 eo-enter">{children}</div>}
+      {open && (
+        <div id={panelId} className="border-t border-border px-5 py-4 eo-enter">
+          {children}
+        </div>
+      )}
     </div>
   );
 }
 
 /* ── Modal overlay (WPF Popup/Grid overlays) ── */
-export function Modal({ open, onClose, title, sub, children, footer, width = "max-w-2xl" }: { open: boolean; onClose: () => void; title: string; sub?: string | undefined; children: ReactNode; footer?: ReactNode | undefined; width?: string | undefined }) {
+export function Modal({
+  open,
+  onClose,
+  title,
+  sub,
+  children,
+  footer,
+  width = "max-w-2xl",
+}: {
+  open: boolean;
+  onClose: () => void;
+  title: string;
+  sub?: string | undefined;
+  children: ReactNode;
+  footer?: ReactNode | undefined;
+  width?: string | undefined;
+}) {
   const dialog = useRef<HTMLDivElement>(null);
   const closeRef = useRef(onClose);
   closeRef.current = onClose;
@@ -229,35 +506,91 @@ export function Modal({ open, onClose, title, sub, children, footer, width = "ma
   const subId = useId();
   const [visible, setVisible] = useState(open);
   useEffect(() => {
-    if (open) { setVisible(true); return; }
+    if (open) {
+      setVisible(true);
+      return;
+    }
     const timer = setTimeout(() => setVisible(false), 150);
     return () => clearTimeout(timer);
   }, [open]);
   useEffect(() => {
     if (!open || !visible) return;
     const previous = document.activeElement instanceof HTMLElement ? document.activeElement : null;
-    const elements = () => Array.from(dialog.current?.querySelectorAll<HTMLElement>('button:not([disabled]), input:not([disabled]), select:not([disabled]), textarea, a[href], [tabindex]:not([tabindex="-1"])') ?? []);
+    const elements = () =>
+      Array.from(
+        dialog.current?.querySelectorAll<HTMLElement>(
+          'button:not([disabled]), input:not([disabled]), select:not([disabled]), textarea, a[href], [tabindex]:not([tabindex="-1"])',
+        ) ?? [],
+      );
     elements()[0]?.focus();
     const h = (e: KeyboardEvent) => {
-      if (e.key === "Escape") { e.preventDefault(); closeRef.current(); }
+      if (e.key === "Escape") {
+        e.preventDefault();
+        closeRef.current();
+      }
       if (e.key !== "Tab") return;
-      const targets = elements(), first = targets[0], last = targets.at(-1);
-      if (e.shiftKey && document.activeElement === first) { e.preventDefault(); last?.focus(); }
-      else if (!e.shiftKey && document.activeElement === last) { e.preventDefault(); first?.focus(); }
+      const targets = elements(),
+        first = targets[0],
+        last = targets.at(-1);
+      if (e.shiftKey && document.activeElement === first) {
+        e.preventDefault();
+        last?.focus();
+      } else if (!e.shiftKey && document.activeElement === last) {
+        e.preventDefault();
+        first?.focus();
+      }
     };
     window.addEventListener("keydown", h);
-    return () => { window.removeEventListener("keydown", h); previous?.focus(); };
+    return () => {
+      window.removeEventListener("keydown", h);
+      previous?.focus();
+    };
   }, [open, visible]);
   if (!visible) return null;
   return (
-    <div className={cn("eo-overlay fixed inset-0 z-50 flex items-center justify-center bg-background/80 p-6 backdrop-blur-sm", !open && "eo-dismiss")} onClick={onClose}>
-      <div ref={dialog} role="dialog" aria-modal="true" aria-labelledby={titleId} aria-describedby={sub ? subId : undefined} className={cn("eo-card eo-modal flex max-h-[86vh] w-full flex-col p-0", width)} onClick={(e) => e.stopPropagation()}>
+    <div
+      className={cn(
+        "eo-overlay fixed inset-0 z-50 flex items-center justify-center bg-background/80 p-6 backdrop-blur-sm",
+        !open && "eo-dismiss",
+      )}
+      onClick={onClose}
+    >
+      <div
+        ref={dialog}
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby={titleId}
+        aria-describedby={sub ? subId : undefined}
+        className={cn("eo-card eo-modal flex max-h-[86vh] w-full flex-col p-0", width)}
+        onClick={(e) => e.stopPropagation()}
+      >
         <div className="eo-modal-head flex items-start justify-between gap-4 border-b border-border px-6 py-4">
-          <div className="min-w-0"><h2 id={titleId} className="text-base font-bold uppercase">{title}</h2>{sub && <p id={subId} className="mt-1 text-xs text-muted-foreground">{sub}</p>}</div>
-          <Btn onClick={onClose} size="sm" variant="ghost" title="Close dialog (Esc)" label="Close dialog"><X aria-hidden="true" className="h-4 w-4" /></Btn>
+          <div className="min-w-0">
+            <h2 id={titleId} className="text-base font-bold uppercase">
+              {title}
+            </h2>
+            {sub && (
+              <p id={subId} className="mt-1 text-xs text-muted-foreground">
+                {sub}
+              </p>
+            )}
+          </div>
+          <Btn
+            onClick={onClose}
+            size="sm"
+            variant="ghost"
+            title="Close dialog (Esc)"
+            label="Close dialog"
+          >
+            <X aria-hidden="true" className="h-4 w-4" />
+          </Btn>
         </div>
         <div className="min-h-0 overflow-y-auto px-6 py-5">{children}</div>
-        {footer && <div className="flex flex-wrap items-center justify-end gap-2 border-t border-border px-6 py-3.5">{footer}</div>}
+        {footer && (
+          <div className="flex flex-wrap items-center justify-end gap-2 border-t border-border px-6 py-3.5">
+            {footer}
+          </div>
+        )}
       </div>
     </div>
   );
@@ -266,15 +599,23 @@ export function Modal({ open, onClose, title, sub, children, footer, width = "ma
 /* ── Simulation helpers ── */
 export function SimNotice({ children }: { children?: ReactNode | undefined }) {
   return (
-    <div role="note" className="flex items-center gap-2 rounded-lg border border-warning/30 bg-warning/5 px-3 py-2 text-[11.5px] text-warning">
+    <div
+      role="note"
+      className="flex items-center gap-2 rounded-lg border border-warning/30 bg-warning/5 px-3 py-2 text-[11.5px] text-warning"
+    >
       <FlaskConical aria-hidden="true" className="h-3.5 w-3.5 shrink-0" />
-      <span>{children ?? "PROTOTYPE NOTICE: Demonstration data only. No Windows registry, service, file or driver is read or changed."}</span>
+      <span>
+        {children ??
+          "PROTOTYPE NOTICE: Demonstration data only. No Windows registry, service, file or driver is read or changed."}
+      </span>
     </div>
   );
 }
 
 export function simulate(label: string | undefined) {
-  toast(`${label} — simulated`, { description: "Prototype only. No real system changes were made." });
+  toast(`${label} — simulated`, {
+    description: "Prototype only. No real system changes were made.",
+  });
 }
 
 export function useSimRun(durationMs = 2200) {
@@ -284,9 +625,17 @@ export function useSimRun(durationMs = 2200) {
   const cancel = () => {
     if (interval.current) clearInterval(interval.current);
     if (delay.current) clearTimeout(delay.current);
-    interval.current = null; delay.current = null; setProgress(null);
+    interval.current = null;
+    delay.current = null;
+    setProgress(null);
   };
-  useEffect(() => () => { if (interval.current) clearInterval(interval.current); if (delay.current) clearTimeout(delay.current); }, []);
+  useEffect(
+    () => () => {
+      if (interval.current) clearInterval(interval.current);
+      if (delay.current) clearTimeout(delay.current);
+    },
+    [],
+  );
   const start = (onDone?: () => void) => {
     if (interval.current || delay.current) return;
     setProgress(0);
@@ -297,7 +646,11 @@ export function useSimRun(durationMs = 2200) {
       if (p >= 100) {
         if (interval.current) clearInterval(interval.current);
         interval.current = null;
-        delay.current = setTimeout(() => { delay.current = null; setProgress(null); onDone?.(); }, 200);
+        delay.current = setTimeout(() => {
+          delay.current = null;
+          setProgress(null);
+          onDone?.();
+        }, 200);
       }
     }, 80);
   };
@@ -305,14 +658,33 @@ export function useSimRun(durationMs = 2200) {
 }
 
 /* ── Stepper (workflow progress: done / current / upcoming) ── */
-export function Stepper({ steps, current, label = "Workflow progress" }: { steps: string[]; current: number; label?: string | undefined }) {
+export function Stepper({
+  steps,
+  current,
+  label = "Workflow progress",
+}: {
+  steps: string[];
+  current: number;
+  label?: string | undefined;
+}) {
   return (
     <ol aria-label={label} className="eo-stepper flex flex-wrap items-center gap-1.5">
       {steps.map((s, i) => {
         const state = i < current ? "done" : i === current ? "current" : "upcoming";
         return (
-          <li key={s} data-state={state} aria-current={state === "current" ? "step" : undefined} className="eo-step flex items-center gap-2 rounded-full border px-2.5 py-1 text-[10px] font-bold uppercase">
-            <span className="eo-step-dot flex h-4 w-4 items-center justify-center rounded-full text-[9px]">{state === "done" ? <CheckIcon aria-hidden="true" className="h-2.5 w-2.5" strokeWidth={4} /> : i + 1}</span>
+          <li
+            key={s}
+            data-state={state}
+            aria-current={state === "current" ? "step" : undefined}
+            className="eo-step flex items-center gap-2 rounded-full border px-2.5 py-1 text-[10px] font-bold uppercase"
+          >
+            <span className="eo-step-dot flex h-4 w-4 items-center justify-center rounded-full text-[9px]">
+              {state === "done" ? (
+                <CheckIcon aria-hidden="true" className="h-2.5 w-2.5" strokeWidth={4} />
+              ) : (
+                i + 1
+              )}
+            </span>
             {s}
             {state === "done" && <span className="sr-only">(completed)</span>}
           </li>
@@ -323,22 +695,46 @@ export function Stepper({ steps, current, label = "Workflow progress" }: { steps
 }
 
 /* ── Loading state (skeleton rows with a live status message) ── */
-export function LoadingState({ label, rows = 3, progress }: { label: string; rows?: number | undefined; progress?: number | null | undefined }) {
+export function LoadingState({
+  label,
+  rows = 3,
+  progress,
+}: {
+  label: string;
+  rows?: number | undefined;
+  progress?: number | null | undefined;
+}) {
   return (
     <div role="status" aria-live="polite" className="space-y-2">
       <div className="flex items-center justify-between text-[11px] font-bold uppercase text-cyan">
-        <span className="flex items-center gap-2"><span aria-hidden="true" className="eo-pulse-dot h-1.5 w-1.5 rounded-full bg-cyan" />{label}</span>
+        <span className="flex items-center gap-2">
+          <span aria-hidden="true" className="eo-pulse-dot h-1.5 w-1.5 rounded-full bg-cyan" />
+          {label}
+        </span>
         {progress != null && <span className="font-mono">{Math.round(progress)}%</span>}
       </div>
       {progress != null && <Bar value={progress} />}
       {Array.from({ length: rows }, (_, i) => (
-        <div key={i} aria-hidden="true" className="eo-skeleton h-14 rounded-xl border border-border" style={{ animationDelay: `${i * 120}ms` }} />
+        <div
+          key={i}
+          aria-hidden="true"
+          className="eo-skeleton h-14 rounded-xl border border-border"
+          style={{ animationDelay: `${i * 120}ms` }}
+        />
       ))}
     </div>
   );
 }
 
-export function EmptyState({ title, sub, action }: { title: string; sub: string; action?: ReactNode | undefined }) {
+export function EmptyState({
+  title,
+  sub,
+  action,
+}: {
+  title: string;
+  sub: string;
+  action?: ReactNode | undefined;
+}) {
   return (
     <div className="eo-empty flex flex-col items-center justify-center rounded-xl border border-dashed border-border-strong px-6 py-10 text-center">
       <div className="eo-label text-foreground">{title}</div>
@@ -349,7 +745,17 @@ export function EmptyState({ title, sub, action }: { title: string; sub: string;
 }
 
 /* Grid with explicit fractional columns, mirroring WPF ColumnDefinitions */
-export function Cols({ cols, gap = 12, children, className }: { cols: string; gap?: number | undefined; children: ReactNode; className?: string | undefined }) {
+export function Cols({
+  cols,
+  gap = 12,
+  children,
+  className,
+}: {
+  cols: string;
+  gap?: number | undefined;
+  children: ReactNode;
+  className?: string | undefined;
+}) {
   return (
     <div className={cn("grid", className)} style={{ gridTemplateColumns: cols, gap }}>
       {children}

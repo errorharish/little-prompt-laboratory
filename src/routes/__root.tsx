@@ -82,14 +82,21 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       { charSet: "utf-8" },
       { name: "viewport", content: "width=device-width, initial-scale=1" },
       { title: "ERROR OPTIMIZER — UI Prototype" },
-      { name: "description", content: "Browser prototype and WPF blueprint of the ERROR OPTIMIZER desktop suite. Simulated data only." },
+      {
+        name: "description",
+        content:
+          "Browser prototype and WPF blueprint of the ERROR OPTIMIZER desktop suite. Simulated data only.",
+      },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
     ],
     links: [
       { rel: "preconnect", href: "https://fonts.googleapis.com" },
       { rel: "preconnect", href: "https://fonts.gstatic.com", crossOrigin: "anonymous" },
-      { rel: "stylesheet", href: "https://fonts.googleapis.com/css2?family=Sora:wght@400;600;700;800&family=JetBrains+Mono:wght@400;600&display=swap" },
+      {
+        rel: "stylesheet",
+        href: "https://fonts.googleapis.com/css2?family=Sora:wght@400;600;700;800&family=JetBrains+Mono:wght@400;600&display=swap",
+      },
       {
         rel: "stylesheet",
         href: appCss,
@@ -122,10 +129,12 @@ function RootComponent() {
 
   return (
     <QueryClientProvider client={queryClient}>
-      <AppearanceProvider><Shell>
-        {/* Required: nested routes render here. Removing <Outlet /> breaks all child routes. */}
-        <Outlet />
-      </Shell></AppearanceProvider>
+      <AppearanceProvider>
+        <Shell>
+          {/* Required: nested routes render here. Removing <Outlet /> breaks all child routes. */}
+          <Outlet />
+        </Shell>
+      </AppearanceProvider>
       <Toaster theme="dark" position="top-right" />
     </QueryClientProvider>
   );

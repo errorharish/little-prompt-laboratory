@@ -13,12 +13,24 @@ describe("Preserved prototype rules", () => {
     expect(V4_TABS).toEqual(["v4-max-performance", "emulator-optimization"]);
   });
   it("preserves the eight one-click execution identities", () => {
-    expect(ONE_CLICK_ACTIONS.map((a) => a.id)).toEqual(["visual-tweaks", "bcd-platform-timers", "shader-cache", "fast-clean", "deep-clean", "background-workload", "ram-standby", "power-performance"]);
+    expect(ONE_CLICK_ACTIONS.map((a) => a.id)).toEqual([
+      "visual-tweaks",
+      "bcd-platform-timers",
+      "shader-cache",
+      "fast-clean",
+      "deep-clean",
+      "background-workload",
+      "ram-standby",
+      "power-performance",
+    ]);
   });
   it("limits restart recommendations to the supplied restart action", () => {
-    expect(filterRecommendations(null, "Requires Restart", "").map((a) => a.id)).toEqual(["bcd-platform-timers"]);
+    expect(filterRecommendations(null, "Requires Restart", "").map((a) => a.id)).toEqual([
+      "bcd-platform-timers",
+    ]);
   });
   it("does not fabricate optional, optimized or protected recommendation rows", () => {
-    for (const filter of ["Optional", "Already Optimized", "Protected Items"]) expect(filterRecommendations(null, filter, "")).toEqual([]);
+    for (const filter of ["Optional", "Already Optimized", "Protected Items"])
+      expect(filterRecommendations(null, filter, "")).toEqual([]);
   });
 });

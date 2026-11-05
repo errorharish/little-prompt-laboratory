@@ -2,10 +2,39 @@ import type { ReactNode } from "react";
 import { DashboardPage } from "./pages/Dashboard";
 import { OneClickPage } from "./pages/OneClick";
 import { TierPage } from "./pages/Tier";
-import { GpuRegistryValuesPage, InputOptimizerPage, RegistryTweakPage, RegistryValuesPage, RegistryValuesRamPage, SystemInfoPage } from "./pages/SystemPages";
-import { AutoOptimizePage, NetworkPage, ProcessReductionPage, ServiceManagerPage, StartupManagerPage, StoragePage, ToolsPage } from "./pages/ManagerPages";
-import { AboutPage, AiOptimizationPage, BackupRestorePage, PerformanceTuningPage, SettingsPage } from "./pages/MiscPages";
-import { EmulatorDeployerPage, EmulatorModulesPage, EmulatorOptimizationPage, LowEndSteamPage, V4CoreOptimizerPage, V4DashboardPage, V4MaxPerformancePage } from "./pages/V4Pages";
+import {
+  GpuRegistryValuesPage,
+  InputOptimizerPage,
+  RegistryTweakPage,
+  RegistryValuesPage,
+  RegistryValuesRamPage,
+  SystemInfoPage,
+} from "./pages/SystemPages";
+import {
+  AutoOptimizePage,
+  NetworkPage,
+  ProcessReductionPage,
+  ServiceManagerPage,
+  StartupManagerPage,
+  StoragePage,
+  ToolsPage,
+} from "./pages/ManagerPages";
+import {
+  AboutPage,
+  AiOptimizationPage,
+  BackupRestorePage,
+  PerformanceTuningPage,
+  SettingsPage,
+} from "./pages/MiscPages";
+import {
+  EmulatorDeployerPage,
+  EmulatorModulesPage,
+  EmulatorOptimizationPage,
+  LowEndSteamPage,
+  V4CoreOptimizerPage,
+  V4DashboardPage,
+  V4MaxPerformancePage,
+} from "./pages/V4Pages";
 
 export const PAGE_COMPONENTS: Record<string, () => ReactNode> = {
   "": () => <DashboardPage />,

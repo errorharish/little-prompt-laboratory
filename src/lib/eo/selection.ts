@@ -26,7 +26,10 @@ export interface SelectionSummary {
   byRisk: Record<Risk, number>;
 }
 
-export function summarizeSelection(items: readonly (Selectable & { restart?: boolean })[], selected: Set<string>): SelectionSummary {
+export function summarizeSelection(
+  items: readonly (Selectable & { restart?: boolean })[],
+  selected: Set<string>,
+): SelectionSummary {
   const picked = items.filter((i) => selected.has(i.id));
   const byRisk: Record<Risk, number> = { SAFE: 0, LOW: 0, MEDIUM: 0, HIGH: 0, PROTECTED: 0 };
   for (const i of picked) byRisk[i.risk] += 1;
@@ -43,6 +46,17 @@ export interface SimulatedRunSummary {
   elapsedMs: number;
 }
 
-export function simulatedRunSummary(selected: number, restartNoted: number, elapsedMs: number): SimulatedRunSummary {
-  return { selected, simulatedSteps: selected, restartNoted, realChanges: 0, verification: "Not performed (prototype)", elapsedMs };
+export function simulatedRunSummary(
+  selected: number,
+  restartNoted: number,
+  elapsedMs: number,
+): SimulatedRunSummary {
+  return {
+    selected,
+    simulatedSteps: selected,
+    restartNoted,
+    realChanges: 0,
+    verification: "Not performed (prototype)",
+    elapsedMs,
+  };
 }

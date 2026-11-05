@@ -9,7 +9,9 @@ export const Route = createFileRoute("/$page")({
     return { title: p.title, description: p.description, suite: p.suite };
   },
   head: ({ loaderData }) => {
-    const title = loaderData ? `${loaderData.title} — ERROR OPTIMIZER ${loaderData.suite}` : "Unavailable — ERROR OPTIMIZER";
+    const title = loaderData
+      ? `${loaderData.title} — ERROR OPTIMIZER ${loaderData.suite}`
+      : "Unavailable — ERROR OPTIMIZER";
     const description = loaderData?.description ?? "Page not found.";
     return {
       meta: [
