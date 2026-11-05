@@ -912,3 +912,6 @@ button.eo-check-row:active { transform: translateY(0); box-shadow: var(--shadow-
   .eo-v4-nav { height: auto; }
   .eo-v4-crumb { display: none; }
 }
+@container (max-width: 1050px) {
+  .eo-page-content .eo-v4-scope-grid { grid-template-columns: minmax(0, 1fr); }
+}
