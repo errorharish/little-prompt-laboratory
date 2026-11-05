@@ -2,6 +2,7 @@
 import { useState } from "react";
 import { Badge, Bar, Btn, Card, Check, Chips, Cols, Details, EmptyState, KV, Label, Modal, PageHeader, RiskBadge, SearchBox, SectionTitle, SimNotice, StatTiles, Toggle, simulate, useSimRun } from "../kit";
 import { cn } from "@/lib/utils";
+import { toggleInSet } from "@/lib/eo/selection";
 
 /* ───────── STARTUP MANAGER ───────── */
 const STARTUP = [
@@ -226,7 +227,7 @@ export function ProcessReductionPage() {
         <div className="mb-3 flex items-center gap-2"><Label>SORT:</Label><Chips options={["SAFETY + RAM", "RAM", "CPU", "NAME"]} value={sort} onChange={setSort} /></div>
         <Label className="mb-2 text-foreground">BACKGROUND PROCESS CANDIDATES</Label>
         <div className="eo-data-table rounded-lg border border-border"><div className="grid bg-window px-3 py-2 eo-label text-[9px] text-subtle" style={{ gridTemplateColumns: "32px 65px 1fr 65px 150px 1fr 60px 65px" }}><span>SEL</span><span>MEMORY</span><span>PROCESS & IDENTITY</span><span>CPU</span><span>SAFETY LEVEL</span><span>REASON</span><span>PID</span><span>ACTION</span></div>
-          {vis.map((p) => <div key={p.pid} className="grid items-center border-t border-border px-3 py-2 text-[12px]" style={{ gridTemplateColumns: "32px 65px 1fr 65px 150px 1fr 60px 65px" }}>{p.s === "SAFE TO TERMINATE" ? <Check on={sel.has(p.pid)} onChange={() => setSel((s) => { const n = new Set(s); n.has(p.pid) ? n.delete(p.pid) : n.add(p.pid); return n; })} /> : <span />}<span>{p.mem} MB</span><span className="font-semibold">{p.n}</span><span>{p.cpu}%</span><Badge tone={tone(p.s)}>{p.s}</Badge><span className="text-muted-foreground">{p.why}</span><span className="font-mono text-subtle">{p.pid}</span><Btn size="sm" variant="ghost" onClick={() => setD(p)}>Info</Btn></div>)}</div>
+          {vis.map((p) => <div key={p.pid} className="grid items-center border-t border-border px-3 py-2 text-[12px]" style={{ gridTemplateColumns: "32px 65px 1fr 65px 150px 1fr 60px 65px" }}>{p.s === "SAFE TO TERMINATE" ? <Check on={sel.has(p.pid)} onChange={() => setSel((s) => { return toggleInSet(s, p.pid); })} /> : <span />}<span>{p.mem} MB</span><span className="font-semibold">{p.n}</span><span>{p.cpu}%</span><Badge tone={tone(p.s)}>{p.s}</Badge><span className="text-muted-foreground">{p.why}</span><span className="font-mono text-subtle">{p.pid}</span><Btn size="sm" variant="ghost" onClick={() => setD(p)}>Info</Btn></div>)}</div>
         <div className="mt-3 flex justify-end"><Btn variant="danger" disabled={!sel.size} onClick={() => setConfirm(true)}>Terminate selected</Btn></div></Card>
       <SimNotice />
       <Modal open={confirm} onClose={() => setConfirm(false)} title="Terminate selected processes?" footer={<><Btn variant="ghost" onClick={() => setConfirm(false)}>Cancel</Btn><Btn variant="danger" onClick={() => { setConfirm(false); setSel(new Set()); simulate("Terminate processes"); }}>Confirm terminate</Btn></>}><p className="text-sm text-muted-foreground">Warning: the selected background processes will be terminated immediately. Unsaved data in them may be lost.</p></Modal>

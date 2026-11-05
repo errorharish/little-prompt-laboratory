@@ -3,6 +3,7 @@ import { useState } from "react";
 import { Link } from "@tanstack/react-router";
 import { Badge, Bar, Btn, Card, Check, Chips, Cols, Details, KV, Label, Modal, PageHeader, RiskBadge, SearchBox, SectionTitle, SimNotice, StatTiles, simulate, useSimRun } from "../kit";
 import { RunModal } from "../RunModal";
+import { toggleInSet } from "@/lib/eo/selection";
 import { CATALOG, HW } from "@/lib/eo/data";
 import { cn } from "@/lib/utils";
 
@@ -20,7 +21,7 @@ export function InputOptimizerPage() {
       <div className="mb-3 flex items-start justify-between"><div><Label className="text-foreground">{title}</Label><p className="mt-1 text-xs text-muted-foreground">{sub}</p></div>
         <div className="flex items-center gap-1.5"><Badge>Applicable: {items.length}</Badge><Badge tone="success">Optimized: 1</Badge><Badge tone="warning">Pending: {items.length - 1}</Badge></div></div>
       {mode === "CUSTOM" && <div className="mb-2 flex gap-1.5"><Btn size="sm" onClick={() => setSel((s) => new Set([...s, ...items]))}>Select all</Btn><Btn size="sm" variant="ghost" onClick={() => setSel((s) => new Set([...s].filter((x) => !items.includes(x))))}>Deselect all</Btn></div>}
-      <div className="space-y-1.5">{items.map((i, n) => <div key={i} className="flex items-center gap-3 rounded-lg border border-border bg-window px-3 py-2.5 text-[12.5px]">{mode === "CUSTOM" && <Check on={sel.has(i)} onChange={() => setSel((s) => { const x = new Set(s); x.has(i) ? x.delete(i) : x.add(i); return x; })} />}<span className="flex-1">{i}</span>{n === 0 ? <Badge tone="success">OPTIMIZED</Badge> : <Badge tone="warning">PENDING</Badge>}</div>)}</div>
+      <div className="space-y-1.5">{items.map((i, n) => <div key={i} className="flex items-center gap-3 rounded-lg border border-border bg-window px-3 py-2.5 text-[12.5px]">{mode === "CUSTOM" && <Check on={sel.has(i)} onChange={() => setSel((s) => { return toggleInSet(s, i); })} />}<span className="flex-1">{i}</span>{n === 0 ? <Badge tone="success">OPTIMIZED</Badge> : <Badge tone="warning">PENDING</Badge>}</div>)}</div>
     </Card>
   );
   return (
