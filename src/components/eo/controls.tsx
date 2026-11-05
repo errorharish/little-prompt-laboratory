@@ -179,17 +179,14 @@ export function NumberField({
   const fallbackId = useId();
   const inputId = id ?? fallbackId;
   const fmt = useCallback((v: number) => v.toFixed(decimals), [decimals]);
-  const [draft, setDraft] = useState(fmt(value));
-  const [editing, setEditing] = useState(false);
-  useEffect(() => {
-    if (!editing) setDraft(fmt(value));
-  }, [value, editing, fmt]);
-  const commit = () => {
-    const n = parseFloat(draft.replace(",", "."));
-    const v = Number.isFinite(n) ? clampStep(n, min, max, step) : value;
-    onChange(v);
-    setDraft(fmt(v));
-    setEditing(false);
+  // While focused the field shows the typed draft; otherwise it always renders the live value,
+  // so it can never lag behind the slider.
+  const [draft, setDraft] = useState<string | null>(null);
+  const commit = (text: string | null) => {
+    if (text === null) return;
+    const n = parseFloat(text.replace(",", "."));
+    onChange(Number.isFinite(n) ? clampStep(n, min, max, step) : value);
+    setDraft(null);
   };
   return (
     <div className="eo-number">
@@ -197,19 +194,24 @@ export function NumberField({
         id={inputId}
         inputMode="decimal"
         aria-label={label}
-        value={draft}
-        onFocus={() => setEditing(true)}
-        onBlur={commit}
+        value={draft ?? fmt(value)}
+        onFocus={(e) => {
+          setDraft(fmt(value));
+          e.currentTarget.select();
+        }}
+        onBlur={() => commit(draft)}
         onChange={(e) => {
           setDraft(e.target.value);
           const n = parseFloat(e.target.value.replace(",", "."));
           if (Number.isFinite(n) && n >= min && n <= max) onChange(clampStep(n, min, max, step));
         }}
         onKeyDown={(e) => {
-          if (e.key === "Enter") commit();
+          if (e.key === "Enter") {
+            commit(draft);
+            setDraft(null);
+          }
           if (e.key === "Escape") {
-            setDraft(fmt(value));
-            setEditing(false);
+            setDraft(null);
             e.currentTarget.blur();
           }
           if (e.key === "ArrowUp" || e.key === "ArrowDown") {
@@ -263,10 +265,10 @@ export function ScoreRing({
           return (
             <line
               key={i}
-              x1={c + Math.cos(a) * r1}
-              y1={c + Math.sin(a) * r1}
-              x2={c + Math.cos(a) * r2}
-              y2={c + Math.sin(a) * r2}
+              x1={(c + Math.cos(a) * r1).toFixed(2)}
+              y1={(c + Math.sin(a) * r1).toFixed(2)}
+              x2={(c + Math.cos(a) * r2).toFixed(2)}
+              y2={(c + Math.sin(a) * r2).toFixed(2)}
               className="eo-score-tick"
               data-lit={i / ticks < value / 100 ? "true" : undefined}
               style={{ "--i": i } as CSSProperties}
