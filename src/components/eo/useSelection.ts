@@ -85,7 +85,10 @@ export function usePersistedSelection<T extends string | number>(
   );
   // Items are usually inline literals; key the memo on their identity-relevant fields.
   const sig = items
-    .map((i) => `${String(i.id)}:${i.risk ?? ""}:${i.done ? 1 : 0}:${i.unsupported ? 1 : 0}:${i.destructive ? 1 : 0}`)
+    .map(
+      (i) =>
+        `${String(i.id)}:${i.risk ?? ""}:${i.done ? 1 : 0}:${i.unsupported ? 1 : 0}:${i.destructive ? 1 : 0}`,
+    )
     .join("|");
   // eslint-disable-next-line react-hooks/exhaustive-deps
   const stable = useMemo(() => items, [sig]);

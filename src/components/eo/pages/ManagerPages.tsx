@@ -943,10 +943,7 @@ export function StoragePage() {
           <Btn size="sm" variant="ghost" onClick={() => simulate("Rescan sample cleanup")}>
             Rescan
           </Btn>
-          <Btn
-            size="sm"
-            onClick={clean.selectAll}
-          >
+          <Btn size="sm" onClick={clean.selectAll}>
             Select all eligible
           </Btn>
           <Btn size="sm" variant="ghost" onClick={() => setCleanSel(new Set())}>
@@ -1303,10 +1300,7 @@ export function ProcessReductionPage() {
             onChange={setF}
           />
           <div className="flex gap-1.5">
-            <Btn
-              size="sm"
-              onClick={procSel.selectAll}
-            >
+            <Btn size="sm" onClick={procSel.selectAll}>
               Select all safe
             </Btn>
             <Btn size="sm" variant="ghost" onClick={() => setSel(new Set())}>

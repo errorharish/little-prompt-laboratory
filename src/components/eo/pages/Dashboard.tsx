@@ -3,16 +3,27 @@
 // overview · 4. system information strip · 5. quick actions. Optimization Status was removed.
 // The full System Performance Telemetry chart lives on the System Telemetry page.
 import { memo, useState, type CSSProperties } from "react";
-import { Link } from "@tanstack/react-router";
+import { Link, useNavigate } from "@tanstack/react-router";
 import {
+  Activity,
+  ArrowUpRight,
+  CheckCircle2,
   Cpu,
-  MemoryStick,
-  MonitorCog,
   HardDrive,
   HeartPulse,
-  RefreshCw,
-  ArrowUpRight,
   Info,
+  Loader2,
+  MemoryStick,
+  MonitorCog,
+  Play,
+  RefreshCw,
+  Rocket,
+  ShieldCheck,
+  Sparkles,
+  Trash2,
+  Wifi,
+  Zap,
+  type LucideIcon,
 } from "lucide-react";
 import {
   Badge,
@@ -27,7 +38,17 @@ import {
   SectionTitle,
   SimNotice,
   simulate,
+  useSimRun,
 } from "../kit";
+import { OpProgress } from "../RunModal";
+import {
+  QUICK_ACTIONS,
+  canStartQuick,
+  navigatesAway,
+  quickResult,
+  quickStepAt,
+  type QuickAction,
+} from "@/lib/eo/quickActions";
 import { CountUp, ScoreRing } from "../controls";
 import { AutoOptimizePanel } from "../AutoOptimizePanel";
 import { HW } from "@/lib/eo/data";

@@ -183,7 +183,13 @@ export function V4MaxPerformancePage() {
                   on={scope.sel.has(s.id)}
                   onChange={() => !r.running && scope.toggle(s.id)}
                   state={st}
-                  icon={st === "done" ? <CheckCircle2 className="h-4 w-4" /> : <s.icon className="h-4 w-4" />}
+                  icon={
+                    st === "done" ? (
+                      <CheckCircle2 className="h-4 w-4" />
+                    ) : (
+                      <s.icon className="h-4 w-4" />
+                    )
+                  }
                   title={s.t}
                   desc={s.d}
                   right={
@@ -230,7 +236,9 @@ export function V4MaxPerformancePage() {
               onClick={() => setConfirmRun(true)}
             >
               <Zap aria-hidden="true" className="h-4 w-4" />
-              {r.running ? `Optimizing… ${pct.toFixed(0)}%` : `Optimize selected (${picked.length})`}
+              {r.running
+                ? `Optimizing… ${pct.toFixed(0)}%`
+                : `Optimize selected (${picked.length})`}
             </Btn>
           </div>
         </Card>
@@ -920,7 +928,9 @@ export function EmulatorModulesPage() {
         }
         title="Module Hub"
         badges={<Badge tone="cyan">MSI APP PLAYER 5</Badge>}
-        sub={active ? active.sub : "Choose a module to review findings and apply simulated changes."}
+        sub={
+          active ? active.sub : "Choose a module to review findings and apply simulated changes."
+        }
         actions={
           <>
             <Btn variant="ghost" onClick={() => setGuide(true)}>
@@ -1012,7 +1022,10 @@ export function EmulatorModulesPage() {
               <div className="min-w-0">
                 <Label className="text-cyan">PLANNED OPTIMIZATIONS</Label>
                 <h2 className="mt-0.5 text-[14px] font-bold">
-                  {profile.replace(" PROFILE", "").toLowerCase().replace(/^\w/, (c) => c.toUpperCase())}{" "}
+                  {profile
+                    .replace(" PROFILE", "")
+                    .toLowerCase()
+                    .replace(/^\w/, (c) => c.toUpperCase())}{" "}
                   profile
                 </h2>
               </div>
@@ -1035,7 +1048,11 @@ export function EmulatorModulesPage() {
               ))}
             </div>
             <div className="mt-3">
-              <Details inline title="Performance assessment" hint="Model estimate — not a benchmark">
+              <Details
+                inline
+                title="Performance assessment"
+                hint="Model estimate — not a benchmark"
+              >
                 <div className="grid grid-cols-4 gap-3 text-[12px]">
                   {[
                     ["HARDWARE TIER", "High-end"],
@@ -1220,7 +1237,9 @@ export function EmulatorModulesPage() {
                 <Btn
                   variant="primary"
                   disabled={!lowEndSel.length}
-                  onClick={() => simulate(`Apply ${lowEndSel.length} selected sample low-end items`)}
+                  onClick={() =>
+                    simulate(`Apply ${lowEndSel.length} selected sample low-end items`)
+                  }
                 >
                   Apply low-end changes
                 </Btn>
@@ -1230,9 +1249,7 @@ export function EmulatorModulesPage() {
         </div>
       )}
 
-      <SimNotice>
-        Simulated modules · emulator configuration files are never touched.
-      </SimNotice>
+      <SimNotice>Simulated modules · emulator configuration files are never touched.</SimNotice>
 
       <Modal
         open={review}

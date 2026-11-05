@@ -530,9 +530,7 @@ export function CheckRow({
       {icon && <span className="eo-row-icon">{icon}</span>}
       <span className="min-w-0 flex-1 text-left">
         <span className="block truncate text-[12.5px] font-semibold">{title}</span>
-        {desc && (
-          <span className="block truncate text-[11px] text-muted-foreground">{desc}</span>
-        )}
+        {desc && <span className="block truncate text-[11px] text-muted-foreground">{desc}</span>}
       </span>
       {right && <span className="flex shrink-0 items-center gap-1.5">{right}</span>}
     </>

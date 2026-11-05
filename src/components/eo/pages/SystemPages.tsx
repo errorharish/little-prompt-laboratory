@@ -59,12 +59,7 @@ export function InputOptimizerPage() {
       <SectionTitle title={title} sub={sub} right={<Badge>{items.length} sample settings</Badge>} />
       {mode === "CUSTOM" && (
         <div className="mb-2 flex gap-1.5">
-          <Btn
-            size="sm"
-            onClick={() =>
-              setSel((s) => new Set([...s, ...items.slice(1)]))
-            }
-          >
+          <Btn size="sm" onClick={() => setSel((s) => new Set([...s, ...items.slice(1)]))}>
             Select all
           </Btn>
           <Btn
@@ -893,10 +888,7 @@ export function GpuRegistryValuesPage() {
         title="HARDWARE-AWARE OPTIMIZATION GROUPS"
         right={
           <>
-            <Btn
-              size="sm"
-              onClick={gpu.selectAll}
-            >
+            <Btn size="sm" onClick={gpu.selectAll}>
               Select all applicable
             </Btn>
             <Btn size="sm" variant="ghost" onClick={() => setSel(new Set())}>
