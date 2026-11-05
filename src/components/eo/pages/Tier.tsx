@@ -23,6 +23,7 @@ import {
 import { RunModal } from "../RunModal";
 import { CATALOG, HW, TIERS, type Risk, type TierInfo } from "@/lib/eo/data";
 import { toggleInSet } from "@/lib/eo/selection";
+import { usePersistedSelection } from "../useSelection";
 import { cn } from "@/lib/utils";
 
 const TIER_CATS: Record<string, string[]> = {
@@ -113,9 +114,9 @@ function TierView({ slug, t }: { slug: string; t: TierInfo }) {
     scope: c.cat === "SYSTEM" ? "UEFI" : "WINDOWS",
     done: i % 4 === 3,
   }));
-  const [sel, setSel] = useState<Set<string>>(
-    new Set(items.filter((i) => !i.done && i.risk !== "MEDIUM").map((i) => i.id)),
-  );
+  // Each tier is its own profile: first use selects every eligible, not-yet-applied item.
+  const tierSel = usePersistedSelection(`tier:${slug}`, items);
+  const { sel, setSel } = tierSel;
   const [query, setQuery] = useState("");
   const [detail, setDetail] = useState<(typeof items)[number] | null>(null);
   const [logsCleared, setLogsCleared] = useState(false);
@@ -262,7 +263,18 @@ function TierView({ slug, t }: { slug: string; t: TierInfo }) {
         <div className="mb-3 flex flex-wrap items-center justify-between gap-2">
           <Chips options={["ALL", "WINDOWS", "UEFI"]} value={scope} onChange={setScope} />
           <div className="flex gap-1.5">
-            <Btn size="sm" onClick={() => setSel(new Set(vis.map((i) => i.id)))}>
+            <Btn
+              size="sm"
+              onClick={() =>
+                setSel(
+                  (s) =>
+                    new Set([
+                      ...s,
+                      ...vis.filter((i) => !i.done && i.risk !== "HIGH").map((i) => i.id),
+                    ]),
+                )
+              }
+            >
               Select all
             </Btn>
             <Btn
