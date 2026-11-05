@@ -1045,3 +1045,6 @@ button.eo-check-row:active { transform: translateY(0); box-shadow: var(--shadow-
 @container (max-width: 760px) {
   .eo-page-content .eo-mode-pick { grid-template-columns: minmax(0, 1fr); }
 }
+@keyframes eo-pop-out { to { opacity: 0; transform: translateY(-4px) scale(.97); } }
+.eo-guide-pop[data-closing] { animation: eo-pop-out 140ms var(--ease-out) both; pointer-events: none; }
+.eo-guide-pop[data-closing][data-above] { animation-name: eo-pop-out; }

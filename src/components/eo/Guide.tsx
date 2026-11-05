@@ -35,6 +35,8 @@ export function GuideTip({
 }) {
   const g = getGuide(id);
   const [open, setOpen] = useState(false);
+  // Kept mounted briefly after closing so the exit animation can play.
+  const [mounted, setMounted] = useState(false);
   const [more, setMore] = useState(false);
   const [pos, setPos] = useState<{ top: number; left: number; above: boolean } | null>(null);
   const btn = useRef<HTMLButtonElement>(null);
@@ -68,6 +70,15 @@ export function GuideTip({
   useLayoutEffect(() => {
     if (open) place();
   }, [open, more, place]);
+
+  useEffect(() => {
+    if (open) {
+      setMounted(true);
+      return;
+    }
+    const t = setTimeout(() => setMounted(false), 140);
+    return () => clearTimeout(t);
+  }, [open]);
 
   useEffect(() => {
     if (!open) return;
@@ -125,7 +136,7 @@ export function GuideTip({
       >
         <CircleHelp aria-hidden="true" />
       </button>
-      {open &&
+      {(open || mounted) &&
         typeof document !== "undefined" &&
         createPortal(
           <div
@@ -135,6 +146,7 @@ export function GuideTip({
             tabIndex={-1}
             className="eo-guide-pop eo-scroll-fade"
             data-above={pos?.above || undefined}
+            data-closing={!open || undefined}
             style={{
               top: pos?.top ?? -9999,
               left: pos?.left ?? -9999,
