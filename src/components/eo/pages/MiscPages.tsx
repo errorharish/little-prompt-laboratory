@@ -965,7 +965,7 @@ export function SettingsPage() {
           </div>
         </Row>
         <Row t="Hue / Saturation / Brightness" s="Fine-tune the accent">
-          <Rng />
+          <Rng label="Accent hue, saturation and brightness" />
         </Row>
         <Row t="Gradient Theme Studio" s="Multi-color atmospheric spectrum">
           <Seg
@@ -977,10 +977,10 @@ export function SettingsPage() {
           <Seg o={["OFF", "SUBTLE (SLOW)", "DYNAMIC"]} d="SUBTLE (SLOW)" />
         </Row>
         <Row t="Window Glass Transparency" s="How much of the window behind is visible">
-          <Rng d={20} />
+          <Rng d={20} label="Window glass transparency" />
         </Row>
         <Row t="Card / Panel Opacity" s="Opacity of internal cards and panels">
-          <Rng d={90} />
+          <Rng d={90} label="Card and panel opacity" />
         </Row>
         <Row t="UI Animations" s="Tactile controls and depth transitions">
           <Toggle
