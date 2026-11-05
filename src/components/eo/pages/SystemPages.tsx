@@ -462,12 +462,15 @@ const REG_LIST = CATALOG.map((c, i) => ({
   state: i % 5 === 0 ? "OPTIMIZED" : i % 7 === 0 ? "NOT APPLICABLE" : "PENDING",
 }));
 // Already-optimized rows are not re-selected; not-applicable rows can never be selected.
+// Recommended = low-risk (the page's own RECOMMENDED definition); MEDIUM is Custom-only.
 const REG_ITEMS = REG_LIST.map((i) => ({
   id: i.id,
   risk: i.risk,
   done: i.state === "OPTIMIZED",
   unsupported: i.state === "NOT APPLICABLE",
+  recommended: i.risk === "LOW" || i.risk === "SAFE",
 }));
+const REG_RECOMMENDED = eligibleSelection(REG_ITEMS);
 export function RegistryTweakPage() {
   const [mode, setMode] = useState("NORMAL");
   const [cat, setCat] = useState("ALL");
@@ -525,6 +528,7 @@ export function RegistryTweakPage() {
             <SectionTitle
               title="RECOMMENDED OPTIMIZATIONS"
               guide="registry.recommended"
+              sub={`${REG_RECOMMENDED.size} applicable, recommended items · selected automatically`}
               right={
                 <Btn variant="primary" onClick={() => setRun(true)}>
                   Apply recommended
@@ -533,8 +537,7 @@ export function RegistryTweakPage() {
             />
             <div className="grid grid-cols-2 gap-2">
               {list
-                .filter((i) => i.state === "PENDING")
-                .slice(0, 8)
+                .filter((i) => REG_RECOMMENDED.has(i.id))
                 .map((i) => (
                   <button
                     key={i.id}
@@ -699,7 +702,10 @@ export function RegistryTweakPage() {
         open={run}
         onClose={() => setRun(false)}
         profile="Registry Intelligence"
-        count={sel.size || 8}
+        count={mode === "NORMAL" ? REG_RECOMMENDED.size : sel.size}
+        items={REG_LIST.filter((i) =>
+          (mode === "NORMAL" ? REG_RECOMMENDED : sel).has(i.id),
+        ).map((i) => ({ id: i.id, title: i.name, risk: i.risk }))}
       />
     </div>
   );
