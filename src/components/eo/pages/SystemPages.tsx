@@ -749,39 +749,356 @@ export function RegistryTweakPage() {
   );
 }
 
-/* ───────── REGISTRY VALUES (tab host: RAM | GPU) ───────── */
+/* ───────── REGISTRY VALUES (overview host: RAM | GPU) ───────── */
+// Data: src/lib/eo/registryValues.ts (transcribed from the WPF RAM and GPU registry engines).
+function RegValueBadge({ v }: { v: RegistryValueEntry }) {
+  if (v.status === "diagnostic") return <Badge>READ-ONLY</Badge>;
+  if (v.status === "not-applicable") return <Badge>N/A</Badge>;
+  if (v.risk === "EXPERIMENTAL") return <Badge tone="warning">EXPERIMENTAL</Badge>;
+  return <RiskBadge risk={v.risk === "DIAGNOSTIC" ? "LOW" : v.risk} />;
+}
+
+function RegTableHead() {
+  return (
+    <div
+      aria-hidden="true"
+      className="grid gap-3 border-b border-border px-2.5 pb-1.5 eo-label text-[9px] text-muted-foreground"
+      style={{ gridTemplateColumns: REG_ROW_COLS }}
+    >
+      <span>Value</span>
+      <span>Sample target · current</span>
+      <span className="text-right">Risk</span>
+    </div>
+  );
+}
+
+const REG_ROW_COLS = "minmax(0, 1.25fr) minmax(0, 1fr) 92px";
+
+function RegRow({ v, onOpen }: { v: RegistryValueEntry; onOpen: (v: RegistryValueEntry) => void }) {
+  const off = v.status !== "applicable";
+  return (
+    <li>
+      <button
+        type="button"
+        onClick={() => onOpen(v)}
+        aria-label={`${v.title} (${v.valueName}) — details`}
+        className={cn(
+          "grid w-full items-center gap-3 rounded-md px-2.5 py-1.5 text-left transition-colors duration-150 hover:bg-highlight focus-visible:bg-highlight",
+          off && "text-muted-foreground",
+        )}
+        style={{ gridTemplateColumns: REG_ROW_COLS }}
+      >
+        <span className="min-w-0">
+          <span className={cn("block truncate text-[12px] font-semibold", !off && "text-foreground")}>
+            {v.title}
+          </span>
+          <span className="flex min-w-0 items-center gap-1.5 font-mono text-[10.5px] text-muted-foreground">
+            <span className="truncate">{v.valueName}</span>
+            {v.restart && v.status === "applicable" && (
+              <RotateCcw aria-label="Restart required" className="h-2.5 w-2.5 shrink-0 text-warning" />
+            )}
+          </span>
+        </span>
+        <span className="min-w-0 font-mono text-[10.5px]">
+          <span
+            className={cn("block truncate", off ? "text-muted-foreground" : "text-cyan")}
+            title={v.target}
+          >
+            {v.target}
+          </span>
+          <span className="block truncate text-muted-foreground" title={v.current}>
+            {v.current}
+          </span>
+        </span>
+        <span className="flex justify-end">
+          <RegValueBadge v={v} />
+        </span>
+      </button>
+    </li>
+  );
+}
+
+function RegGroup({
+  group,
+  values,
+  onOpen,
+  badge,
+}: {
+  group: RegistryGroup;
+  values: RegistryValueEntry[];
+  onOpen: (v: RegistryValueEntry) => void;
+  badge?: ReactNode;
+}) {
+  return (
+    <section aria-label={group.title} className="space-y-1">
+      <div className="flex flex-wrap items-center gap-2 px-2.5 pt-2">
+        <h3 className="text-[11px] font-bold tracking-wide text-foreground uppercase">{group.title}</h3>
+        <Badge tone="cyan">{group.tag}</Badge>
+        {badge}
+        <span className="ml-auto text-[10.5px] text-muted-foreground">
+          {values.length} {values.length === 1 ? "value" : "values"}
+        </span>
+      </div>
+      {group.note && <p className="px-2.5 text-[11px] text-muted-foreground">{group.note}</p>}
+      <ul className="divide-y divide-border/60">
+        {values.map((v) => (
+          <RegRow key={v.id} v={v} onOpen={onOpen} />
+        ))}
+      </ul>
+    </section>
+  );
+}
+
+const NATIVE_STEPS: [string, string][] = [
+  ["Read", "Current value is read back before anything is offered."],
+  ["Back up", "A snapshot of the previous value is saved before a write."],
+  ["Write & verify", "The value is written, then read back to confirm it stuck."],
+  ["Restart & check", "Restart-bound values are re-checked after the next boot; rollback stays available."],
+];
+
 export function RegistryValuesPage() {
+  const [detail, setDetail] = useState<RegistryValueEntry | null>(null);
+  const ram = registrySummary(RAM_REGISTRY_VALUES);
+  const gpu = registrySummary(GPU_REGISTRY_VALUES);
+  const hw = SAMPLE_REGISTRY_HW;
+  const sampleTier = nearestRamTier(hw.ramGb);
+  const gpuVendorGroups = GPU_REG_GROUPS.filter((g) => g.key !== "diagnostic");
+  const diagGroup = GPU_REG_GROUPS.find((g) => g.key === "diagnostic");
+  const isGpu = detail ? GPU_REGISTRY_VALUES.includes(detail) : false;
+  const vendorBadge = (key: string) => {
+    if (key === "nvidia")
+      return hw.gpuVendor === "NVIDIA" ? <Badge tone="success">IN SAMPLE</Badge> : <Badge>NOT IN SAMPLE</Badge>;
+    if (key === "amd")
+      return hw.gpuVendor === "AMD" ? <Badge tone="success">IN SAMPLE</Badge> : <Badge>NOT IN SAMPLE</Badge>;
+    return undefined;
+  };
   return (
     <div className="space-y-4">
       <PageHeader
         title="Registry Values"
-        sub="Explore sample RAM and GPU registry configurations."
+        sub="Hardware-aware RAM and GPU registry values, matched to sample hardware."
+        actions={
+          <>
+            <Link to="/$page" params={{ page: "registry-values-ram" }}>
+              <Btn size="sm">RAM page →</Btn>
+            </Link>
+            <Link to="/$page" params={{ page: "gpu-registry-values" }}>
+              <Btn size="sm">GPU page →</Btn>
+            </Link>
+          </>
+        }
       />
-      <div className="grid grid-cols-2 items-stretch gap-3.5">
-        <Link
-          to="/$page"
-          params={{ page: "registry-values-ram" }}
-          className="eo-card eo-depth p-4 transition-colors hover:border-cyan/50"
-        >
-          <Badge tone="cyan">RAM</Badge>
-          <h2 className="mt-3 text-sm font-bold">RAM registry values</h2>
-          <p className="mt-1 text-xs text-muted-foreground">
-            Service Host (svchost) split threshold configuration based on installed RAM.
-          </p>
-        </Link>
-        <Link
-          to="/$page"
-          params={{ page: "gpu-registry-values" }}
-          className="eo-card eo-depth p-4 transition-colors hover:border-cyan/50"
-        >
-          <Badge tone="cyan">GPU</Badge>
-          <h2 className="mt-3 text-sm font-bold">GPU registry values</h2>
-          <p className="mt-1 text-xs text-muted-foreground">
-            Universal, NVIDIA and AMD hardware-aware GPU registry groups.
-          </p>
-        </Link>
+      <SimNotice>
+        SAMPLE DATA: values are computed for sample hardware ({hw.ramGb} GB RAM · {hw.gpuName} ·{" "}
+        {hw.laptop ? "laptop" : "desktop"} · {hw.profile} profile). No Windows registry is read or
+        written.
+      </SimNotice>
+      <StatTiles
+        items={[
+          { label: "RAM VALUES", value: ram.total, sub: `${ram.applicable} applicable` },
+          { label: "GPU VALUES", value: gpu.total, sub: `${gpu.applicable} applicable` },
+          {
+            label: "NOT APPLICABLE",
+            value: ram.notApplicable + gpu.notApplicable,
+            sub: "Hardware or profile gate",
+          },
+          { label: "READ-ONLY", value: gpu.diagnostic, sub: "Diagnostic, never applied" },
+          {
+            label: "NEED RESTART",
+            value: ram.restart + gpu.restart,
+            sub: "Of applicable values",
+            tone: "warning",
+          },
+        ]}
+      />
+      <div className="grid grid-cols-1 items-start gap-3.5 lg:grid-cols-2">
+        <div className="space-y-3.5">
+          <Card>
+            <SectionTitle
+              title="RAM REGISTRY VALUES"
+              guide="registry.ram-values"
+              sub={`Machine values · sample ${hw.ramGb} GB RAM, ${hw.logicalCores} threads`}
+              right={
+                <Link to="/$page" params={{ page: "registry-values-ram" }}>
+                  <Btn size="sm" variant="ghost">
+                    Open
+                  </Btn>
+                </Link>
+              }
+            />
+            <RegTableHead />
+            <div className="space-y-1">
+              {RAM_GROUPS.map((g) => (
+                <RegGroup
+                  key={g.key}
+                  group={g}
+                  values={valuesInGroup(RAM_REGISTRY_VALUES, g.key)}
+                  onOpen={setDetail}
+                />
+              ))}
+            </div>
+          </Card>
+          <Card>
+            <SectionTitle
+              title="SERVICE HOST THRESHOLD BY RAM TIER"
+              guide="ram.size"
+              sub="SvcHostSplitThresholdInKB · nearest validated tier is used"
+            />
+            <table className="w-full text-[11.5px]">
+              <caption className="sr-only">Service Host split threshold for each RAM tier</caption>
+              <thead>
+                <tr className="eo-label text-left text-[9px] text-muted-foreground">
+                  <th scope="col" className="border-b border-border px-2.5 pb-1.5 font-semibold">
+                    RAM tier
+                  </th>
+                  <th scope="col" className="border-b border-border px-2.5 pb-1.5 font-semibold">
+                    DWORD
+                  </th>
+                  <th scope="col" className="border-b border-border px-2.5 pb-1.5 text-right font-semibold">
+                    Threshold
+                  </th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-border/60">
+                {RAM_TIER_MAP.map(([gb, dword]) => {
+                  const sample = gb === sampleTier;
+                  return (
+                    <tr
+                      key={gb}
+                      className={cn("transition-colors duration-150 hover:bg-highlight", sample && "bg-cyan/5")}
+                    >
+                      <td className="px-2.5 py-1.5 font-semibold">
+                        {gb} GB{" "}
+                        {sample && (
+                          <Badge tone="cyan" className="ml-1.5 align-middle">
+                            SAMPLE
+                          </Badge>
+                        )}
+                      </td>
+                      <td className={cn("px-2.5 py-1.5 font-mono text-[10.5px]", sample && "text-cyan")}>
+                        {hex8(dword)}
+                      </td>
+                      <td className="px-2.5 py-1.5 text-right font-mono text-[10.5px] text-muted-foreground">
+                        {dword.toLocaleString("en-US")} KB
+                      </td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+            <p className="mt-2 px-2.5 text-[11px] text-muted-foreground">
+              Unset default: {hex8(SVCHOST_DEFAULT_KB)} ({SVCHOST_DEFAULT_KB.toLocaleString("en-US")} KB).
+            </p>
+          </Card>
+          <Card>
+            <SectionTitle title="HOW THE NATIVE ENGINE APPLIES VALUES" sub="Not run in this prototype" />
+            <ol className="space-y-2">
+              {NATIVE_STEPS.map(([k, d], i) => (
+                <li key={k} className="flex gap-2.5 text-[11.5px]">
+                  <span className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full border border-cyan/40 font-mono text-[10px] text-cyan">
+                    {i + 1}
+                  </span>
+                  <span>
+                    <span className="font-semibold text-foreground">{k}.</span>{" "}
+                    <span className="text-muted-foreground">{d}</span>
+                  </span>
+                </li>
+              ))}
+            </ol>
+          </Card>
+        </div>
+        <Card>
+          <SectionTitle
+            title="GPU REGISTRY VALUES"
+            guide="gpu.groups"
+            sub={`Sample ${hw.gpuName} · ${hw.gpuCount} GPU · HAGS ${hw.supportsHags ? "supported" : "unsupported"}`}
+            right={
+              <Link to="/$page" params={{ page: "gpu-registry-values" }}>
+                <Btn size="sm" variant="ghost">
+                  Open
+                </Btn>
+              </Link>
+            }
+          />
+          <RegTableHead />
+          <div className="space-y-1">
+            {gpuVendorGroups.map((g) => (
+              <RegGroup
+                key={g.key}
+                group={g}
+                values={valuesInGroup(GPU_REGISTRY_VALUES, g.key)}
+                onOpen={setDetail}
+                badge={vendorBadge(g.key)}
+              />
+            ))}
+          </div>
+          {diagGroup && (
+            <div className="mt-2">
+              <Details
+                inline
+                title="DIAGNOSTIC CONFIGURATION"
+                hint={`${gpu.diagnostic} read-only values`}
+              >
+                <RegGroup
+                  group={diagGroup}
+                  values={valuesInGroup(GPU_REGISTRY_VALUES, "diagnostic")}
+                  onOpen={setDetail}
+                />
+              </Details>
+            </div>
+          )}
+        </Card>
       </div>
-      <SimNotice />
+      <Modal
+        open={!!detail}
+        onClose={() => setDetail(null)}
+        title={detail?.title ?? "Registry value"}
+        sub={detail ? `${isGpu ? "GPU" : "RAM"} registry value · sample data` : undefined}
+        footer={
+          <>
+            <Link to="/$page" params={{ page: isGpu ? "gpu-registry-values" : "registry-values-ram" }}>
+              <Btn size="sm">{isGpu ? "Open GPU page" : "Open RAM page"}</Btn>
+            </Link>
+            <Btn variant="ghost" onClick={() => setDetail(null)}>
+              Close
+            </Btn>
+          </>
+        }
+      >
+        {detail && (
+          <div className="space-y-3">
+            <p className="text-[12.5px] text-muted-foreground">{detail.description}</p>
+            <div className="flex flex-wrap gap-1.5">
+              <RegValueBadge v={detail} />
+              {detail.restart && <Badge tone="warning">RESTART REQUIRED</Badge>}
+              <Badge tone="cyan">{detail.category}</Badge>
+            </div>
+            <Cols cols="minmax(0, 1fr) minmax(0, 1fr)" gap={10} className="items-stretch">
+              <div className="rounded-lg border border-border bg-window p-3">
+                <Label>Current (sample)</Label>
+                <div className="mt-1 font-mono text-[12px]">{detail.current}</div>
+              </div>
+              <div className="rounded-lg border border-success/30 bg-window p-3">
+                <Label className="text-success">Target (sample)</Label>
+                <div className="mt-1 font-mono text-[12px]">{detail.target}</div>
+              </div>
+            </Cols>
+            <div>
+              <KV k="Value name:" v={detail.valueName} mono />
+              <KV k="Type:" v={detail.type} mono />
+              <KV k="Registry path:" v={<span className="break-all">{detail.path}</span>} mono />
+              <KV k="Hardware:" v={detail.hardware} />
+              {detail.driver && <KV k="Driver:" v={detail.driver} />}
+              <KV k="Sample applicability:" v={detail.reason} />
+            </div>
+            {detail.path.includes("<adapter>") && (
+              <p className="text-[11px] text-muted-foreground">
+                {"<adapter>"} is the display adapter subkey (for example 0000), resolved at runtime.
+              </p>
+            )}
+          </div>
+        )}
+      </Modal>
     </div>
   );
 }
