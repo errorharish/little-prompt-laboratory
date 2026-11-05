@@ -372,7 +372,7 @@ export function EmulatorOptimizationPage() {
                 <div>
                   <div className="flex items-center gap-2">
                     <Badge tone="cyan">ENGINE {i + 1}</Badge>
-                    <h3 className="text-[15px] font-bold tracking-wide">{e.n}</h3>
+                    <h2 className="text-[15px] font-bold tracking-wide">{e.n}</h2>
                   </div>
                   <p className="mt-1 text-xs text-muted-foreground">{e.desc}</p>
                 </div>
@@ -630,7 +630,7 @@ export function EmulatorModulesPage() {
                 </Label>
                 <Badge tone="success">{m.tag}</Badge>
               </div>
-              <h3 className="mt-2 text-lg font-bold">{m.n}</h3>
+              <h2 className="mt-2 text-lg font-bold">{m.n}</h2>
               <p className="text-xs text-muted-foreground">{m.sub}</p>
               <div className="mt-3 text-[11.5px]">
                 <span className="text-subtle">Suitability:</span> {m.suit}
