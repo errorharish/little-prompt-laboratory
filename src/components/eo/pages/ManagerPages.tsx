@@ -68,7 +68,7 @@ export function StartupManagerPage() {
       <PageHeader
         title="Startup Manager"
         badges={<Badge tone="cyan">BOOT ACCELERATION</Badge>}
-        sub="Manage startup applications and background tasks that launch automatically with Windows."
+        sub="Review sample startup apps and their boot impact."
         actions={<Btn onClick={() => simulate("Rescan startup")}>Rescan startup</Btn>}
       />
       <StatTiles
@@ -94,12 +94,10 @@ export function StartupManagerPage() {
         ]}
       />
       <Card>
-        <Cols cols="1fr auto" className="mb-3 items-center">
+        <div className="mb-3">
           <SearchBox placeholder="Search startup items…" value={q} onChange={setQ} />
-          <span className="text-[10px] font-bold tracking-widest text-subtle">
-            SORT: NAME · IMPACT · STATUS · PUBLISHER
-          </span>
-        </Cols>
+
+        </div>
         <Chips
           options={[
             "ALL",
@@ -115,15 +113,22 @@ export function StartupManagerPage() {
           value={f}
           onChange={setF}
         />
-        <div className="mt-3 space-y-1.5">
+        <div className="mt-3 overflow-hidden rounded-lg border border-border">
+          <div className="grid items-center gap-3 bg-window px-3 py-2 text-[10px] font-bold tracking-wide text-subtle" style={{ gridTemplateColumns: "minmax(0, 1fr) 110px 100px 70px 40px" }}>
+            <span>APPLICATION</span>
+            <span>PUBLISHER</span>
+            <span>IMPACT</span>
+            <span>TYPE</span>
+            <span>ON</span>
+          </div>
           {vis.map((i) => (
             <div
               key={i.name}
-              className="grid items-center gap-3 rounded-lg border border-border bg-window px-3 py-2.5 text-[12.5px]"
-              style={{ gridTemplateColumns: "1fr 140px 110px 90px auto" }}
+              className="grid items-center gap-3 border-t border-border px-3 py-2 text-[12.5px]"
+              style={{ gridTemplateColumns: "minmax(0, 1fr) 110px 100px 70px 40px" }}
             >
               <button
-                className="text-left font-semibold hover:text-cyan"
+                className="min-w-0 text-left font-semibold hover:text-cyan"
                 onClick={() => setDetail(i)}
               >
                 {i.name}
@@ -275,7 +280,7 @@ export function ServiceManagerPage() {
     <div className="space-y-4">
       <PageHeader
         title="Service Manager"
-        sub="Inspect, monitor, and optimize Windows background services. Identify safe-to-stop services with dependency awareness."
+        sub="Review sample services, startup modes, and action safety."
         actions={<Btn onClick={() => simulate("Rescan services")}>Rescan services</Btn>}
       />
       <StatTiles
@@ -309,13 +314,19 @@ export function ServiceManagerPage() {
           value={f}
           onChange={setF}
         />
-        <div className="mt-3 space-y-1.5">
+        <div className="mt-3 overflow-hidden rounded-lg border border-border">
+          <div className="grid items-center gap-3 bg-window px-3 py-2 text-[10px] font-bold tracking-wide text-subtle" style={{ gridTemplateColumns: "minmax(0, 1fr) 80px 130px 115px" }}>
+            <span>SERVICE</span>
+            <span>STATUS</span>
+            <span>STARTUP</span>
+            <span>SAFETY</span>
+          </div>
           {vis.map((s) => (
             <button
               key={s.name}
               onClick={() => setD(s)}
-              className="grid w-full items-center gap-3 rounded-lg border border-border bg-window px-3 py-2.5 text-left text-[12.5px] hover:border-cyan/40"
-              style={{ gridTemplateColumns: "1fr 90px 150px 130px" }}
+              className="grid w-full items-center gap-3 border-t border-border px-3 py-2 text-left text-[12.5px] hover:bg-window"
+              style={{ gridTemplateColumns: "minmax(0, 1fr) 80px 130px 115px" }}
             >
               <span className="font-semibold">{s.name}</span>
               <Badge tone={s.run ? "success" : "muted"}>{s.run ? "RUNNING" : "STOPPED"}</Badge>
@@ -459,7 +470,7 @@ export function NetworkPage() {
     <div className="space-y-4">
       <PageHeader
         title="Network Boost"
-        sub="Analyze and optimize the Windows network stack for lower latency, minimal jitter and stable throughput."
+        sub="Inspect sample connectivity and simulate network optimization."
         actions={
           <>
             <Btn
@@ -479,97 +490,45 @@ export function NetworkPage() {
         }
       />
       {t.running && <Bar value={t.progress ?? 0} />}
-      <div className="grid gap-3" style={{ gridTemplateColumns: "1.1fr 1.3fr 1.1fr" }}>
-        <Card>
-          <Label className="mb-2 text-foreground">ACTIVE NETWORK INTERFACE</Label>
-          <div className="text-sm font-bold">Ethernet · Realtek 2.5GbE</div>
-          <div className="mb-2 text-[11.5px] text-success">• Status: Connected</div>
-          <div className="grid grid-cols-2 gap-x-3">
-            <KV k="LINK SPEED" v="2.5 Gbps" />
-            <KV k="GATEWAY" v="192.168.1.1" />
-            <KV k="IPv4" v="192.168.1.24" />
-            <KV k="MTU" v="1500" />
-          </div>
-          <KV k="DNS SERVERS" v="1.1.1.1, 8.8.8.8" />
-        </Card>
-        <Card>
-          <Label className="mb-2 text-foreground">NETWORK HEALTH & DIAGNOSTICS</Label>
-          <div className="grid grid-cols-4 gap-2">
-            {[
-              ["LATENCY", tested ? "11 ms" : "—"],
-              ["JITTER", tested ? "1.4 ms" : "—"],
-              ["LOSS", tested ? "0%" : "—"],
-              ["DNS TIME", tested ? "9 ms" : "—"],
-            ].map(([k, v]) => (
-              <div key={k} className="rounded-lg border border-border bg-window p-2.5 text-center">
-                <div className="text-lg font-bold">{v}</div>
-                <div className="text-[9px] font-bold tracking-widest text-subtle">{k}</div>
-              </div>
-            ))}
-          </div>
-          <div className="mt-3 flex gap-4 text-[11.5px]">
-            <span>
-              Gateway: <b className="text-success">Reachable</b>
-            </span>
-            <span>
-              Internet: <b className="text-success">Online</b>
-            </span>
-          </div>
-        </Card>
-        <Card>
-          <Label className="mb-2 text-foreground">INTERNET THROUGHPUT</Label>
-          <div className="grid grid-cols-2 gap-2">
-            <div className="rounded-lg border border-border bg-window p-3 text-center">
-              <div className="text-xl font-bold text-cyan">{tested ? "912" : "—"}</div>
-              <div className="text-[9px] font-bold tracking-widest text-subtle">DOWNLOAD Mbps</div>
-            </div>
-            <div className="rounded-lg border border-border bg-window p-3 text-center">
-              <div className="text-xl font-bold text-cyan">{tested ? "486" : "—"}</div>
-              <div className="text-[9px] font-bold tracking-widest text-subtle">UPLOAD Mbps</div>
-            </div>
-          </div>
-          <Btn size="sm" className="mt-3 w-full" onClick={() => simulate("Flush DNS cache")}>
-            🚀 Flush DNS cache
-          </Btn>
-        </Card>
-      </div>
-      <StatTiles
-        items={[
-          { label: "TOTAL", value: 24 },
-          { label: "SUPPORTED", value: 22 },
-          { label: "APPLICABLE", value: 18, tone: "cyan" },
-          { label: "PENDING", value: 4, tone: "warning" },
-          { label: "OPTIMIZED", value: 14, tone: "success" },
-          { label: "NOT APPLICABLE", value: 4 },
-        ]}
-      />
       <Card>
-        <Cols cols="320px 1fr" className="mb-3 items-center">
+        <SectionTitle title="SAMPLE NETWORK OVERVIEW" sub="Ethernet · Realtek 2.5GbE · Connected" right={<Badge tone="success">ONLINE</Badge>} />
+        <StatTiles items={[
+          { label: "LATENCY", value: tested ? "11 ms" : "—" },
+          { label: "JITTER", value: tested ? "1.4 ms" : "—" },
+          { label: "LOSS", value: tested ? "0%" : "—" },
+          { label: "DNS TIME", value: tested ? "9 ms" : "—" },
+          { label: "DOWN · Mbps", value: tested ? "912" : "—", tone: "cyan" },
+          { label: "UP · Mbps", value: tested ? "486" : "—", tone: "cyan" },
+        ]} />
+        <Details inline title="Interface & target inventory" hint="2.5 Gbps · MTU 1500">
+          <div className="grid grid-cols-2 gap-x-3.5">
+            <KV k="Gateway · reachable" v="192.168.1.1" />
+            <KV k="IPv4" v="192.168.1.24" />
+            <KV k="DNS servers" v="1.1.1.1, 8.8.8.8" />
+            <KV k="Target inventory" v="24 total · 22 supported · 18 applicable" />
+            <KV k="Sample target status" v="4 pending · 14 optimized · 4 not applicable" />
+          </div>
+        </Details>
+      </Card>
+      <Card>
+        <div className="mb-3 flex flex-wrap items-center gap-3.5">
           <SearchBox placeholder="Search network targets…" value={q} onChange={setQ} />
           <Chips
             options={["ALL", "TCP/IP", "MMCSS", "HARDWARE", "PENDING", "OPTIMIZED"]}
             value={f}
             onChange={setF}
           />
-        </Cols>
-        <div className="mb-4 flex items-center justify-between rounded-xl border border-cyan/30 bg-cyan/5 p-4">
-          <div>
-            <Label className="text-foreground">BATCH SYSTEM NETWORK OPTIMIZATION</Label>
-            <p className="mt-1 text-xs text-muted-foreground">
-              Simulates backup, apply and readback for all currently pending network targets. No
-              network settings are changed.
-            </p>
-          </div>
+        </div>
+        <SectionTitle title="PERSISTENT NETWORK TARGETS" sub="Simulated backup, apply, and readback; no settings change." right={
           <Btn variant="primary" onClick={() => simulate("Batch network optimization")}>
             Optimize all pending
           </Btn>
-        </div>
-        <Label className="mb-2 text-foreground">PERSISTENT NETWORK OPTIMIZATION TARGETS</Label>
+        } />
         <div className="space-y-1.5">
           {vis.map((n) => (
             <div
               key={n[0]}
-              className="flex items-center justify-between rounded-lg border border-border bg-window px-3 py-2.5 text-[12.5px]"
+              className="flex items-center justify-between rounded-lg border border-border bg-window px-3 py-2 text-[12.5px]"
             >
               <span className="font-semibold">{n[0]}</span>
               <span className="flex gap-1.5">
@@ -659,7 +618,7 @@ export function StoragePage() {
           <div>
             <h1 className="text-xl font-bold tracking-wide">FULL FILE EXPLORER</h1>
             <p className="text-xs text-muted-foreground">
-              Search, inspect, and safely manage real files across all accessible locations.
+              Inspect sample files and simulate storage management.
             </p>
           </div>
           <Btn variant="primary" onClick={() => setScanned(true)}>
@@ -771,7 +730,7 @@ export function StoragePage() {
           ) : (
             <div className="eo-data-table rounded-lg border border-border">
               <div
-                className="grid bg-window px-3 py-2 eo-label text-[9px] text-subtle"
+                className="grid bg-window px-3 py-2 eo-label text-[10px] text-subtle"
                 style={{ gridTemplateColumns: "34px 1fr 72px 72px 120px 90px 95px" }}
               >
                 <span />
@@ -900,7 +859,7 @@ export function StoragePage() {
           {CLEAN_CATS.map(([n, s, r]) => (
             <div
               key={n}
-              className="flex items-center justify-between rounded-lg border border-border bg-window px-3 py-2.5 text-[12.5px]"
+              className="flex items-center justify-between rounded-lg border border-border bg-window px-3 py-2 text-[12.5px]"
             >
               <span>{n}</span>
               <span className="flex items-center gap-2">
@@ -928,7 +887,7 @@ export function StoragePage() {
         <Card>
           <SectionTitle
             title="FULL FILE EXPLORER"
-            sub="Search, inspect, and safely manage real files across all accessible locations."
+            sub="Inspect sample files and simulate storage management."
           />
           <Btn variant="primary" onClick={() => setExplorer(true)}>
             Open file explorer
@@ -1070,7 +1029,7 @@ export function ToolsPage() {
         </div>
       </Card>
       <SearchBox
-        placeholder="Search tools, categories, actions, or components (e.g. sfc, ram, dism, network)…"
+        placeholder="Search tools, categories, or components…"
         value={q}
         onChange={setQ}
       />
@@ -1089,9 +1048,9 @@ export function ToolsPage() {
         value={c}
         onChange={setC}
       />
-      <div className="grid grid-cols-4 gap-2.5">
+      <div className="grid grid-cols-2 items-stretch gap-3.5 xl:grid-cols-3">
         {vis.map(([n, cat, elev]) => (
-          <div key={n} className="eo-card flex flex-col p-4">
+          <div key={n} className="eo-card flex min-w-0 flex-col p-3">
             <Label className="text-cyan">{cat}</Label>
             <div className="mt-1.5 flex-1 text-[13px] font-bold">{n}</div>
             <div className="mt-3 flex items-center justify-between">
@@ -1287,8 +1246,8 @@ export function ProcessReductionPage() {
     <div className="space-y-4">
       <PageHeader
         title="Process Intelligence"
-        badges={<Badge tone="cyan">SAFE BACKGROUND PROCESS MANAGEMENT</Badge>}
-        sub="Analyze running processes, identify non-essential background activity, and safely reclaim memory."
+        badges={<Badge tone="cyan">PROTECTED SYSTEM PROCESSES</Badge>}
+        sub="Review sample background processes and simulate memory recovery."
         actions={<Btn onClick={() => simulate("Rescan")}>↻ Refresh / Rescan</Btn>}
       />
       <StatTiles
@@ -1314,7 +1273,7 @@ export function ProcessReductionPage() {
         ]}
       />
       <Card>
-        <div className="mb-3 flex justify-between gap-2">
+        <div className="mb-3 flex flex-wrap items-center justify-between gap-3.5">
           <Chips
             options={[
               "ALL",
@@ -1348,8 +1307,8 @@ export function ProcessReductionPage() {
         <Label className="mb-2 text-foreground">BACKGROUND PROCESS CANDIDATES</Label>
         <div className="eo-data-table rounded-lg border border-border">
           <div
-            className="grid bg-window px-3 py-2 eo-label text-[9px] text-subtle"
-            style={{ gridTemplateColumns: "32px 65px 1fr 65px 150px 1fr 60px 65px" }}
+            className="grid bg-window px-3 py-2 eo-label text-[10px] text-subtle"
+            style={{ gridTemplateColumns: "26px 60px minmax(130px, 1fr) 45px 145px minmax(90px, 1fr) 45px 50px" }}
           >
             <span>SEL</span>
             <span>MEMORY</span>
@@ -1364,7 +1323,7 @@ export function ProcessReductionPage() {
             <div
               key={p.pid}
               className="grid items-center border-t border-border px-3 py-2 text-[12px]"
-              style={{ gridTemplateColumns: "32px 65px 1fr 65px 150px 1fr 60px 65px" }}
+              style={{ gridTemplateColumns: "26px 60px minmax(130px, 1fr) 45px 145px minmax(90px, 1fr) 45px 50px" }}
             >
               {p.s === "SAFE TO TERMINATE" ? (
                 <Check

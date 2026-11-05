@@ -1,5 +1,5 @@
 // AiOptimizationView, BackupRestoreView, SettingsView, AboutView, PerformanceTuningView
-import { Fragment, useState, type ReactNode } from "react";
+import { useState, type ReactNode } from "react";
 import {
   Badge,
   Bar,
@@ -50,7 +50,7 @@ export function AiOptimizationPage() {
             <Badge tone="warning">SAMPLE DATA</Badge>
           </>
         }
-        sub="RAM limiter, workload profiles and power-plan recommendations. Passive monitors only — nothing is enforced until you confirm a target."
+        sub="Sample RAM limits, workload profiles and power recommendations; confirmation required."
       />
       <Card className="flex flex-wrap items-center justify-between gap-3 py-3">
         <Segmented
@@ -71,70 +71,23 @@ export function AiOptimizationPage() {
           />
         </div>
       </Card>
-      <p className="text-[11.5px] text-muted-foreground">
-        <b className="text-cyan">PRO TIP</b> · AI engines run as safe passive monitors; nothing is
-        enforced until you confirm a target.
-      </p>
-
-      {/* Hero row cols=1.1*,10,1.35*,10,0.95* */}
-      <div className="grid gap-2.5" style={{ gridTemplateColumns: "1.1fr 1.35fr 0.95fr" }}>
-        <Card>
-          <div className="mb-3 flex items-center justify-between">
-            <Label className="text-foreground">AI PROFILE ENGINE</Label>
-            <Badge tone="success">AI READY</Badge>
-          </div>
-          <div className="grid grid-cols-2 gap-3 text-[12.5px]">
-            {[
-              ["ACTIVE MODULE", mod],
-              ["PROTECTION", "Foreground shield"],
-              ["SYSTEM RAM", "32 GB"],
-              ["RAM PRESSURE", "Low (38%)"],
-            ].map(([k, v]) => (
-              <div key={k}>
-                <Label className="text-[9px]">{k}</Label>
-                <div className="mt-0.5 font-semibold">{v}</div>
-              </div>
-            ))}
-          </div>
-        </Card>
-        <Card>
-          <Label className="mb-3 text-foreground">OPTIMIZATION STATUS</Label>
-          <div className="grid grid-cols-4 gap-2">
-            {[
-              ["AUTO ACTIONS", 3],
-              ["HIGH RAM APPS", 2],
-              ["CUSTOM TARGETS", 1],
-              ["RAM USAGE", "38%"],
-            ].map(([k, v]) => (
-              <div
-                key={k as string}
-                className="rounded-lg border border-border bg-window p-2.5 text-center"
-              >
-                <div className="text-lg font-bold">{v}</div>
-                <div className="text-[8.5px] font-bold tracking-widest text-subtle">{k}</div>
-              </div>
-            ))}
-          </div>
-        </Card>
-        <Card>
-          <Label className="mb-3 text-foreground">RISK & SAFETY</Label>
-          <div className="grid grid-cols-3 gap-2">
-            {[
-              ["SAFE", 6, "text-success"],
-              ["MEDIUM", 1, "text-warning"],
-              ["HIGH", 0, "text-destructive"],
-            ].map(([k, v, c]) => (
-              <div
-                key={k as string}
-                className="rounded-lg border border-border bg-window p-2.5 text-center"
-              >
-                <div className={cn("text-lg font-bold", c as string)}>{v}</div>
-                <div className="text-[9px] font-bold tracking-widest text-subtle">{k}</div>
-              </div>
-            ))}
-          </div>
-        </Card>
-      </div>
+      <StatTiles
+        items={[
+          { label: "RAM USAGE · SAMPLE", value: "38%", sub: "32 GB system memory" },
+          { label: "AUTO ACTIONS", value: 3 },
+          { label: "HIGH-RAM APPS", value: 2 },
+          { label: "CUSTOM TARGETS", value: 1 },
+          { label: "SAFE", value: 6, tone: "success" },
+          { label: "MEDIUM RISK", value: 1, tone: "warning" },
+          { label: "HIGH RISK", value: 0, tone: "danger" },
+        ]}
+      />
+      <Card className="flex flex-wrap items-center justify-between gap-3 py-3">
+        <div className="text-[12px] text-muted-foreground">
+          <span className="font-semibold text-foreground">{mod}</span> · Passive monitoring · Foreground shield
+        </div>
+        <Badge tone="success">AI READY</Badge>
+      </Card>
 
       <div key={mod} className="eo-swap space-y-4">
         {mod === "RAM LIMITER" && (
@@ -151,7 +104,7 @@ export function AiOptimizationPage() {
                 ["STATUS", "Monitoring"],
               ].map(([k, v]) => (
                 <div key={k}>
-                  <Label className="text-[9px]">{k}</Label>
+                  <Label className="text-[10px]">{k}</Label>
                   <div className="text-[13px] font-semibold">{v}</div>
                 </div>
               ))}
@@ -327,7 +280,7 @@ export function AiOptimizationPage() {
           <>
             <Card>
               <Label className="mb-3 text-cyan">AI POWER RECOMMENDATION</Label>
-              <div className="grid grid-cols-4 gap-3">
+              <div className="grid grid-cols-3 gap-3.5">
                 {[
                   ["RECOMMENDED PLAN:", "AI Max Performance"],
                   ["HARDWARE:", "Desktop · 8C/16T"],
@@ -335,7 +288,7 @@ export function AiOptimizationPage() {
                   ["CURRENT ACTIVE:", "Balanced"],
                 ].map(([k, v]) => (
                   <div key={k}>
-                    <Label className="text-[9px]">{k}</Label>
+                    <Label className="text-[10px]">{k}</Label>
                     <div className="text-[13px] font-semibold">{v}</div>
                   </div>
                 ))}
@@ -509,11 +462,11 @@ function RamLimiterPanel({
         <div className="min-w-0">
           <div className="flex flex-wrap items-end justify-between gap-3">
             <div>
-              <Label className="text-[9.5px]">TARGET APPLICATION</Label>
+              <Label className="text-[10px]">TARGET APPLICATION</Label>
               <div className="text-[13px] font-bold">chrome.exe</div>
             </div>
             <div className="text-right">
-              <Label className="text-[9.5px]">SYSTEM MEMORY · SAMPLE</Label>
+              <Label className="text-[10px]">SYSTEM MEMORY · SAMPLE</Label>
               <div className="text-[13px] font-semibold">
                 {SYSTEM_RAM_GB} GB total · 19.8 GB free
               </div>
@@ -554,7 +507,7 @@ function RamLimiterPanel({
           />
 
           <div className="mt-4">
-            <div className="mb-1 flex justify-between text-[9.5px] font-bold text-subtle">
+            <div className="mb-1 flex justify-between text-[10px] font-bold text-subtle">
               <span>LIMIT IN CONTEXT OF {SYSTEM_RAM_GB} GB SYSTEM MEMORY</span>
               <span>{share.toFixed(1)}%</span>
             </div>
@@ -568,7 +521,7 @@ function RamLimiterPanel({
         </div>
 
         <div className="eo-ram-side flex flex-col gap-2.5">
-          <label htmlFor="eo-ram-number" className="eo-label text-[9.5px] text-muted-foreground">
+          <label htmlFor="eo-ram-number" className="eo-label text-[10px] text-muted-foreground">
             EXACT LIMIT
           </label>
           <NumberField
@@ -618,11 +571,11 @@ function RamLimiterPanel({
 
       <div className="mt-4 grid grid-cols-3 gap-2 border-t border-border pt-3 text-[11px]">
         <div>
-          <Label className="text-[9px]">MODE</Label>
+          <Label className="text-[10px]">MODE</Label>
           <div className="font-semibold">{mode} · working-set trim</div>
         </div>
         <div>
-          <Label className="text-[9px]">FOREGROUND SHIELD</Label>
+          <Label className="text-[10px]">FOREGROUND SHIELD</Label>
           <div
             className={cn(
               "flex items-center gap-1 font-semibold",
@@ -634,7 +587,7 @@ function RamLimiterPanel({
           </div>
         </div>
         <div>
-          <Label className="text-[9px]">HOW IT WORKS</Label>
+          <Label className="text-[10px]">HOW IT WORKS</Label>
           <div className="text-muted-foreground">
             Pages above the limit are trimmed to standby; the app is never closed.
           </div>
@@ -669,7 +622,7 @@ export function BackupRestorePage() {
       <PageHeader
         title="Backup & Restore"
         badges={<Badge tone="cyan">UNIVERSAL TRANSACTION ENGINE</Badge>}
-        sub="Authoritative per-optimization real state backups, profile containers, and Windows restore points."
+        sub="Sample transaction backups, profile containers and restore points."
         actions={
           <>
             <Btn variant="ghost" onClick={() => simulate("Refresh")}>
@@ -697,18 +650,18 @@ export function BackupRestorePage() {
       />
       <Card>
         <Label className="mb-3 text-foreground">PROFILE CONTAINERS</Label>
-        <div className="grid grid-cols-3 gap-2.5">
+        <div className="grid grid-cols-3 items-stretch gap-3.5">
           {[
             ["Normal", 6],
             ["Input Optimizer", 2],
             ["Network", 1],
           ].map(([n, c]) => (
-            <div key={n as string} className="rounded-xl border border-border bg-window p-3.5">
-              <div className="text-[13px] font-bold">{n}</div>
-              <div className="text-[11.5px] text-muted-foreground">
-                {c} transactions · restorable
+            <div key={n as string} className="flex items-center justify-between gap-3 border-r border-border px-3 py-2 last:border-r-0">
+              <div>
+                <div className="text-[13px] font-bold">{n}</div>
+                <div className="text-[11.5px] text-muted-foreground">{c} transactions · restorable</div>
               </div>
-              <Btn size="sm" className="mt-2" onClick={() => setRestore(true)}>
+              <Btn size="sm" onClick={() => setRestore(true)}>
                 Restore profile
               </Btn>
             </div>
@@ -746,8 +699,8 @@ export function BackupRestorePage() {
               <button
                 key={t[0]}
                 onClick={() => setD(t)}
-                className="grid w-full items-center gap-3 rounded-lg border border-border bg-window px-3 py-2.5 text-left text-[12.5px] hover:border-cyan/40"
-                style={{ gridTemplateColumns: "1fr 100px 160px 140px 120px" }}
+                className="grid w-full items-center gap-3 rounded-lg border border-border bg-window px-3 py-2 text-left text-[12.5px] hover:border-cyan/40"
+                style={{ gridTemplateColumns: "minmax(0, 1fr) 80px 110px 120px 120px" }}
               >
                 <span className="font-semibold">{t[0]}</span>
                 <Badge>{t[1]}</Badge>
@@ -852,14 +805,14 @@ function Row({
 }) {
   return (
     <div
-      className="grid items-center gap-4 border-b border-border py-3 last:border-0"
+      className="grid items-center gap-3.5 border-b border-border py-2 last:border-0"
       style={{ gridTemplateColumns: "minmax(150px, 1fr) auto" }}
     >
       <div>
         <div className="text-[13px] font-semibold">{t}</div>
-        <div className="text-[11px] text-subtle">{s}</div>
+        <div className="text-[11.5px] text-muted-foreground">{s}</div>
       </div>
-      {children}
+      <div className="flex min-w-0 flex-wrap items-center justify-end">{children}</div>
     </div>
   );
 }
@@ -897,7 +850,7 @@ export function SettingsPage() {
     <div className="space-y-4">
       <PageHeader
         title="Preferences & System Settings"
-        sub="Manage Windows startup registration, AI engine boot policies, appearance, performance and safety guardrails."
+        sub="Session appearance, simulated startup policies and safety preferences."
         actions={
           <Btn
             variant="ghost"
@@ -927,13 +880,14 @@ export function SettingsPage() {
             </Btn>
           }
         />
-        <Row t="Start with Windows" s="Real Windows startup registration">
+        <Row t="Start with Windows" s="Simulated Windows startup registration">
           <Tog init={false} />
         </Row>
         <Row t="Start Minimized" s="Launch silently to background">
           <Tog init={false} />
         </Row>
-        <div className="mt-3 grid grid-cols-3 gap-2">
+        <Details inline title="STARTUP STATUS" hint="Sample registration & bootstrap">
+        <div className="grid grid-cols-3 gap-3.5">
           {[
             ["Windows Startup", "Not registered"],
             ["Startup Bootstrap", "Idle"],
@@ -942,6 +896,7 @@ export function SettingsPage() {
             <KV key={k} k={k} v={v} />
           ))}
         </div>
+        </Details>
       </Card>
       <Card>
         <SectionTitle title="AI ENGINE STARTUP POLICIES" />
@@ -959,7 +914,7 @@ export function SettingsPage() {
       <Card>
         <SectionTitle
           title="APPEARANCE & THEME ENGINE"
-          sub="Select between Solid Single-Hue Family or Multi-Color Cinematic Gradient."
+          sub="Accent, display and motion preferences for this session."
         />
         <Row t="Solid Accent Studio" s="Global brand & 100% unified hue">
           <div className="flex gap-1.5">
@@ -979,6 +934,7 @@ export function SettingsPage() {
             ))}
           </div>
         </Row>
+        <Details inline title="ACCENT & GLASS" hint="Fine-tuning and gradient direction">
         <Row t="Hue / Saturation / Brightness" s="Fine-tune the accent">
           <Rng label="Accent hue, saturation and brightness" />
         </Row>
@@ -997,6 +953,7 @@ export function SettingsPage() {
         <Row t="Card / Panel Opacity" s="Opacity of internal cards and panels">
           <Rng d={90} label="Card and panel opacity" />
         </Row>
+        </Details>
         <Row t="UI Animations" s="Tactile controls and depth transitions">
           <Toggle
             label="UI Animations"
@@ -1014,12 +971,14 @@ export function SettingsPage() {
         <Row t="Reduced Motion" s="Also respects your system accessibility preference">
           <Toggle label="Reduced Motion" on={appearance.reduced} onChange={appearance.setReduced} />
         </Row>
+        <Details inline title="AMBIENT EFFECTS" hint="Particles and background motion">
         <Row t="Particle Density" s="Background & intelligence orb particles">
           <Seg o={["OFF", "LOW (30)", "MED (80)", "HIGH (150)"]} d="MED (80)" />
         </Row>
         <Row t="Background Motion Mode" s="Ambient gradient drift & light sweep">
           <Seg o={["STATIC", "SUBTLE", "DYNAMIC"]} d="SUBTLE" />
         </Row>
+        </Details>
         <Row t="3D Spatial Depth" s="Restrained surface tilt and elevation">
           <Chips
             options={["LOW (2D)", "MEDIUM (3D)", "HIGH (DEEP)"]}
@@ -1027,7 +986,7 @@ export function SettingsPage() {
             onChange={appearance.setDepth}
           />
         </Row>
-        <Details title="PARALLAX STAR BACKGROUND · MOTION TOGGLES · HALO CURSOR DYNAMICS">
+        <Details inline title="EFFECT SPECIFICATIONS" hint="Parallax and cursor blueprint">
           <p className="text-xs text-muted-foreground">
             Star density/opacity/parallax/speed/glow/depth/twinkle, cursor effects & trail, hover,
             proximity glow and halo cursor size/intensity sliders live here (see blueprint).
@@ -1097,7 +1056,7 @@ export function AboutPage() {
     <div className="space-y-4">
       <PageHeader
         title="About Error Optimizer"
-        sub="Learn exactly what Error Optimizer changes, why it changes it, when it applies, and how every change can be reversed."
+        sub="Explore sample hardware, optimization profiles and recovery details."
       />
       <Card
         className="grid items-center gap-4"
@@ -1116,17 +1075,17 @@ export function AboutPage() {
           title="CONNECT WITH ERROR OPTIMIZER"
           sub="Official community, content and social channels."
         />
-        <div className="grid grid-cols-4 gap-2.5">
+        <div className="grid grid-cols-2 items-stretch gap-3.5">
           {[
             ["DISCORD", "Community Server", "JOIN DISCORD →"],
             ["YOUTUBE", "@Errorfftamil", "WATCH YOUTUBE →"],
             ["INSTAGRAM", "@errorexeff", "OPEN INSTAGRAM →"],
             ["KICK", "Live Streaming", "WATCH ON KICK →"],
           ].map(([a, b, c]) => (
-            <div key={a} className="rounded-xl border border-border bg-window p-4">
+            <div key={a} className="flex flex-wrap items-center justify-between gap-3 border-b border-border px-3 py-2">
               <Label className="text-cyan">{a}</Label>
               <div className="mt-1 text-sm font-bold">{b}</div>
-              <Btn size="sm" className="mt-3" onClick={() => simulate(c)}>
+              <Btn size="sm" onClick={() => simulate(c)}>
                 {c}
               </Btn>
             </div>
@@ -1135,14 +1094,14 @@ export function AboutPage() {
       </Card>
       <Card>
         <SectionTitle
-          title="HARDWARE MANAGEMENT, LATENCY MINIMIZATION & OS INTELLIGENCE ENGINE"
+          title="HARDWARE & ENGINE STATUS"
           right={
             <Btn size="sm" onClick={() => simulate("Rescan hardware")}>
               Rescan hardware
             </Btn>
           }
         />
-        <div className="grid grid-cols-4 gap-3">
+        <div className="grid grid-cols-3 gap-3.5">
           {[
             ["LOCAL MACHINE", "DEMO-PC"],
             ["PLATFORM ARCHITECTURE", "x64"],
@@ -1158,7 +1117,7 @@ export function AboutPage() {
             ["TRANSACTIONAL BACKUP", "Armed"],
           ].map(([k, v]) => (
             <div key={k}>
-              <Label className="text-[9px]">{k}</Label>
+              <Label className="text-[10px]">{k}</Label>
               <div className="text-[12.5px] font-semibold">{v}</div>
             </div>
           ))}
@@ -1181,11 +1140,11 @@ export function AboutPage() {
       />
       <Card>
         <SectionTitle title="SYSTEM OPTIMIZATION PROFILES" sub="7 Specialized Engine Profiles" />
-        <div className="grid grid-cols-7 gap-2">
+        <div className="flex flex-wrap gap-2">
           {PROFILES.map((p) => (
             <div
               key={p}
-              className="rounded-lg border border-border bg-window p-3 text-center text-[12px] font-bold"
+              className="rounded-lg border border-border bg-window px-3 py-2 text-center text-[12px] font-bold"
             >
               {p}
             </div>
@@ -1207,7 +1166,7 @@ export function AboutPage() {
             <button
               key={c.id}
               onClick={() => setD(c)}
-              className="flex items-center justify-between rounded-lg border border-border bg-window px-3 py-2.5 text-left text-[12.5px] hover:border-cyan/40"
+              className="flex items-center justify-between rounded-lg border border-border bg-window px-3 py-2 text-left text-[12.5px] hover:border-cyan/40"
             >
               <span>{c.name}</span>
               <span className="flex gap-1.5">
@@ -1261,7 +1220,7 @@ export function PerformanceTuningPage() {
     <div className="space-y-4">
       <PageHeader
         title="Performance Tuning"
-        sub="Optional CPU and GPU performance tuning for supported hardware."
+        sub="Simulated CPU and GPU tuning for supported hardware; no changes are applied."
         actions={
           <>
             <Btn variant="ghost" onClick={() => simulate("Revert to stock")}>
@@ -1274,7 +1233,7 @@ export function PerformanceTuningPage() {
           </>
         }
       />
-      <Cols cols="1fr 1fr" gap={14}>
+      <Cols cols="1fr 1fr" gap={14} className="items-stretch">
         {[
           ["CPU PERFORMANCE", HW.cpu, "42°C"],
           ["GPU PERFORMANCE", HW.gpu, "44°C"],
@@ -1302,24 +1261,13 @@ export function PerformanceTuningPage() {
           </Card>
         ))}
       </Cols>
-      <Card
-        className="grid items-center gap-4"
-        style={{ gridTemplateColumns: "1fr auto 1fr auto 1fr" } as React.CSSProperties}
-      >
-        {[
-          ["THERMAL PROTECTION", "Active"],
-          ["STABILITY MONITORING", "Ready"],
-          ["POWER SOURCE", "AC"],
-        ].map(([k, v], i) => (
-          <Fragment key={k}>
-            <div>
-              <Label className="text-[9px]">{k}</Label>
-              <div className="text-sm font-semibold text-success">{v}</div>
-            </div>
-            {i < 2 && <div className="h-8 w-px bg-border" />}
-          </Fragment>
-        ))}
-      </Card>
+      <StatTiles
+        items={[
+          { label: "THERMAL PROTECTION", value: "Active", tone: "success" },
+          { label: "STABILITY MONITORING", value: "Ready", tone: "success" },
+          { label: "POWER SOURCE", value: "AC" },
+        ]}
+      />
       <Card className="flex items-center justify-between">
         <div>
           <Label>SESSION FLOW:</Label>
