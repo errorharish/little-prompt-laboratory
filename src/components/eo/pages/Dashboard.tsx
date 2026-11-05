@@ -2,7 +2,7 @@
 // 1. Overall Optimization Score · 2. Auto Optimize panel · 3. compact system overview ·
 // 4. optimization status + recent activity · 5. quick actions.
 // The full System Performance Telemetry chart lives on the System Telemetry page.
-import { memo, useState } from "react";
+import { memo, useState, type CSSProperties } from "react";
 import { Link } from "@tanstack/react-router";
 import { Cpu, MemoryStick, MonitorCog, HardDrive, HeartPulse, RefreshCw, ArrowUpRight, Info } from "lucide-react";
 import { Badge, Bar, Btn, Card, DemoBadge, EmptyState, KV, Label, Modal, PageHeader, SectionTitle, SimNotice, simulate } from "../kit";
@@ -171,7 +171,7 @@ const ScoreCard = memo(function ScoreCard() {
         {SCORE_CATEGORIES.map((c, i) => (
           <li key={c.key} className="grid items-center gap-2 text-[11px]" style={{ gridTemplateColumns: "92px minmax(0,1fr) 26px" }}>
             <span className="truncate font-semibold text-muted-foreground">{c.label}</span>
-            <span className="eo-score-bar" style={{ "--v": `${c.value}%`, "--i": i } as React.CSSProperties} />
+            <span className="eo-score-bar" style={{ "--v": `${c.value}%`, "--i": i } as CSSProperties} />
             <span className="text-right font-bold tabular-nums">{c.value}</span>
           </li>
         ))}
