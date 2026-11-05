@@ -135,6 +135,9 @@ export function GuideTip({
               left: pos?.left ?? -9999,
               width: Math.min(POP_W, typeof window === "undefined" ? POP_W : window.innerWidth - 16),
             }}
+            // React events bubble through portals: keep clicks/keys from reaching parent rows.
+            onClick={(e) => e.stopPropagation()}
+            onKeyDown={(e) => e.stopPropagation()}
             onBlur={(e) => {
               const next = e.relatedTarget as Node | null;
               if (next && !pop.current?.contains(next) && !btn.current?.contains(next)) close();
