@@ -58,3 +58,8 @@
 - [x] Global rule: default = applicable AND recommended AND eligible.
 - [x] System Telemetry: System Health Check with documented, reproducible score, missing-data handling, category breakdown, recommendations.
 - [x] Verify all 34 destinations at 1280×820 / 1024×768, tests.
+
+# Registry Values page (prompt-14)
+- [x] RAM (5) and GPU (25) registry values from the original WPF engines, grouped, with sample current/target, risk, restart and applicability.
+- [x] Two-column layout with RAM tier map and native apply steps; details dialog per value; demo notice at top.
+- [x] Verify at 1280×820, 1163×690, 1024×768; tests.
