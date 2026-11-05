@@ -400,6 +400,26 @@ export const COMPONENT_MAP: { web: string; wpf: string; note: string }[] = [
     note: "Two tabs; sub-pages (Module Hub, Deployer, Low End Steam) keep their parent tab active and show a breadcrumb.",
   },
   {
+    web: "RestorePointDialog (System Protection check)",
+    wpf: "Overlay dialog driven by a RestorePointWorkflow state machine in BackupRestoreViewModel",
+    note: "Checking → System Protection Is Disabled (Enable / Cancel) → explicit confirm → enable → verify → create → verify. Shared by Backup & Restore, Dashboard and the run dialog's restore step.",
+  },
+  {
+    web: "Navigation shortcuts + Quick Optimize (Dashboard)",
+    wpf: "Two ItemsControls: Hyperlink-style cards (NavigateCommand) and run cards (QuickOptimizeCommand)",
+    note: "Shortcuts only navigate; Quick Optimize cards only run their own task in place. One run at a time.",
+  },
+  {
+    web: "Mode cards (Input Optimizer)",
+    wpf: "RadioButton group styled as cards; Normal/Advanced bind a read-only recommended list, Custom binds an editable one",
+    note: "Custom has Select all eligible, Clear, Save custom profile, Reset to recommended.",
+  },
+  {
+    web: "System Health Check (Telemetry)",
+    wpf: "ScoreRing + category ItemsControl bound to HealthScoreService results",
+    note: "Fixed curves, weights and missing-data rules (src/lib/eo/health.ts); load is never labelled damage.",
+  },
+  {
     web: "GuideTip (contextual guide popover)",
     wpf: "Help glyph Button + Popup (StaysOpen=False) bound to a Guide resource",
     note: "One registry of guides. What / why / when / benefit / restart / reversible, risk line, 'How it works' expander. Esc and outside click close; one open at a time.",
@@ -631,5 +651,49 @@ export const NATIVE_AUTO_ARCHITECTURE: { area: string; detail: string }[] = [
     area: "History & errors",
     detail:
       "Each run writes a history record (trigger, start/end, per-task outcome, bytes freed when measured, error message). Failures are shown verbatim; there is no simulated or fabricated output.",
+  },
+];
+
+/** Restore point + System Protection: intended native implementation (not run in the browser). */
+export const NATIVE_RESTORE_POINT: { area: string; detail: string }[] = [
+  {
+    area: "Service",
+    detail:
+      "RestorePointService (Services layer) behind IRestorePointService; BackupRestoreViewModel and UniversalOptimizationModal call it through the same RestorePointWorkflow state machine the prototype uses.",
+  },
+  {
+    area: "Check protection",
+    detail:
+      "Resolve the system drive from Environment.SystemDirectory. Read protection state via WMI root\\default SystemRestoreConfig / the SPP Clients registry key for that volume GUID. Never infer 'on' from a missing value.",
+  },
+  {
+    area: "Elevation",
+    detail:
+      "The main app runs asInvoker. Enabling launches a signed elevated helper (ProcessStartInfo Verb=runas → UAC prompt) only after the user confirms in the dialog. Declined UAC = EnableFailed with manual steps.",
+  },
+  {
+    area: "Enable",
+    detail:
+      "Helper calls SystemRestore.Enable(\"C:\\\") via WMI for the system drive only; other drives are never touched. Protection is never disabled and existing points are never deleted.",
+  },
+  {
+    area: "Verify protection",
+    detail:
+      "Re-read the protection state after the helper exits. Only a verified 'on' continues to creation; anything else returns EnableFailed.",
+  },
+  {
+    area: "Create",
+    detail:
+      "SystemRestore.CreateRestorePoint(description, APPLICATION_INSTALL / MODIFY_SETTINGS, BEGIN_SYSTEM_CHANGE) (or SRSetRestorePointW). Respect SystemRestorePointCreationFrequency — Windows may skip creation within 24 h.",
+  },
+  {
+    area: "Verify point",
+    detail:
+      "Enumerate SystemRestore instances before and after; success only when a new SequenceNumber with the expected description exists. Otherwise CreateFailed ('Windows skipped the restore point').",
+  },
+  {
+    area: "Logging",
+    detail:
+      "Each phase writes to the audit log and transaction journal; results shown to the user come from verification, never from the call's return code alone.",
   },
 ];

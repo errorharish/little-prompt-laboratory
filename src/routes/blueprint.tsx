@@ -393,6 +393,20 @@ function Blueprint() {
         />
       </Section>
 
+      <Section id="restore-point">
+        <SectionTitle
+          id="restore-point-title"
+          title="RESTORE POINT — SYSTEM PROTECTION WORKFLOW"
+          badge={<Badge tone="warning">PROTOTYPE SIMULATION</Badge>}
+          sub="The browser walks through every phase; the native C# implementation is below."
+        />
+        <Table
+          head={["AREA", "INTENDED IMPLEMENTATION"]}
+          cols="160px 1fr"
+          rows={NATIVE_RESTORE_POINT.map((a) => [a.area, a.detail])}
+        />
+      </Section>
+
       <Section id="patterns">
         <SectionTitle id="patterns-title" title="REUSABLE PATTERNS" />
         <ul className="grid grid-cols-2 gap-x-8 gap-y-1.5 text-[12.5px] text-muted-foreground">
