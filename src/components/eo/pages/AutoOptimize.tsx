@@ -1,6 +1,6 @@
 // AutoOptimizeView — recurring maintenance engine: task selection, schedule, lifecycle,
 // safety preferences, simulated lifecycle events and history. Prototype only.
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState, type ReactNode } from "react";
 import {
   ChevronDown,
   Pause,
@@ -45,12 +45,12 @@ export function AutoOptimizePage() {
   const now = useNow();
   const [draft, setDraft] = useState<AutoConfig>(s.config);
   const dirty = comparable(draft) !== comparable(s.config);
-  // Adopt the stored configuration once it has loaded (and after saves elsewhere).
+  // Adopt the stored configuration when it loads or changes elsewhere, unless you are editing.
+  const dirtyRef = useRef(dirty);
+  dirtyRef.current = dirty;
   useEffect(() => {
-    setDraft((d) => (comparable(d) === comparable(s.config) ? d : s.loaded && !dirtyRef.current ? s.config : d));
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [s.loaded, s.config]);
-  const dirtyRef = useDirtyRef(dirty);
+    if (!dirtyRef.current) setDraft(s.config);
+  }, [s.config]);
 
   const presetIdx = PRESET_INTERVALS.indexOf(draft.intervalMin as (typeof PRESET_INTERVALS)[number]);
   const [custom, setCustom] = useState(presetIdx === -1);
@@ -495,13 +495,7 @@ export function AutoOptimizePage() {
   );
 }
 
-function useDirtyRef(dirty: boolean) {
-  const [ref] = useState(() => ({ current: dirty }));
-  ref.current = dirty;
-  return ref;
-}
-
-function SettingRow({ title, sub, control }: { title: string; sub: string; control: React.ReactNode }) {
+function SettingRow({ title, sub, control }: { title: string; sub: string; control: ReactNode }) {
   return (
     <div className="eo-setting-row">
       <div className="min-w-0">
