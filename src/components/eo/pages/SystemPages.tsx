@@ -813,7 +813,10 @@ function RegRow({ v, onOpen }: { v: RegistryValueEntry; onOpen: (v: RegistryValu
           <span className="flex min-w-0 items-center gap-1.5 font-mono text-[10.5px] text-muted-foreground">
             <span className="truncate">{v.valueName}</span>
             {v.restart && v.status === "applicable" && (
-              <RotateCcw aria-label="Restart required" className="h-2.5 w-2.5 shrink-0 text-warning" />
+              <RotateCcw
+                aria-label="Restart required"
+                className="h-2.5 w-2.5 shrink-0 text-warning"
+              />
             )}
           </span>
         </span>
@@ -850,7 +853,9 @@ function RegGroup({
   return (
     <section aria-label={group.title} className="space-y-1">
       <div className="flex flex-wrap items-center gap-2 px-2.5 pt-2">
-        <h3 className="text-[11px] font-bold tracking-wide text-foreground uppercase">{group.title}</h3>
+        <h3 className="text-[11px] font-bold tracking-wide text-foreground uppercase">
+          {group.title}
+        </h3>
         <Badge tone="cyan">{group.tag}</Badge>
         {badge}
         <span className="ml-auto text-[10.5px] text-muted-foreground">
@@ -871,7 +876,10 @@ const NATIVE_STEPS: [string, string][] = [
   ["Read", "Current value is read back before anything is offered."],
   ["Back up", "A snapshot of the previous value is saved before a write."],
   ["Write & verify", "The value is written, then read back to confirm it stuck."],
-  ["Restart & check", "Restart-bound values are re-checked after the next boot; rollback stays available."],
+  [
+    "Restart & check",
+    "Restart-bound values are re-checked after the next boot; rollback stays available.",
+  ],
 ];
 
 export function RegistryValuesPage() {
@@ -885,9 +893,17 @@ export function RegistryValuesPage() {
   const isGpu = detail ? GPU_REGISTRY_VALUES.includes(detail) : false;
   const vendorBadge = (key: string) => {
     if (key === "nvidia")
-      return hw.gpuVendor === "NVIDIA" ? <Badge tone="success">IN SAMPLE</Badge> : <Badge>NOT IN SAMPLE</Badge>;
+      return hw.gpuVendor === "NVIDIA" ? (
+        <Badge tone="success">IN SAMPLE</Badge>
+      ) : (
+        <Badge>NOT IN SAMPLE</Badge>
+      );
     if (key === "amd")
-      return hw.gpuVendor === "AMD" ? <Badge tone="success">IN SAMPLE</Badge> : <Badge>NOT IN SAMPLE</Badge>;
+      return hw.gpuVendor === "AMD" ? (
+        <Badge tone="success">IN SAMPLE</Badge>
+      ) : (
+        <Badge>NOT IN SAMPLE</Badge>
+      );
     return undefined;
   };
   return (
@@ -932,14 +948,125 @@ export function RegistryValuesPage() {
       {/* Two columns once the content area (not the window) is wide enough to keep values readable. */}
       <div className="@container">
         <div className="grid grid-cols-1 items-start gap-3.5 @min-[60rem]:grid-cols-2">
-        <div className="space-y-3.5">
+          <div className="space-y-3.5">
+            <Card>
+              <SectionTitle
+                title="RAM REGISTRY VALUES"
+                guide="registry.ram-values"
+                sub={`Machine values · sample ${hw.ramGb} GB RAM, ${hw.logicalCores} threads`}
+                right={
+                  <Link to="/$page" params={{ page: "registry-values-ram" }}>
+                    <Btn size="sm" variant="ghost">
+                      Open
+                    </Btn>
+                  </Link>
+                }
+              />
+              <RegTableHead />
+              <div className="space-y-1">
+                {RAM_GROUPS.map((g) => (
+                  <RegGroup
+                    key={g.key}
+                    group={g}
+                    values={valuesInGroup(RAM_REGISTRY_VALUES, g.key)}
+                    onOpen={setDetail}
+                  />
+                ))}
+              </div>
+            </Card>
+            <Card>
+              <SectionTitle
+                title="SERVICE HOST THRESHOLD BY RAM TIER"
+                guide="ram.size"
+                sub="SvcHostSplitThresholdInKB · nearest validated tier is used"
+              />
+              <table className="w-full text-[11.5px]">
+                <caption className="sr-only">
+                  Service Host split threshold for each RAM tier
+                </caption>
+                <thead>
+                  <tr className="eo-label text-left text-[9px] text-muted-foreground">
+                    <th scope="col" className="border-b border-border px-2.5 pb-1.5 font-semibold">
+                      RAM tier
+                    </th>
+                    <th scope="col" className="border-b border-border px-2.5 pb-1.5 font-semibold">
+                      DWORD
+                    </th>
+                    <th
+                      scope="col"
+                      className="border-b border-border px-2.5 pb-1.5 text-right font-semibold"
+                    >
+                      Threshold
+                    </th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-border/60">
+                  {RAM_TIER_MAP.map(([gb, dword]) => {
+                    const sample = gb === sampleTier;
+                    return (
+                      <tr
+                        key={gb}
+                        className={cn(
+                          "transition-colors duration-150 hover:bg-highlight",
+                          sample && "bg-cyan/5",
+                        )}
+                      >
+                        <td className="px-2.5 py-1.5 font-semibold">
+                          {gb} GB{" "}
+                          {sample && (
+                            <Badge tone="cyan" className="ml-1.5 align-middle">
+                              SAMPLE
+                            </Badge>
+                          )}
+                        </td>
+                        <td
+                          className={cn(
+                            "px-2.5 py-1.5 font-mono text-[10.5px]",
+                            sample && "text-cyan",
+                          )}
+                        >
+                          {hex8(dword)}
+                        </td>
+                        <td className="px-2.5 py-1.5 text-right font-mono text-[10.5px] text-muted-foreground">
+                          {dword.toLocaleString("en-US")} KB
+                        </td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
+              <p className="mt-2 px-2.5 text-[11px] text-muted-foreground">
+                Unset default: {hex8(SVCHOST_DEFAULT_KB)} (
+                {SVCHOST_DEFAULT_KB.toLocaleString("en-US")} KB).
+              </p>
+            </Card>
+            <Card>
+              <SectionTitle
+                title="HOW THE NATIVE ENGINE APPLIES VALUES"
+                sub="Not run in this prototype"
+              />
+              <ol className="space-y-2">
+                {NATIVE_STEPS.map(([k, d], i) => (
+                  <li key={k} className="flex gap-2.5 text-[11.5px]">
+                    <span className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full border border-cyan/40 font-mono text-[10px] text-cyan">
+                      {i + 1}
+                    </span>
+                    <span>
+                      <span className="font-semibold text-foreground">{k}.</span>{" "}
+                      <span className="text-muted-foreground">{d}</span>
+                    </span>
+                  </li>
+                ))}
+              </ol>
+            </Card>
+          </div>
           <Card>
             <SectionTitle
-              title="RAM REGISTRY VALUES"
-              guide="registry.ram-values"
-              sub={`Machine values · sample ${hw.ramGb} GB RAM, ${hw.logicalCores} threads`}
+              title="GPU REGISTRY VALUES"
+              guide="gpu.groups"
+              sub={`Sample ${hw.gpuName} · ${hw.gpuCount} GPU · HAGS ${hw.supportsHags ? "supported" : "unsupported"}`}
               right={
-                <Link to="/$page" params={{ page: "registry-values-ram" }}>
+                <Link to="/$page" params={{ page: "gpu-registry-values" }}>
                   <Btn size="sm" variant="ghost">
                     Open
                   </Btn>
@@ -948,125 +1075,31 @@ export function RegistryValuesPage() {
             />
             <RegTableHead />
             <div className="space-y-1">
-              {RAM_GROUPS.map((g) => (
+              {gpuVendorGroups.map((g) => (
                 <RegGroup
                   key={g.key}
                   group={g}
-                  values={valuesInGroup(RAM_REGISTRY_VALUES, g.key)}
+                  values={valuesInGroup(GPU_REGISTRY_VALUES, g.key)}
                   onOpen={setDetail}
+                  badge={vendorBadge(g.key)}
                 />
               ))}
             </div>
-          </Card>
-          <Card>
-            <SectionTitle
-              title="SERVICE HOST THRESHOLD BY RAM TIER"
-              guide="ram.size"
-              sub="SvcHostSplitThresholdInKB · nearest validated tier is used"
-            />
-            <table className="w-full text-[11.5px]">
-              <caption className="sr-only">Service Host split threshold for each RAM tier</caption>
-              <thead>
-                <tr className="eo-label text-left text-[9px] text-muted-foreground">
-                  <th scope="col" className="border-b border-border px-2.5 pb-1.5 font-semibold">
-                    RAM tier
-                  </th>
-                  <th scope="col" className="border-b border-border px-2.5 pb-1.5 font-semibold">
-                    DWORD
-                  </th>
-                  <th scope="col" className="border-b border-border px-2.5 pb-1.5 text-right font-semibold">
-                    Threshold
-                  </th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-border/60">
-                {RAM_TIER_MAP.map(([gb, dword]) => {
-                  const sample = gb === sampleTier;
-                  return (
-                    <tr
-                      key={gb}
-                      className={cn("transition-colors duration-150 hover:bg-highlight", sample && "bg-cyan/5")}
-                    >
-                      <td className="px-2.5 py-1.5 font-semibold">
-                        {gb} GB{" "}
-                        {sample && (
-                          <Badge tone="cyan" className="ml-1.5 align-middle">
-                            SAMPLE
-                          </Badge>
-                        )}
-                      </td>
-                      <td className={cn("px-2.5 py-1.5 font-mono text-[10.5px]", sample && "text-cyan")}>
-                        {hex8(dword)}
-                      </td>
-                      <td className="px-2.5 py-1.5 text-right font-mono text-[10.5px] text-muted-foreground">
-                        {dword.toLocaleString("en-US")} KB
-                      </td>
-                    </tr>
-                  );
-                })}
-              </tbody>
-            </table>
-            <p className="mt-2 px-2.5 text-[11px] text-muted-foreground">
-              Unset default: {hex8(SVCHOST_DEFAULT_KB)} ({SVCHOST_DEFAULT_KB.toLocaleString("en-US")} KB).
-            </p>
-          </Card>
-          <Card>
-            <SectionTitle title="HOW THE NATIVE ENGINE APPLIES VALUES" sub="Not run in this prototype" />
-            <ol className="space-y-2">
-              {NATIVE_STEPS.map(([k, d], i) => (
-                <li key={k} className="flex gap-2.5 text-[11.5px]">
-                  <span className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full border border-cyan/40 font-mono text-[10px] text-cyan">
-                    {i + 1}
-                  </span>
-                  <span>
-                    <span className="font-semibold text-foreground">{k}.</span>{" "}
-                    <span className="text-muted-foreground">{d}</span>
-                  </span>
-                </li>
-              ))}
-            </ol>
-          </Card>
-        </div>
-        <Card>
-          <SectionTitle
-            title="GPU REGISTRY VALUES"
-            guide="gpu.groups"
-            sub={`Sample ${hw.gpuName} · ${hw.gpuCount} GPU · HAGS ${hw.supportsHags ? "supported" : "unsupported"}`}
-            right={
-              <Link to="/$page" params={{ page: "gpu-registry-values" }}>
-                <Btn size="sm" variant="ghost">
-                  Open
-                </Btn>
-              </Link>
-            }
-          />
-          <RegTableHead />
-          <div className="space-y-1">
-            {gpuVendorGroups.map((g) => (
-              <RegGroup
-                key={g.key}
-                group={g}
-                values={valuesInGroup(GPU_REGISTRY_VALUES, g.key)}
-                onOpen={setDetail}
-                badge={vendorBadge(g.key)}
-              />
-            ))}
-          </div>
-          {diagGroup && (
-            <div className="mt-2">
-              <Details
-                inline
-                title="DIAGNOSTIC CONFIGURATION"
-                hint={`${gpu.diagnostic} read-only values`}
-              >
-                <RegGroup
-                  group={diagGroup}
-                  values={valuesInGroup(GPU_REGISTRY_VALUES, "diagnostic")}
-                  onOpen={setDetail}
-                />
-              </Details>
-            </div>
-          )}
+            {diagGroup && (
+              <div className="mt-2">
+                <Details
+                  inline
+                  title="DIAGNOSTIC CONFIGURATION"
+                  hint={`${gpu.diagnostic} read-only values`}
+                >
+                  <RegGroup
+                    group={diagGroup}
+                    values={valuesInGroup(GPU_REGISTRY_VALUES, "diagnostic")}
+                    onOpen={setDetail}
+                  />
+                </Details>
+              </div>
+            )}
           </Card>
         </div>
       </div>
@@ -1077,7 +1110,10 @@ export function RegistryValuesPage() {
         sub={detail ? `${isGpu ? "GPU" : "RAM"} registry value · sample data` : undefined}
         footer={
           <>
-            <Link to="/$page" params={{ page: isGpu ? "gpu-registry-values" : "registry-values-ram" }}>
+            <Link
+              to="/$page"
+              params={{ page: isGpu ? "gpu-registry-values" : "registry-values-ram" }}
+            >
               <Btn size="sm">{isGpu ? "Open GPU page" : "Open RAM page"}</Btn>
             </Link>
             <Btn variant="ghost" onClick={() => setDetail(null)}>

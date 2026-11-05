@@ -224,7 +224,8 @@ export const GPU_REG_GROUPS: RegistryGroup[] = [
   },
 ];
 
-const GAMES = "HKLM\\SOFTWARE\\Microsoft\\Windows NT\\CurrentVersion\\Multimedia\\SystemProfile\\Tasks\\Games";
+const GAMES =
+  "HKLM\\SOFTWARE\\Microsoft\\Windows NT\\CurrentVersion\\Multimedia\\SystemProfile\\Tasks\\Games";
 const GFX = "HKLM\\SYSTEM\\CurrentControlSet\\Control\\GraphicsDrivers";
 const DWM = "HKLM\\SOFTWARE\\Microsoft\\Windows\\Dwm";
 const ADAPTER =
@@ -422,7 +423,8 @@ function gpuValues(hw: RegistryHardware = SAMPLE_REGISTRY_HW): RegistryValueEntr
       category: "Desktop Window Manager",
       path: DWM,
       type: "REG_DWORD",
-      description: "Hardware-level fullscreen promotion for borderless and fullscreen DirectX swapchains.",
+      description:
+        "Hardware-level fullscreen promotion for borderless and fullscreen DirectX swapchains.",
       risk: "LOW",
       restart: true,
       hardware: "DirectX 11 / 12 GPU",
@@ -578,7 +580,8 @@ function gpuValues(hw: RegistryHardware = SAMPLE_REGISTRY_HW): RegistryValueEntr
       category: "Privacy & Background Services",
       path: AMD_CN,
       type: "REG_DWORD",
-      description: "Starts AMD Software in the notification area without a splash window at sign-in.",
+      description:
+        "Starts AMD Software in the notification area without a splash window at sign-in.",
       risk: "SAFE",
       restart: false,
       hardware: "AMD Radeon Software",

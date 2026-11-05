@@ -23,7 +23,9 @@ describe("Registry Values data (from the WPF RAM and GPU engines)", () => {
   it("lists the five RAM engine values and 25 GPU engine values", () => {
     expect(RAM_REGISTRY_VALUES).toHaveLength(5);
     expect(GPU_REGISTRY_VALUES).toHaveLength(25);
-    expect(new Set([...RAM_REGISTRY_VALUES, ...GPU_REGISTRY_VALUES].map((v) => v.id)).size).toBe(30);
+    expect(new Set([...RAM_REGISTRY_VALUES, ...GPU_REGISTRY_VALUES].map((v) => v.id)).size).toBe(
+      30,
+    );
   });
 
   it("never offers AMD values on the NVIDIA sample hardware", () => {
@@ -36,9 +38,9 @@ describe("Registry Values data (from the WPF RAM and GPU engines)", () => {
   it("offers AMD values and hides NVIDIA ones on AMD hardware", () => {
     const { gpu } = valuesForHardware({ ...SAMPLE_REGISTRY_HW, gpuVendor: "AMD" });
     expect(gpu.filter((v) => v.group === "amd").every((v) => v.status === "applicable")).toBe(true);
-    expect(gpu.filter((v) => v.group === "nvidia").every((v) => v.status === "not-applicable")).toBe(
-      true,
-    );
+    expect(
+      gpu.filter((v) => v.group === "nvidia").every((v) => v.status === "not-applicable"),
+    ).toBe(true);
   });
 
   it("keeps diagnostic TDR values read-only", () => {
