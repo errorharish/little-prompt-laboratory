@@ -449,7 +449,7 @@ const QuickActions = memo(function QuickActions() {
                 </span>
                 {result.failed > 0 && (
                   <span>
-                    <b className="text-danger">{result.failed}</b> failed
+                    <b className="text-destructive">{result.failed}</b> failed
                   </span>
                 )}
                 <span>
