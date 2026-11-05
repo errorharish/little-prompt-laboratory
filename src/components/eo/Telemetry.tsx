@@ -313,7 +313,6 @@ const TelemetryChart = memo(function TelemetryChart({
                 <path
                   key={`l-${s.key}`}
                   className="eo-morph"
-                  pathLength={1}
                   d={d}
                   style={morph(d)}
                   fill="none"
@@ -455,7 +454,6 @@ function MetricCard({
             />
             <path
               className="eo-morph"
-              pathLength={1}
               d={line}
               style={morph(line)}
               fill="none"

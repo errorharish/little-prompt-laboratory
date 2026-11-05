@@ -471,6 +471,11 @@ input[type="range"] { accent-color: var(--cyan); }
 .eo-tele-plot { cursor: crosshair; border-radius: 6px; }
 .eo-tele-plot:focus-visible { outline: 2px solid var(--cyan); outline-offset: 4px; }
 .eo-morph { transition: d var(--duration-slow) var(--ease-out); }
+/* Morphing telemetry lines use non-scaling strokes, so they reveal left-to-right with a clip
+   instead of the dash draw (a normalized dash would only cover part of a stretched line). */
+.eo-chart path.eo-morph { stroke-dasharray: none; animation: none; }
+.eo-chart:has(.eo-morph) { animation: eo-reveal-x 800ms var(--ease-out) both; }
+@keyframes eo-reveal-x { from { clip-path: inset(0 100% 0 0); } to { clip-path: inset(0 0 0 0); } }
 .eo-tele-cross { position: absolute; top: 0; bottom: 0; width: 1px; pointer-events: none; background: linear-gradient(180deg, transparent, color-mix(in oklab, var(--cyan) 70%, transparent), transparent); }
 .eo-tele-dot { position: absolute; height: 10px; width: 10px; margin: -5px 0 0 -5px; pointer-events: none; border-radius: 50%; border: 2px solid var(--background); background: var(--series); box-shadow: 0 0 10px var(--series); transition: top var(--duration-fast) var(--ease-out); }
 .eo-tele-tip { position: absolute; top: 8px; z-index: 5; min-width: 150px; pointer-events: none; border-radius: 8px; border: 1px solid var(--border-strong); padding: 8px 10px; background: linear-gradient(160deg, var(--surface-light), transparent 40%), var(--glass-float); backdrop-filter: var(--glass-blur-float); box-shadow: var(--overlay-shadow); transform: translateX(14px); animation: eo-pop-in 160ms var(--ease-out) both; }
