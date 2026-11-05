@@ -527,6 +527,60 @@ export const COMPONENT_MAP: { web: string; wpf: string; note: string }[] = [
     wpf: "ItemsControl with a vertical connector Line",
     note: "Numbered node shows engine state",
   },
+  {
+    web: "RestorePointDialog",
+    wpf: "Controls/RestorePointDialog.xaml (staged ContentControl per state)",
+    note: "Check → System Protection Is Disabled → confirm → enable → verify → create → verify",
+  },
+  {
+    web: "Navigation shortcut tile",
+    wpf: "Button + NavigationService.Navigate(routeKey)",
+    note: "Never executes an operation",
+  },
+  {
+    web: "Input mode picker",
+    wpf: "RadioButton group styled as cards, bound to SelectedMode",
+    note: "Normal / Advanced computed; Custom editable + Save / Reset",
+  },
+  {
+    web: "HealthCheck",
+    wpf: "SystemInfoView health panel (ScoreRing + ItemsControl)",
+    note: "HealthScoreService: weights, worst-reading categories, coverage",
+  },
+];
+
+/** Future native System Protection / restore point implementation (not in the browser). */
+export const NATIVE_RESTORE_POINT: { area: string; detail: string }[] = [
+  {
+    area: "Status check",
+    detail:
+      "SystemRestoreService.GetProtectionStatusAsync(systemDrive) reads the drive's protection state (WMI root\\default:SystemRestoreConfig / vssadmin list shadowstorage) for %SystemDrive% only. Group Policy keys DisableSR / DisableConfig under HKLM\\SOFTWARE\\Policies\\Microsoft\\Windows NT\\SystemRestore are read to detect a blocked state up front.",
+  },
+  {
+    area: "Disabled dialog",
+    detail:
+      "When protection is off the ViewModel shows RestorePointDialog in the ProtectionRequired state; nothing is changed until the user presses Enable System Protection and then Confirm.",
+  },
+  {
+    area: "Elevation",
+    detail:
+      "Enabling runs in the elevated helper (requireAdministrator manifest, started via ProcessStartInfo Verb=\"runas\"). A declined UAC prompt (Win32Exception 1223) returns to the dialog with an accurate message; permissions are never bypassed.",
+  },
+  {
+    area: "Enable",
+    detail:
+      "Calls SystemRestore.Enable(\"C:\\\\\") (WMI root\\default:SystemRestore) for the system drive only; other drives, existing restore points and disk-usage settings are left untouched. Protection is never disabled by the app.",
+  },
+  {
+    area: "Verify",
+    detail:
+      "Re-reads the protection status after enabling. Only a verified ON state continues to creation; otherwise the dialog shows the manual System Properties › System Protection steps.",
+  },
+  {
+    area: "Create & verify",
+    detail:
+      "SystemRestore.CreateRestorePoint(name, APPLICATION_INSTALL=0, BEGIN_SYSTEM_CHANGE=100) then lists SystemRestore instances to confirm the new sequence number exists. Windows' 24-hour creation frequency limit (SystemRestorePointCreationFrequency) is reported as such, never as success.",
+  },
 ];
 
 export const LAYOUT_RULES: string[] = [
