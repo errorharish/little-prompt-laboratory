@@ -992,3 +992,85 @@ button.eo-check-row:active { transform: translateY(0); box-shadow: var(--shadow-
 .eo-guide-steps p { margin-top: 2px; font-size: 12px; line-height: 1.5; color: var(--muted-foreground); }
 .eo-guide-note { margin-top: 14px; border-top: 1px solid var(--border); padding-top: 10px; font-size: 11px; color: var(--success); }
 .eo-guide-num-sm { height: 22px; width: 22px; flex-shrink: 0; font-size: 10.5px; }
+
+/* ── Dashboard navigation shortcuts (open a page; never run anything) ── */
+.eo-shortcut { display: flex; min-width: 0; align-items: center; gap: 10px; padding: 10px 12px; border-radius: 12px; border: 1px solid var(--border); background: var(--gradient-card); box-shadow: var(--shadow-card); transition: border-color var(--duration-control), transform var(--duration-control) var(--ease-out), box-shadow var(--duration-control), background-color var(--duration-fast); }
+.eo-shortcut:hover { border-color: color-mix(in oklab, var(--cyan) 45%, var(--border)); transform: translateY(-2px); box-shadow: var(--shadow-elevated); }
+.eo-shortcut:active { transform: translateY(0); box-shadow: var(--shadow-pressed); }
+.eo-shortcut:focus-visible { outline: 2px solid var(--cyan); outline-offset: 2px; }
+.eo-shortcut[data-primary] { border-color: color-mix(in oklab, var(--primary) 55%, var(--border)); background: linear-gradient(140deg, color-mix(in oklab, var(--primary) 16%, transparent), transparent 70%), var(--gradient-card); }
+.eo-shortcut:hover .eo-quick-icon { transform: translateY(-1px) scale(1.06); }
+.eo-shortcut:hover .eo-quick-arrow { transform: translate(2px, -2px); }
+.eo-quick-grid .eo-quick { min-height: 128px; }
+@container (max-width: 1050px) {
+  .eo-page-content .eo-quick-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+  .eo-page-content .eo-shortcut-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+
+/* ── Restore point workflow (System Protection check) ── */
+.eo-rp-alert { display: flex; gap: 12px; padding: 12px 14px; border-radius: 10px; border: 1px solid var(--border); background: var(--window); font-size: 12px; line-height: 1.5; color: var(--muted-foreground); animation: eo-section-in var(--duration-standard) var(--ease-out) both; }
+.eo-rp-alert-icon { display: inline-flex; height: 34px; width: 34px; flex-shrink: 0; align-items: center; justify-content: center; border-radius: 9px; color: var(--cyan); background: color-mix(in oklab, var(--cyan) 12%, transparent); box-shadow: inset 0 0 0 1px color-mix(in oklab, var(--cyan) 24%, transparent); }
+.eo-rp-alert-icon svg { height: 17px; width: 17px; }
+.eo-rp-alert-title { margin-bottom: 2px; font-size: 13px; font-weight: 800; color: var(--foreground); }
+.eo-rp-alert[data-tone="warning"] { border-color: color-mix(in oklab, var(--warning) 35%, var(--border)); background: color-mix(in oklab, var(--warning) 6%, var(--window)); }
+.eo-rp-alert[data-tone="warning"] .eo-rp-alert-icon { color: var(--warning); background: color-mix(in oklab, var(--warning) 14%, transparent); box-shadow: inset 0 0 0 1px color-mix(in oklab, var(--warning) 30%, transparent); }
+.eo-rp-alert[data-tone="danger"] { border-color: color-mix(in oklab, var(--destructive) 35%, var(--border)); background: color-mix(in oklab, var(--destructive) 6%, var(--window)); }
+.eo-rp-alert[data-tone="danger"] .eo-rp-alert-icon { color: var(--destructive); background: color-mix(in oklab, var(--destructive) 14%, transparent); box-shadow: inset 0 0 0 1px color-mix(in oklab, var(--destructive) 30%, transparent); }
+.eo-rp-alert[data-tone="success"] { border-color: color-mix(in oklab, var(--success) 35%, var(--border)); background: color-mix(in oklab, var(--success) 6%, var(--window)); }
+.eo-rp-alert[data-tone="success"] .eo-rp-alert-icon { color: var(--success); background: color-mix(in oklab, var(--success) 14%, transparent); box-shadow: inset 0 0 0 1px color-mix(in oklab, var(--success) 30%, transparent); }
+.eo-rp-alert[data-tone="muted"] .eo-rp-alert-icon { color: var(--muted-foreground); background: var(--elevated); box-shadow: none; }
+.eo-rp-drive { display: inline-flex; flex-wrap: wrap; align-items: center; gap: 8px; margin-top: 8px; padding: 6px 10px; border-radius: 8px; border: 1px solid var(--border); background: var(--elevated); font-size: 12px; color: var(--foreground); }
+.eo-rp-drive svg { height: 14px; width: 14px; color: var(--cyan); }
+.eo-rp-confirm { padding: 10px 14px; border-radius: 10px; border: 1px solid color-mix(in oklab, var(--cyan) 30%, var(--border)); background: color-mix(in oklab, var(--cyan) 5%, var(--window)); animation: eo-section-in var(--duration-standard) var(--ease-out) both; }
+.eo-rp-confirm ul, .eo-rp-steps { margin-top: 6px; display: grid; gap: 3px; padding-left: 18px; font-size: 11.5px; color: var(--muted-foreground); }
+.eo-rp-confirm ul { list-style: disc; }
+.eo-rp-steps { list-style: decimal; }
+.eo-rp-device { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 10px; }
+.eo-rp-device .eo-rp-drive { margin-top: 0; }
+
+/* ── Mode selector cards (Input Optimizer: Normal / Advanced / Custom) ── */
+.eo-mode-pick { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) minmax(0, .72fr); gap: 10px; }
+.eo-mode-card { display: flex; min-width: 0; align-items: center; gap: 10px; padding: 10px 12px; border-radius: 12px; border: 1px solid var(--border); background: var(--gradient-card); box-shadow: var(--shadow-card); text-align: left; transition: border-color var(--duration-standard) var(--ease-out), background-color var(--duration-standard), transform var(--duration-control) var(--ease-out), box-shadow var(--duration-standard); }
+.eo-mode-card:hover { border-color: var(--border-strong); transform: translateY(-1px); }
+.eo-mode-card:focus-visible { outline: 2px solid var(--cyan); outline-offset: 2px; }
+.eo-mode-card[aria-pressed="true"] { border-color: color-mix(in oklab, var(--cyan) 55%, var(--border)); background: linear-gradient(140deg, color-mix(in oklab, var(--cyan) 12%, transparent), transparent 70%), var(--gradient-card); box-shadow: var(--shadow-glow), var(--shadow-card); }
+.eo-mode-card[aria-pressed="true"] .eo-quick-icon { color: var(--primary-foreground); background: var(--gradient-brand); box-shadow: none; }
+.eo-mode-title { display: block; font-size: 12.5px; font-weight: 800; letter-spacing: .04em; text-transform: uppercase; }
+.eo-mode-sub { display: block; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: 11px; color: var(--muted-foreground); }
+.eo-mode-count { flex-shrink: 0; font-size: 10.5px; color: var(--muted-foreground); }
+.eo-mode-count b { color: var(--foreground); }
+.eo-mode-card[aria-pressed="true"] .eo-mode-count b { color: var(--cyan); }
+.eo-mode-body { animation: eo-section-in var(--duration-standard) var(--ease-out) both; }
+.eo-check-row[data-readonly] { cursor: default; }
+@container (max-width: 760px) {
+  .eo-page-content .eo-mode-pick { grid-template-columns: minmax(0, 1fr); }
+}
+@keyframes eo-pop-out { to { opacity: 0; transform: translateY(-4px) scale(.97); } }
+.eo-guide-pop[data-closing] { animation: eo-pop-out 140ms var(--ease-out) both; pointer-events: none; }
+.eo-guide-pop[data-closing][data-above] { animation-name: eo-pop-out; }
+
+/* ── System Health Check (Telemetry) ── */
+.eo-health-head { display: grid; grid-template-columns: auto minmax(0, 1fr) auto; align-items: center; gap: 18px; }
+.eo-health-ring { display: flex; }
+.eo-health-steps { margin-top: 14px; display: flex; flex-wrap: wrap; gap: 6px 16px; font-size: 11.5px; color: var(--muted-foreground); }
+.eo-health-steps li { display: inline-flex; align-items: center; gap: 6px; transition: color var(--duration-fast); }
+.eo-health-steps li[data-state="active"] { color: var(--foreground); font-weight: 700; }
+.eo-health-steps li[data-state="done"] { color: var(--success); }
+.eo-health-body { margin-top: 16px; display: grid; grid-template-columns: minmax(0, 1.6fr) minmax(0, 1fr); gap: 16px; animation: eo-section-in var(--duration-standard) var(--ease-out) both; }
+.eo-health-cats { display: grid; grid-template-columns: repeat(auto-fill, minmax(190px, 1fr)); gap: 10px; }
+.eo-health-cats > li { padding: 10px 12px; border-radius: 10px; border: 1px solid var(--border); background: var(--window); }
+.eo-health-attn { padding: 12px 14px; border-radius: 10px; border: 1px solid var(--border); background: var(--window); }
+.eo-health-item { display: flex; align-items: center; gap: 10px; padding: 7px 10px; border-radius: 8px; border-left: 3px solid var(--warning); background: var(--elevated); }
+.eo-health-item[data-kind="missing"] { border-left-color: var(--muted-foreground); }
+.eo-health-item[data-kind="utilization"] { border-left-color: var(--cyan); }
+.eo-health-link { flex-shrink: 0; padding: 3px 9px; border-radius: 6px; border: 1px solid var(--border); font-size: 10.5px; font-weight: 800; letter-spacing: .06em; text-transform: uppercase; color: var(--cyan); transition: border-color var(--duration-fast), background-color var(--duration-fast); }
+.eo-health-link:hover { border-color: color-mix(in oklab, var(--cyan) 45%, var(--border)); background: color-mix(in oklab, var(--cyan) 8%, transparent); }
+.eo-health-link:focus-visible { outline: 2px solid var(--cyan); outline-offset: 2px; }
+.eo-health .eo-details { margin-top: 12px; }
+@container (max-width: 900px) {
+  .eo-page-content .eo-health-body { grid-template-columns: minmax(0, 1fr); }
+}
+@container (max-width: 640px) {
+  .eo-page-content .eo-health-head { grid-template-columns: auto minmax(0, 1fr); }
+  .eo-page-content .eo-health-head > :last-child { grid-column: 1 / -1; justify-self: start; }
+}
