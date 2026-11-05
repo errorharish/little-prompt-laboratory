@@ -125,7 +125,7 @@ export function OneClickPage() {
         <div className="mb-3 flex flex-wrap items-start justify-between gap-3">
           <div><Label as="h2" className="text-foreground">RECOMMENDED OPTIMIZATIONS</Label><p className="mt-1 text-xs text-muted-foreground">Choose the sample changes to include; risk and restart requirements stay visible.</p></div>
           <div ref={filterRef} className="relative flex flex-wrap gap-2">
-            {filter !== "All Optimizations" && <Btn size="sm" variant="ghost" onClick={() => setFilter("All Optimizations")} title="Remove filter"><X aria-hidden="true" className="h-3 w-3" />{filter}</Btn>}
+            {filter !== "All Optimizations" && <Btn size="sm" variant="ghost" onClick={() => setFilter("All Optimizations")} title="Remove filter" label={`Remove filter: ${filter}`}><X aria-hidden="true" className="h-3 w-3" />{filter}</Btn>}
             <Btn size="sm" expanded={filterOpen} controls="eo-oneclick-filter" onClick={() => setFilterOpen(!filterOpen)}><SlidersHorizontal aria-hidden="true" className="h-3 w-3" />Filter</Btn>
             <Btn size="sm" disabled={!analyzed} onClick={() => setSel(recommendedSelection(ONE_CLICK_ACTIONS))}>Select recommended</Btn>
             <Btn size="sm" variant="ghost" disabled={!sel.size} onClick={() => setSel(new Set())}>Clear</Btn>
