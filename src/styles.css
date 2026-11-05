@@ -84,7 +84,7 @@
   --secondary-foreground: oklch(0.98 0.003 248);
   --muted: oklch(0.22 0.045 265);
   --muted-foreground: oklch(0.71 0.035 257); /* #94A3B8 */
-  --subtle: oklch(0.62 0.04 257); /* #7A879C — lifted from #64748B for 4.5:1 text contrast on window */
+  --subtle: oklch(0.62 0.04 257); /* #77879F — lifted from #64748B (4.0:1) to 5.3:1 contrast on window */
   --accent: oklch(0.546 0.215 263);
   --accent-foreground: oklch(0.98 0.003 248);
   --success: oklch(0.7 0.15 163); /* #10B981 */
