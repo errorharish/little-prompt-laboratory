@@ -1,5 +1,14 @@
 // InputOptimizerView, SystemInfoView, RegistryTweakView, RegistryValuesView, RegistryValuesRamView, GpuRegistryValuesView
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import {
+  Check as CheckIcon,
+  Gauge,
+  Lock,
+  RotateCcw,
+  ShieldCheck,
+  SlidersHorizontal,
+  type LucideIcon,
+} from "lucide-react";
 import { Link } from "@tanstack/react-router";
 import {
   Badge,
@@ -7,6 +16,7 @@ import {
   Btn,
   Card,
   Check,
+  CheckRow,
   Chips,
   Cols,
   Details,
@@ -17,6 +27,7 @@ import {
   RiskBadge,
   SearchBox,
   SectionTitle,
+  SelectionBar,
   SimNotice,
   StatTiles,
   simulate,
@@ -26,95 +37,95 @@ import type { GuideId } from "@/lib/eo/guides";
 import { RunModal } from "../RunModal";
 import { TelemetryConsole } from "../Telemetry";
 import { HealthCheck } from "../HealthCheck";
-import { toggleInSet } from "@/lib/eo/selection";
+import {
+  clampSelection,
+  eligibleSelection,
+  isSelectable,
+  toggleInSet,
+} from "@/lib/eo/selection";
+import {
+  INPUT_ITEMS,
+  INPUT_MODES,
+  exclusionReason,
+  modeSelection,
+  parseInputMode,
+  type InputItem,
+  type InputMode,
+} from "@/lib/eo/inputModes";
 import { usePersistedSelection } from "../useSelection";
 import { CATALOG, HW } from "@/lib/eo/data";
 import { cn } from "@/lib/utils";
 
 /* ───────── INPUT OPTIMIZER ───────── */
-const NORMAL_INPUT = [
-  "Disable mouse acceleration (1:1 raw pointer)",
-  "Keyboard repeat rate maximization",
-  "Keyboard repeat delay minimum",
-  "Mouse hover time reduction",
-];
-const ADV_INPUT = [
-  "Mouse data queue size",
-  "Keyboard data queue size",
-  "High-precision timer request",
-  "USB selective suspend (input devices)",
-];
-// First row of each list is already applied on the sample system (shown as OPTIMIZED).
-const INPUT_ITEMS = [...NORMAL_INPUT, ...ADV_INPUT].map((id) => ({
-  id,
-  risk: "LOW" as const,
-  done: id === NORMAL_INPUT[0] || id === ADV_INPUT[0],
-}));
+// Normal / Advanced are recommendation-driven (computed selection, read-only rows); Custom is
+// the only editable mode and is saved as its own profile. Rules: src/lib/eo/inputModes.ts.
+const MODE_META: Record<InputMode, { title: string; sub: string; Icon: LucideIcon }> = {
+  NORMAL: { title: "Normal Optimization", sub: "Recommended pointer & keyboard presets", Icon: ShieldCheck },
+  ADVANCED: { title: "Advanced Optimization", sub: "Adds queue, timer and USB options", Icon: Gauge },
+  CUSTOM: { title: "Custom", sub: "Pick items yourself · saved profile", Icon: SlidersHorizontal },
+};
+const MODE_KEY = "eo-input-mode";
+const sameSet = (a: Set<string>, b: Set<string>) => a.size === b.size && [...a].every((x) => b.has(x));
+
 export function InputOptimizerPage() {
-  const [mode, setMode] = useState("NORMAL");
-  const { sel, setSel } = usePersistedSelection("input-optimizer", INPUT_ITEMS);
+  const [mode, setModeState] = useState<InputMode>("NORMAL");
+  useEffect(() => {
+    try {
+      setModeState(parseInputMode(window.localStorage.getItem(MODE_KEY)));
+    } catch {
+      /* ignore */
+    }
+  }, []);
+  const setMode = (m: InputMode) => {
+    setModeState(m);
+    try {
+      window.localStorage.setItem(MODE_KEY, m);
+    } catch {
+      /* ignore */
+    }
+  };
+  const saved = usePersistedSelection("input-optimizer:custom", INPUT_ITEMS);
+  const [draft, setDraft] = useState<Set<string> | null>(null);
+  const customSel = draft ?? saved.sel;
+  const dirty = draft !== null && !sameSet(draft, saved.sel);
+  const editDraft = (next: Set<string>) => setDraft(clampSelection(next, INPUT_ITEMS));
+
+  const counts = {
+    NORMAL: modeSelection("NORMAL").size,
+    ADVANCED: modeSelection("ADVANCED").size,
+    CUSTOM: customSel.size,
+  };
+  const activeSel = mode === "CUSTOM" ? customSel : modeSelection(mode);
+  const runItems = INPUT_ITEMS.filter((i) => activeSel.has(i.id));
   const test = useSimRun(2500);
   const [run, setRun] = useState(false);
   const [tested, setTested] = useState(false);
-  const List = ({
-    title,
-    sub,
-    items,
-    guide,
-  }: {
-    title: string;
-    sub: string;
-    items: string[];
-    guide: GuideId;
-  }) => (
-    <Card>
-      <SectionTitle
-        title={title}
-        sub={sub}
-        guide={guide}
-        right={<Badge>{items.length} sample settings</Badge>}
-      />
-      {mode === "CUSTOM" && (
-        <div className="mb-2 flex gap-1.5">
-          <Btn size="sm" onClick={() => setSel((s) => new Set([...s, ...items.slice(1)]))}>
-            Select all
-          </Btn>
-          <Btn
-            size="sm"
-            variant="ghost"
-            onClick={() => setSel((s) => new Set([...s].filter((x) => !items.includes(x))))}
-          >
-            Deselect all
-          </Btn>
-        </div>
-      )}
-      <div className="space-y-1.5">
-        {items.map((i, n) => (
-          <div
-            key={i}
-            className="flex items-center gap-3 rounded-lg border border-border bg-window px-3 py-2 text-[12.5px]"
-          >
-            {mode === "CUSTOM" && (
-              <Check
-                on={sel.has(i)}
-                onChange={() =>
-                  setSel((s) => {
-                    return toggleInSet(s, i);
-                  })
-                }
-              />
-            )}
-            <span className="flex-1">{i}</span>
-            {n === 0 ? (
-              <Badge tone="success">OPTIMIZED</Badge>
-            ) : (
-              <Badge tone="warning">PENDING</Badge>
-            )}
-          </div>
-        ))}
-      </div>
-    </Card>
-  );
+
+  const readRow = (i: InputItem) => {
+    const why = exclusionReason(i);
+    return (
+      <li key={i.id} className="eo-mode-row" data-included={why ? undefined : "true"}>
+        <span className="eo-mode-row-mark" aria-hidden="true">
+          {why ? <Lock className="h-2.5 w-2.5" /> : <CheckIcon className="h-3 w-3" strokeWidth={3.5} />}
+        </span>
+        <span className="min-w-0 flex-1">
+          <span className="block truncate text-[12.5px] font-semibold">{i.title}</span>
+          <span className="block truncate text-[11px] text-muted-foreground">
+            {i.group === "advanced" ? `${i.desc} · ${i.compat}` : i.desc}
+          </span>
+        </span>
+        <span className="flex shrink-0 items-center gap-1.5">
+          {i.restart && i.group === "advanced" && <Badge>RESTART</Badge>}
+          <RiskBadge risk={i.risk} />
+          <Badge tone={why ? "muted" : "cyan"}>{why ? why.toUpperCase() : "INCLUDED"}</Badge>
+        </span>
+        <span className="sr-only">{why ? `Not included: ${why}` : "Included"}</span>
+      </li>
+    );
+  };
+  const normalItems = INPUT_ITEMS.filter((i) => i.group === "normal");
+  const advItems = INPUT_ITEMS.filter((i) => i.group === "advanced");
+
   return (
     <div className="space-y-4">
       <PageHeader
@@ -122,14 +133,9 @@ export function InputOptimizerPage() {
         badges={<Badge tone="cyan">LATENCY REDUCTION ENGINE</Badge>}
         sub="Simulated pointer, keyboard and timer tuning."
         actions={
-          <>
-            <Btn variant="ghost" onClick={() => simulate("Refresh")}>
-              Refresh
-            </Btn>
-            <Btn variant="ghost" onClick={() => simulate("Restore defaults")}>
-              Restore defaults
-            </Btn>
-          </>
+          <Btn variant="ghost" onClick={() => simulate("Refresh")}>
+            Refresh
+          </Btn>
         }
       />
       <StatTiles
@@ -141,34 +147,157 @@ export function InputOptimizerPage() {
         ]}
       />
       <Card>
-        <div className="flex flex-wrap items-center justify-between gap-3">
-          <SectionTitle
-            title="INPUT PROFILE"
-            sub="Normal presets or custom item selection · simulated."
-          />
-          <Chips options={["NORMAL", "CUSTOM"]} value={mode} onChange={setMode} />
+        <SectionTitle
+          title="OPTIMIZATION MODE"
+          guide="input.modes"
+          sub="Normal and Advanced select every applicable, recommended item for you."
+        />
+        <div role="radiogroup" aria-label="Input optimization mode" className="eo-mode-pick">
+          {INPUT_MODES.map((m) => {
+            const meta = MODE_META[m];
+            return (
+              <button
+                key={m}
+                type="button"
+                role="radio"
+                aria-checked={mode === m}
+                onClick={() => setMode(m)}
+                className="eo-mode-opt"
+                data-kind={m === "CUSTOM" ? "custom" : undefined}
+              >
+                <span className="eo-quick-icon" aria-hidden="true">
+                  <meta.Icon className="h-4 w-4" />
+                </span>
+                <span className="min-w-0 flex-1 text-left">
+                  <span className="block truncate text-[12.5px] font-bold uppercase tracking-[0.06em]">
+                    {meta.title}
+                  </span>
+                  <span className="block truncate text-[11px] text-muted-foreground">{meta.sub}</span>
+                </span>
+                <span className="eo-mode-count">
+                  {m === "CUSTOM" && dirty ? "UNSAVED" : `${counts[m]} selected`}
+                </span>
+              </button>
+            );
+          })}
         </div>
-        <Details inline title="Aim-shake diagnosis" hint="Demo: no aim-shake">
-          <p className="text-xs text-muted-foreground">
-            Sample diagnosis of MarkC linear curves, acceleration thresholds and frame-time jitter;
-            no measurements collected.
-          </p>
-        </Details>
       </Card>
-      <Cols cols="minmax(0, 1fr) minmax(0, 1fr)" gap={14} className="items-stretch">
-        <List
-          title="NORMAL INPUT OPTIMIZATION"
-          sub="Standard pointer and keyboard presets."
-          items={NORMAL_INPUT}
-          guide="input.normal"
-        />
-        <List
-          title="ADVANCED INPUT OPTIMIZATION"
-          sub="Queue, timer and USB configuration."
-          items={ADV_INPUT}
-          guide="input.advanced"
-        />
-      </Cols>
+
+      {mode === "NORMAL" && (
+        <Card>
+          <SectionTitle
+            title="NORMAL OPTIMIZATION"
+            guide="input.normal"
+            sub="Standard pointer and keyboard presets · selected automatically"
+            right={<Badge tone="cyan">{counts.NORMAL} of {normalItems.length} included</Badge>}
+          />
+          <ul className="space-y-1.5" aria-label="Normal optimizations">{normalItems.map(readRow)}</ul>
+        </Card>
+      )}
+
+      {mode === "ADVANCED" && (
+        <Card>
+          <SectionTitle
+            title="ADVANCED OPTIMIZATION"
+            guide="input.advanced"
+            sub="Normal set plus queue, timer and USB options · selected automatically"
+            right={<Badge tone="cyan">{counts.ADVANCED} of {INPUT_ITEMS.length} included</Badge>}
+          />
+          <div className="eo-label mb-1.5 text-[10px] text-cyan">ADVANCED OPTIONS</div>
+          <ul className="space-y-1.5" aria-label="Advanced optimizations">{advItems.map(readRow)}</ul>
+          <Details inline title="Normal set (included)" hint={`${modeSelection("NORMAL").size} recommended items`}>
+            <ul className="space-y-1.5" aria-label="Normal optimizations included">{normalItems.map(readRow)}</ul>
+          </Details>
+        </Card>
+      )}
+
+      {mode === "CUSTOM" && (
+        <Card>
+          <SectionTitle
+            title="CUSTOM SELECTION"
+            sub="Your own picks · saved separately from Normal and Advanced"
+            badge={dirty ? <Badge tone="warning">UNSAVED CHANGES</Badge> : saved.customized ? <Badge tone="success">SAVED</Badge> : undefined}
+          />
+          <div className="mb-2 flex flex-wrap items-center justify-between gap-2">
+            <SelectionBar
+              count={customSel.size}
+              total={INPUT_ITEMS.filter(isSelectable).length}
+              onAll={() => editDraft(eligibleSelection(INPUT_ITEMS))}
+              onClear={() => editDraft(new Set())}
+              allLabel="Select all eligible"
+            />
+            <span className="flex gap-1.5">
+              <Btn
+                size="sm"
+                variant="ghost"
+                disabled={!saved.customized && !dirty}
+                onClick={() => {
+                  saved.reset();
+                  setDraft(null);
+                }}
+              >
+                <RotateCcw aria-hidden="true" className="h-3 w-3" /> Reset to recommended
+              </Btn>
+              <Btn
+                size="sm"
+                variant="primary"
+                disabled={!dirty}
+                onClick={() => {
+                  saved.setSel(customSel);
+                  setDraft(null);
+                }}
+              >
+                Save custom profile
+              </Btn>
+            </span>
+          </div>
+          {[
+            ["NORMAL", normalItems],
+            ["ADVANCED", advItems],
+          ].map(([label, list]) => (
+            <div key={label as string} className="mt-2">
+              <div className="eo-label mb-1.5 text-[10px] text-cyan">{label as string}</div>
+              <div className="space-y-1.5">
+                {(list as InputItem[]).map((i) => (
+                  <CheckRow
+                    key={i.id}
+                    on={customSel.has(i.id)}
+                    onChange={() => editDraft(toggleInSet(customSel, i.id))}
+                    title={i.title}
+                    desc={i.group === "advanced" ? `${i.desc} · ${i.compat}` : i.desc}
+                    locked={isSelectable(i) ? undefined : exclusionReason(i) ?? "Not selectable"}
+                    right={
+                      <>
+                        {i.done && <Badge tone="success">APPLIED</Badge>}
+                        <RiskBadge risk={i.risk} />
+                      </>
+                    }
+                  />
+                ))}
+              </div>
+            </div>
+          ))}
+        </Card>
+      )}
+
+      <div className="eo-action-bar">
+        <span className="text-[12px] text-muted-foreground">
+          <b className="text-foreground tabular-nums">{activeSel.size}</b> selected ·{" "}
+          {MODE_META[mode].title}
+          {mode === "CUSTOM" && dirty ? " · unsaved" : ""}
+        </span>
+        <Btn variant="primary" disabled={!activeSel.size} onClick={() => setRun(true)}>
+          Run optimization
+        </Btn>
+      </div>
+      <RunModal
+        open={run}
+        onClose={() => setRun(false)}
+        profile={`Input ${MODE_META[mode].title}`}
+        count={runItems.length}
+        items={runItems}
+      />
+
       <Card>
         <SectionTitle
           title="SIMULATED INPUT TEST"
@@ -200,16 +329,7 @@ export function InputOptimizerPage() {
             ? "Simulated test finished. No measurements were collected."
             : "Run the simulated test to preview its progress; real results require the native app."}
         </p>
-      </Card>
-      <Card>
-        <Details
-          inline
-          title="Illustrative before / after states"
-          hint="Demo values, not benchmarks"
-        >
-          <p className="mb-3 text-xs text-muted-foreground">
-            Demo values only — not benchmark results or evidence of an improvement.
-          </p>
+        <Details inline title="Illustrative before / after states" hint="Demo values, not benchmarks">
           <Cols cols="1fr 40px 1fr">
             <div className="rounded-lg border border-border bg-window p-3">
               <Label className="mb-2">BEFORE OPTIMIZATION</Label>
@@ -226,27 +346,10 @@ export function InputOptimizerPage() {
             </div>
           </Cols>
         </Details>
-      </Card>
-      <div className="flex justify-end">
-        <Btn
-          variant="primary"
-          disabled={mode === "CUSTOM" && !sel.size}
-          onClick={() => setRun(true)}
-        >
-          Review input settings
-        </Btn>
-      </div>
-      <RunModal
-        open={run}
-        onClose={() => setRun(false)}
-        profile="Input Optimizer"
-        count={mode === "NORMAL" ? NORMAL_INPUT.length : sel.size}
-      />
-      <Card>
-        <Details inline title="Diagnostic telemetry" hint="Native app readback">
+        <Details inline title="Aim-shake diagnosis" hint="Demo: no aim-shake">
           <p className="text-xs text-muted-foreground">
-            Per-item diagnostic readback (registry location, current vs target value) is listed here
-            in the native app. Hidden by default.
+            Sample diagnosis of MarkC linear curves, acceleration thresholds and frame-time jitter;
+            no measurements collected.
           </p>
         </Details>
       </Card>
