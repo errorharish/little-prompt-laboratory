@@ -1042,6 +1042,6 @@ button.eo-check-row:active { transform: translateY(0); box-shadow: var(--shadow-
 .eo-mode-card[aria-pressed="true"] .eo-mode-count b { color: var(--cyan); }
 .eo-mode-body { animation: eo-section-in var(--duration-standard) var(--ease-out) both; }
 .eo-check-row[data-readonly] { cursor: default; }
-@container (max-width: 900px) {
+@container (max-width: 760px) {
   .eo-page-content .eo-mode-pick { grid-template-columns: minmax(0, 1fr); }
 }
