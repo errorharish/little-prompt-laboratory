@@ -11,6 +11,7 @@ import {
   Search,
   Check as CheckIcon,
   Loader2,
+  Lock,
 } from "lucide-react";
 import { toast } from "sonner";
 
@@ -480,6 +481,110 @@ export function Check({
     >
       {on && <CheckIcon aria-hidden="true" className="h-3 w-3" strokeWidth={3.5} />}
     </button>
+  );
+}
+
+/* ── Selectable optimization row: the whole row is one checkbox (keyboard + screen reader).
+ * `locked` rows (protected / unsupported) render as a non-interactive row with a lock. */
+export function CheckRow({
+  on,
+  onChange,
+  title,
+  desc,
+  icon,
+  right,
+  locked,
+  state,
+  className,
+}: {
+  on: boolean;
+  onChange: (v: boolean) => void;
+  title: ReactNode;
+  desc?: ReactNode | undefined;
+  icon?: ReactNode | undefined;
+  right?: ReactNode | undefined;
+  /** Reason shown instead of a checkbox; the row cannot be selected. */
+  locked?: string | undefined;
+  state?: "active" | "done" | undefined;
+  className?: string | undefined;
+}) {
+  const body = (
+    <>
+      <span
+        aria-hidden="true"
+        className={cn(
+          "eo-check flex h-4.5 w-4.5 shrink-0 items-center justify-center rounded border",
+          locked
+            ? "border-border bg-window text-subtle"
+            : on
+              ? "border-cyan bg-cyan text-sidebar-primary-foreground"
+              : "border-border-strong bg-window",
+        )}
+      >
+        {locked ? (
+          <Lock className="h-2.5 w-2.5" />
+        ) : (
+          on && <CheckIcon className="h-3 w-3" strokeWidth={3.5} />
+        )}
+      </span>
+      {icon && <span className="eo-row-icon">{icon}</span>}
+      <span className="min-w-0 flex-1 text-left">
+        <span className="block truncate text-[12.5px] font-semibold">{title}</span>
+        {desc && (
+          <span className="block truncate text-[11px] text-muted-foreground">{desc}</span>
+        )}
+      </span>
+      {right && <span className="flex shrink-0 items-center gap-1.5">{right}</span>}
+    </>
+  );
+  if (locked)
+    return (
+      <div className={cn("eo-check-row", className)} data-locked="true" title={locked}>
+        {body}
+        <span className="sr-only">{locked}</span>
+      </div>
+    );
+  return (
+    <button
+      type="button"
+      role="checkbox"
+      aria-checked={on}
+      onClick={() => onChange(!on)}
+      className={cn("eo-check-row", className)}
+      data-on={on ? "true" : undefined}
+      data-state={state}
+    >
+      {body}
+    </button>
+  );
+}
+
+/* ── Selection toolbar: "n of m selected" + Select all / Clear ── */
+export function SelectionBar({
+  count,
+  total,
+  onAll,
+  onClear,
+  allLabel = "Select all",
+}: {
+  count: number;
+  total: number;
+  onAll: () => void;
+  onClear: () => void;
+  allLabel?: string | undefined;
+}) {
+  return (
+    <div className="eo-sel-bar">
+      <span aria-live="polite" className="text-[11px] font-semibold text-muted-foreground">
+        <b className="text-foreground tabular-nums">{count}</b> of {total} selected
+      </span>
+      <Btn size="sm" variant="ghost" disabled={count >= total} onClick={onAll}>
+        {allLabel}
+      </Btn>
+      <Btn size="sm" variant="ghost" disabled={!count} onClick={onClear}>
+        Clear
+      </Btn>
+    </div>
   );
 }
 
