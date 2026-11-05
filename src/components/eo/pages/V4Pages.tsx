@@ -793,7 +793,7 @@ export function EmulatorOptimizationPage() {
                     {i + 1}
                   </span>
                   <span className="min-w-0">
-                    <span className="eo-guide-step-title block">{t.replace(/^\d+\.\s*/, "")}</span>
+                    <span className="eo-guide-step-title block">{(t ?? "").replace(/^\d+\.\s*/, "")}</span>
                     <span className="block text-[10.5px] text-subtle">{s}</span>
                   </span>
                 </span>
@@ -806,7 +806,7 @@ export function EmulatorOptimizationPage() {
                 {gs + 1}
               </span>
               <div className="text-[15px] font-bold uppercase">
-                {GUIDE_SECTIONS[gs]?.[0].replace(/^\d+\.\s*/, "")}
+                {GUIDE_SECTIONS[gs]?.[0]?.replace(/^\d+\.\s*/, "")}
               </div>
             </div>
             <p className="mt-3 text-[12.5px] leading-relaxed text-muted-foreground">
