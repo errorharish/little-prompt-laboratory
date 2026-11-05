@@ -358,8 +358,6 @@ input[type="range"] { accent-color: var(--cyan); }
 .eo-step[data-state="current"] .eo-step-dot { background: var(--cyan); color: var(--background); }
 .eo-step[data-state="done"] { border-color: color-mix(in oklab, var(--success) 40%, transparent); color: var(--success); }
 .eo-step[data-state="done"] .eo-step-dot { background: color-mix(in oklab, var(--success) 20%, transparent); color: var(--success); }
-.eo-step-sep { width: 14px; height: 1px; background: var(--border-strong); }
-.eo-step[data-state="done"] + .eo-step-sep { background: color-mix(in oklab, var(--success) 50%, transparent); }
 .eo-skeleton { background: linear-gradient(90deg, var(--window) 0%, var(--elevated) 45%, var(--window) 90%); background-size: 220% 100%; animation: eo-shimmer 1.3s linear infinite; }
 .eo-pulse-dot { animation: eo-pulse 1s ease-in-out infinite; }
 .eo-empty { background: linear-gradient(180deg, var(--surface-light), transparent); }

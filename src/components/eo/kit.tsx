@@ -2,10 +2,14 @@ import { useEffect, useRef, useId, useState, type ReactNode } from "react";
 import type React from "react";
 import { cn } from "@/lib/utils";
 import type { Risk } from "@/lib/eo/data";
-import { X, ChevronDown, FlaskConical, Search, Check as CheckIcon } from "lucide-react";
+import { X, ChevronDown, FlaskConical, Search, Check as CheckIcon, Loader2 } from "lucide-react";
 import { toast } from "sonner";
 
-/* ── Card (FigmaCardStyle / GlassCard) ── */
+/* ── Card (FigmaCardStyle / GlassCard) ──
+ * Pointer light follows the mouse on every card; the gentle tilt (max ±0.8°) is limited to
+ * large cards without form fields. Updates are batched per animation frame. */
+const TILT_MIN_W = 340;
+const TILT_MIN_H = 180;
 export function Card({
   className,
   children,
@@ -18,32 +22,44 @@ export function Card({
   style?: React.CSSProperties | undefined;
 }) {
   const ref = useRef<HTMLDivElement>(null);
+  const frame = useRef(0);
+  const reset = () => {
+    cancelAnimationFrame(frame.current);
+    const node = ref.current;
+    if (!node) return;
+    node.style.setProperty("--tilt-x", "0deg");
+    node.style.setProperty("--tilt-y", "0deg");
+  };
+  useEffect(() => () => cancelAnimationFrame(frame.current), []);
   return (
     <div
       ref={ref}
       style={style}
       onPointerMove={(e) => {
-        const node = ref.current;
-        if (
-          !node ||
-          e.pointerType !== "mouse" ||
-          node.querySelector("input, select") ||
-          document.documentElement.dataset["motion"] === "reduced" ||
-          document.documentElement.dataset["depth"] === "flat"
-        )
-          return;
-        const box = node.getBoundingClientRect();
-        const x = (e.clientX - box.left) / box.width,
-          y = (e.clientY - box.top) / box.height;
-        node.style.setProperty("--tilt-x", `${(0.5 - y) * 1.8}deg`);
-        node.style.setProperty("--tilt-y", `${(x - 0.5) * 1.8}deg`);
-        node.style.setProperty("--light-x", `${x * 100}%`);
+        if (e.pointerType !== "mouse") return;
+        const { clientX, clientY } = e;
+        cancelAnimationFrame(frame.current);
+        frame.current = requestAnimationFrame(() => {
+          const node = ref.current;
+          const root = document.documentElement.dataset;
+          if (!node || root["motion"] === "reduced") return;
+          const box = node.getBoundingClientRect();
+          const x = (clientX - box.left) / box.width,
+            y = (clientY - box.top) / box.height;
+          node.style.setProperty("--light-x", `${(x * 100).toFixed(1)}%`);
+          node.style.setProperty("--light-y", `${(y * 100).toFixed(1)}%`);
+          const canTilt =
+            root["depth"] !== "flat" &&
+            box.width >= TILT_MIN_W &&
+            box.height >= TILT_MIN_H &&
+            !node.querySelector("input, select, textarea");
+          if (!canTilt) return;
+          node.style.setProperty("--tilt-x", `${((0.5 - y) * 1.6).toFixed(2)}deg`);
+          node.style.setProperty("--tilt-y", `${((x - 0.5) * 1.6).toFixed(2)}deg`);
+        });
       }}
-      onPointerLeave={() => {
-        ref.current?.style.setProperty("--tilt-x", "0deg");
-        ref.current?.style.setProperty("--tilt-y", "0deg");
-      }}
-      className={cn("eo-card eo-depth p-5", glow && "eo-glow", className)}
+      onPointerLeave={reset}
+      className={cn("eo-card eo-depth p-4", glow && "eo-glow", className)}
     >
       {children}
     </div>
@@ -83,7 +99,7 @@ export function SectionTitle({
   id?: string | undefined;
 }) {
   return (
-    <div className="eo-section-title mb-4 flex flex-wrap items-start justify-between gap-4">
+    <div className="eo-section-title mb-3 flex flex-wrap items-start justify-between gap-3">
       <div>
         <div className="flex items-center gap-2">
           <span className="h-3.5 w-1 rounded-full bg-cyan" />
@@ -92,7 +108,7 @@ export function SectionTitle({
           </h2>
           {badge}
         </div>
-        {sub && <p className="mt-1 pl-3 text-xs text-muted-foreground">{sub}</p>}
+        {sub && <p className="mt-0.5 pl-3 text-xs text-muted-foreground">{sub}</p>}
       </div>
       {right && <div className="flex shrink-0 flex-wrap items-center gap-2">{right}</div>}
     </div>
@@ -121,7 +137,7 @@ export function Badge({
   return (
     <span
       className={cn(
-        "inline-flex items-center gap-1 whitespace-nowrap rounded-[4px] border px-1.5 py-0.5 text-[9.5px] font-bold tracking-[0.1em] uppercase",
+        "inline-flex w-fit items-center justify-self-start gap-1 whitespace-nowrap rounded-[4px] border px-1.5 py-0.5 text-[9.5px] font-bold tracking-[0.1em] uppercase",
         toneCls[tone],
         className,
       )}
@@ -148,8 +164,7 @@ export function DemoBadge({ label = "DEMO" }: { label?: string | undefined }) {
 /* ── Buttons (Theme/Buttons.xaml: Primary / Secondary / Ghost / Danger) ── */
 type BtnVariant = "primary" | "secondary" | "ghost" | "danger" | "success";
 const btnCls: Record<BtnVariant, string> = {
-  primary:
-    "eo-brand text-primary-foreground border-transparent hover:brightness-110 shadow-[var(--shadow-glow)]",
+  primary: "eo-brand eo-btn-primary text-primary-foreground border-transparent hover:brightness-110",
   secondary:
     "bg-elevated text-foreground border-border-strong hover:border-cyan/50 hover:bg-highlight",
   ghost:
@@ -173,6 +188,7 @@ export function Btn({
   pressed,
   expanded,
   controls,
+  loading,
 }: {
   variant?: BtnVariant | undefined;
   children: ReactNode;
@@ -185,6 +201,8 @@ export function Btn({
   pressed?: boolean | undefined;
   expanded?: boolean | undefined;
   controls?: string | undefined;
+  /** Shows a spinner, sets aria-busy and blocks clicks while a simulated action runs. */
+  loading?: boolean | undefined;
 }) {
   return (
     <button
@@ -194,19 +212,21 @@ export function Btn({
       aria-pressed={pressed}
       aria-expanded={expanded}
       aria-controls={controls}
-      disabled={disabled}
+      aria-busy={loading || undefined}
+      disabled={disabled || loading}
       onClick={onClick}
       className={cn(
-        "eo-btn inline-flex items-center justify-center gap-1.5 whitespace-nowrap rounded-lg border font-bold tracking-[0.08em] uppercase transition-all active:scale-[0.98] disabled:opacity-40 disabled:pointer-events-none",
+        "eo-btn inline-flex items-center justify-center gap-1.5 whitespace-nowrap rounded-lg border font-bold tracking-[0.08em] uppercase active:scale-[0.98] disabled:opacity-40 disabled:pointer-events-none",
         size === "sm"
           ? "h-7 px-2.5 text-[10px]"
           : size === "lg"
-            ? "h-11 px-5 text-xs"
-            : "h-9 px-3.5 text-[10.5px]",
+            ? "h-10 px-4.5 text-xs"
+            : "h-8 px-3 text-[10.5px]",
         btnCls[variant],
         className,
       )}
     >
+      {loading && <Loader2 aria-hidden="true" className="eo-spin h-3.5 w-3.5" />}
       {children}
     </button>
   );
@@ -227,15 +247,15 @@ export function PageHeader({
   accent?: string | undefined;
 }) {
   return (
-    <div className="eo-page-header mb-5 flex flex-wrap items-start justify-between gap-4">
+    <div className="eo-page-header mb-4 flex flex-wrap items-start justify-between gap-3">
       <div className="flex gap-3">
-        <span className={cn("mt-1 h-9 w-1 rounded-full", accent)} />
+        <span className={cn("eo-accent-bar mt-0.5 h-8 w-1 rounded-full", accent)} />
         <div>
           <div className="flex flex-wrap items-center gap-2">
-            <h1 className="text-[22px] font-bold tracking-[0.04em] uppercase">{title}</h1>
+            <h1 className="font-bold tracking-[0.04em] uppercase">{title}</h1>
             {badges}
           </div>
-          {sub && <p className="mt-1 max-w-2xl text-[13px] text-muted-foreground">{sub}</p>}
+          {sub && <p className="mt-0.5 max-w-2xl text-[12.5px] text-muted-foreground">{sub}</p>}
         </div>
       </div>
       {actions && <div className="flex flex-wrap items-center gap-2">{actions}</div>}
@@ -265,9 +285,12 @@ export function StatTiles({
       style={{ gridTemplateColumns: `repeat(${cols ?? items.length}, minmax(0,1fr))` }}
     >
       {items.map((s) => (
-        <div key={s.label} className="eo-card eo-stat p-3.5">
+        <div key={s.label} className="eo-card eo-stat px-3 py-2.5">
           <Label className="text-[9.5px]">{s.label}</Label>
-          <div className={cn("mt-1.5 text-2xl font-bold tabular-nums", tc[s.tone ?? "muted"])}>
+          <div
+            key={typeof s.value === "string" || typeof s.value === "number" ? s.value : undefined}
+            className={cn("eo-stat-value mt-1 text-2xl font-bold tabular-nums", tc[s.tone ?? "muted"])}
+          >
             {s.value}
           </div>
           {s.sub && <div className="mt-0.5 text-[11px] text-subtle">{s.sub}</div>}
@@ -300,10 +323,10 @@ export function Chips({
           aria-pressed={value === o}
           onClick={() => onChange(o)}
           className={cn(
-            "h-7 rounded-md border px-2.5 text-[10px] font-bold tracking-[0.08em] uppercase transition-colors",
+            "h-7 rounded-md border px-2.5 text-[10px] font-bold tracking-[0.08em] uppercase",
             value === o
-              ? "border-cyan/50 bg-cyan/15 text-cyan"
-              : "border-border bg-window text-muted-foreground hover:text-foreground",
+              ? "border-cyan/50 bg-cyan/15 text-cyan shadow-[inset_0_1px_0_var(--surface-edge),0_0_14px_-6px_var(--cyan)]"
+              : "border-border bg-window text-muted-foreground hover:border-border-strong hover:text-foreground",
           )}
         >
           {o}
@@ -324,13 +347,13 @@ export function SearchBox({
 }) {
   return (
     <div className="eo-search relative">
-      <Search className="pointer-events-none absolute left-3 top-3 h-3.5 w-3.5 text-subtle" />
+      <Search aria-hidden="true" className="pointer-events-none absolute left-3 top-2.5 h-3.5 w-3.5 text-subtle" />
       <input
         aria-label={placeholder}
         value={value}
         onChange={(e) => onChange(e.target.value)}
         placeholder={placeholder}
-        className="h-9 w-full rounded-lg border border-border bg-window pl-9 pr-3 text-sm text-foreground placeholder:text-subtle outline-none focus:border-cyan/60"
+        className="h-8.5 w-full rounded-lg border border-border bg-window pl-9 pr-3 text-[13px] text-foreground placeholder:text-subtle outline-none hover:border-border-strong focus:border-cyan/60"
       />
     </div>
   );
@@ -340,10 +363,13 @@ export function Bar({
   value,
   tone = "cyan",
   className,
+  active,
 }: {
   value: number;
   tone?: Tone | undefined;
   className?: string | undefined;
+  /** Moving sheen while a simulated run is in progress (static bars stay still). */
+  active?: boolean | undefined;
 }) {
   const bg: Record<Tone, string> = {
     cyan: "bg-cyan",
@@ -363,7 +389,8 @@ export function Bar({
       className={cn("h-1.5 w-full overflow-hidden rounded-full bg-window", className)}
     >
       <div
-        className={cn("h-full rounded-full transition-all duration-500", bg[tone])}
+        data-active={active && value < 100 ? "true" : undefined}
+        className={cn("eo-bar-fill h-full rounded-full", bg[tone])}
         style={{ width: `${Math.min(100, Math.max(0, value))}%` }}
       />
     </div>
@@ -388,14 +415,15 @@ export function Toggle({
       aria-label={label}
       onClick={() => onChange(!on)}
       className={cn(
-        "relative h-5 w-9 shrink-0 rounded-full border transition-colors",
-        on ? "border-cyan/60 bg-cyan/30" : "border-border-strong bg-window",
+        "relative h-5 w-9 shrink-0 rounded-full border",
+        on ? "border-cyan/60 bg-cyan/30" : "border-border-strong bg-window hover:border-subtle",
       )}
     >
       <span
+        aria-hidden="true"
         className={cn(
-          "absolute top-0.5 h-3.5 w-3.5 rounded-full transition-all",
-          on ? "left-[18px] bg-cyan" : "left-0.5 bg-subtle",
+          "eo-toggle-thumb absolute top-0.5 left-0.5 h-3.5 w-3.5 rounded-full",
+          on ? "bg-cyan" : "bg-subtle",
         )}
       />
     </button>
@@ -464,19 +492,22 @@ export function Details({
         aria-expanded={open}
         aria-controls={panelId}
         onClick={() => setOpen(!open)}
-        className="flex w-full items-center justify-between px-5 py-3.5 text-left hover:bg-highlight/40"
+        className="flex w-full items-center justify-between px-4 py-3 text-left hover:bg-highlight/40"
       >
         <span className="eo-label text-muted-foreground">{title}</span>
         <ChevronDown
           aria-hidden="true"
-          className={cn("h-4 w-4 text-muted-foreground transition-transform", open && "rotate-180")}
+          className={cn(
+            "h-4 w-4 text-muted-foreground transition-transform duration-200",
+            open && "rotate-180 text-cyan",
+          )}
         />
       </button>
-      {open && (
-        <div id={panelId} className="border-t border-border px-5 py-4 eo-enter">
-          {children}
+      <div id={panelId} className="eo-expand" data-open={open} inert={!open}>
+        <div>
+          <div className="border-t border-border px-4 py-3.5">{children}</div>
         </div>
-      )}
+      </div>
     </div>
   );
 }
@@ -550,7 +581,7 @@ export function Modal({
   return (
     <div
       className={cn(
-        "eo-overlay fixed inset-0 z-50 flex items-center justify-center bg-background/80 p-6 backdrop-blur-sm",
+        "eo-overlay fixed inset-0 z-50 flex items-center justify-center bg-background/75 p-6 backdrop-blur-sm",
         !open && "eo-dismiss",
       )}
       onClick={onClose}
@@ -564,7 +595,7 @@ export function Modal({
         className={cn("eo-card eo-modal flex max-h-[86vh] w-full flex-col p-0", width)}
         onClick={(e) => e.stopPropagation()}
       >
-        <div className="eo-modal-head flex items-start justify-between gap-4 border-b border-border px-6 py-4">
+        <div className="eo-modal-head flex items-start justify-between gap-4 border-b border-border px-5 py-3.5">
           <div className="min-w-0">
             <h2 id={titleId} className="text-base font-bold uppercase">
               {title}
@@ -585,9 +616,9 @@ export function Modal({
             <X aria-hidden="true" className="h-4 w-4" />
           </Btn>
         </div>
-        <div className="min-h-0 overflow-y-auto px-6 py-5">{children}</div>
+        <div className="min-h-0 overflow-y-auto px-5 py-4">{children}</div>
         {footer && (
-          <div className="flex flex-wrap items-center justify-end gap-2 border-t border-border px-6 py-3.5">
+          <div className="flex flex-wrap items-center justify-end gap-2 border-t border-border bg-window/40 px-5 py-3">
             {footer}
           </div>
         )}
@@ -713,12 +744,12 @@ export function LoadingState({
         </span>
         {progress != null && <span className="font-mono">{Math.round(progress)}%</span>}
       </div>
-      {progress != null && <Bar value={progress} />}
+      {progress != null && <Bar value={progress} active />}
       {Array.from({ length: rows }, (_, i) => (
         <div
           key={i}
           aria-hidden="true"
-          className="eo-skeleton h-14 rounded-xl border border-border"
+          className="eo-skeleton h-12 rounded-lg border border-border"
           style={{ animationDelay: `${i * 120}ms` }}
         />
       ))}
