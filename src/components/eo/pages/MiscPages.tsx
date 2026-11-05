@@ -22,6 +22,8 @@ import {
   simulate,
 } from "../kit";
 import { useAppearance } from "../Appearance";
+import { NumberField, RangeSlider, Segmented } from "../controls";
+import { RotateCcw, ShieldCheck, Target } from "lucide-react";
 import { CATALOG, HW, PROFILES } from "@/lib/eo/data";
 import { cn } from "@/lib/utils";
 
@@ -34,7 +36,8 @@ export function AiOptimizationPage() {
   const [mode, setMode] = useState("AUTO");
   const [ctl, setCtl] = useState("NORMAL");
   const [inv, setInv] = useState("ALL");
-  const [limit, setLimit] = useState(2048);
+  const [limit, setLimit] = useState(RAM_DEFAULT_GB);
+  const [enforced, setEnforced] = useState<number | null>(null);
   const [fg, setFg] = useState(true);
   const [plan, setPlan] = useState(false);
   return (
@@ -50,7 +53,7 @@ export function AiOptimizationPage() {
         sub="RAM limiter, workload profiles and power-plan recommendations. Passive monitors only — nothing is enforced until you confirm a target."
       />
       <Card className="flex flex-wrap items-center justify-between gap-3 py-3">
-        <Chips
+        <Segmented
           label="AI module"
           options={["RAM LIMITER", "WORKLOAD OPTIMIZATION", "POWER PLAN OPTIMIZATION"]}
           value={mod}
@@ -60,7 +63,7 @@ export function AiOptimizationPage() {
           <Btn size="sm" variant="ghost" onClick={() => simulate("Refresh")}>
             Refresh
           </Btn>
-          <Chips
+          <Segmented
             label="Control mode"
             options={["NORMAL", "CUSTOM"]}
             value={ctl}
@@ -133,6 +136,7 @@ export function AiOptimizationPage() {
         </Card>
       </div>
 
+      <div key={mod} className="eo-swap space-y-4">
       {mod === "RAM LIMITER" && (
         <>
           <Card
@@ -154,15 +158,24 @@ export function AiOptimizationPage() {
             <Badge tone="cyan">RAM CONTROL: ON</Badge>
           </Card>
           <Card>
-            <Label className="mb-2 text-foreground">PROFILE / TARGET CONFIGURATION</Label>
+            <Label as="h2" className="mb-1 text-foreground">
+              PROFILE / TARGET CONFIGURATION
+            </Label>
             <p className="mb-3 text-xs text-muted-foreground">
               Control mode is active from the top mode selector.
             </p>
             <div className="mb-3 flex flex-wrap items-center gap-3">
-              <Label>ACTIVE MODE:</Label>
-              <Chips options={["AUTO", "LIGHT", "AGGRESSIVE"]} value={mode} onChange={setMode} />
-              <Label className="ml-4">FOREGROUND PROTECTION:</Label>
-              <Toggle on={fg} onChange={setFg} />
+              <Label>ACTIVE MODE</Label>
+              <Segmented
+                label="RAM limiter mode"
+                options={["AUTO", "LIGHT", "AGGRESSIVE"]}
+                value={mode}
+                onChange={setMode}
+              />
+              <span className="ml-auto flex items-center gap-2">
+                <Label>FOREGROUND PROTECTION</Label>
+                <Toggle label="Foreground protection" on={fg} onChange={setFg} />
+              </span>
             </div>
             <div className="mb-2 flex items-center justify-between">
               <Label className="text-foreground">
@@ -177,44 +190,37 @@ export function AiOptimizationPage() {
               value={query}
               onChange={setQuery}
             />
-            <div
-              className={cn(
-                "mt-4 rounded-xl border border-border bg-window p-4",
-                query && !"chrome.exe".includes(query.toLowerCase()) && "hidden",
-              )}
-            >
-              <Label className="mb-3 text-foreground">SELECTED TARGET CONFIGURATION</Label>
-              <div
-                className="grid items-center gap-4"
-                style={{ gridTemplateColumns: "minmax(150px, 1fr) auto" }}
-              >
-                <div>
-                  <Label className="text-[9px]">TARGET APPLICATION</Label>
-                  <div className="text-sm font-semibold">chrome.exe</div>
-                </div>
-                <div>
-                  <Label className="text-[9px]">MAX RAM LIMIT · {limit} MB</Label>
-                  <input
-                    type="range"
-                    min={512}
-                    max={8192}
-                    step={256}
-                    value={limit}
-                    onChange={(e) => setLimit(+e.target.value)}
-                    className="w-full accent-[var(--cyan)]"
-                  />
-                </div>
-                <Btn variant="primary" onClick={() => simulate("Enforce target")}>
-                  Enforce target
-                </Btn>
-              </div>
-            </div>
           </Card>
+          {query && !"chrome.exe".includes(query.toLowerCase()) ? (
+            <EmptyState
+              title="No matching application"
+              sub="The sample list only contains chrome.exe. Nothing on this PC is enumerated."
+              action={<Btn onClick={() => setQuery("")}>Clear search</Btn>}
+            />
+          ) : (
+            <RamLimiterPanel
+              value={limit}
+              onChange={setLimit}
+              enforced={enforced}
+              onEnforce={() => {
+                setEnforced(limit);
+                simulate(`Enforce ${limit.toFixed(2)} GB limit for chrome.exe`);
+              }}
+              mode={mode}
+              foreground={fg}
+            />
+          )}
           <Card>
             <Label className="mb-2 text-foreground">CONFIGURED CUSTOM TARGETS</Label>
-            <div className="flex items-center justify-between rounded-lg border border-border bg-window px-3 py-2 text-[12.5px]">
-              <span>Discord.exe</span>
-              <span className="text-muted-foreground">1024 MB limit</span>
+            <div
+              className="grid items-center gap-3 rounded-lg border border-border bg-window px-3 py-2 text-[12.5px]"
+              style={{ gridTemplateColumns: "minmax(0,1fr) 160px auto" }}
+            >
+              <span className="font-semibold">Discord.exe</span>
+              <Bar value={(1 / RAM_MAX_GB) * 100} />
+              <span className="text-right font-mono text-[11.5px] text-muted-foreground">
+                1.00 GB limit
+              </span>
             </div>
           </Card>
           <Card>
@@ -400,6 +406,7 @@ export function AiOptimizationPage() {
           </Card>
         </>
       )}
+      </div>
       <SimNotice />
       <Modal
         open={plan}
@@ -440,6 +447,193 @@ export function AiOptimizationPage() {
         </Cols>
       </Modal>
     </div>
+  );
+}
+
+
+/* ── RAM Limiter panel: slider + numeric field always share one value ── */
+const RAM_MIN_GB = 0.5;
+const RAM_MAX_GB = 8;
+const RAM_STEP_GB = 0.25;
+const RAM_DEFAULT_GB = 2; // original prototype default (2048 MB); shown as the recommended mark
+const SYSTEM_RAM_GB = 32; // sample system memory (HW.ram)
+const gb = (v: number) => `${v.toFixed(2)} GB`;
+
+function RamLimiterPanel({
+  value,
+  onChange,
+  enforced,
+  onEnforce,
+  mode,
+  foreground,
+}: {
+  value: number;
+  onChange: (v: number) => void;
+  enforced: number | null;
+  onEnforce: () => void;
+  mode: string;
+  foreground: boolean;
+}) {
+  const dirty = enforced !== value;
+  const atDefault = value === RAM_DEFAULT_GB;
+  const share = (value / SYSTEM_RAM_GB) * 100;
+  return (
+    <Card className="eo-hero eo-ram">
+      <div className="flex flex-wrap items-start justify-between gap-3">
+        <div className="flex items-start gap-3">
+          <span className="eo-auto-mark" aria-hidden="true">
+            <Target className="h-4 w-4" />
+          </span>
+          <div>
+            <div className="flex flex-wrap items-center gap-2">
+              <h2 className="text-[15px] font-black uppercase">RAM Limiter</h2>
+              <Badge tone="warning">SAMPLE TARGET</Badge>
+            </div>
+            <p className="mt-0.5 max-w-xl text-[11.5px] text-muted-foreground">
+              Cap the working set of one application. The limiter stays a passive monitor until you
+              enforce the target — in this prototype, enforcing is simulated.
+            </p>
+          </div>
+        </div>
+        <span aria-live="polite">
+          {enforced === null ? (
+            <Badge tone="muted">NOT ENFORCED</Badge>
+          ) : dirty ? (
+            <Badge tone="warning">UNSAVED CHANGE</Badge>
+          ) : (
+            <Badge tone="success">ENFORCED · SIMULATED</Badge>
+          )}
+        </span>
+      </div>
+
+      <div className="eo-ram-grid mt-4 grid gap-4">
+        <div className="min-w-0">
+          <div className="flex flex-wrap items-end justify-between gap-3">
+            <div>
+              <Label className="text-[9.5px]">TARGET APPLICATION</Label>
+              <div className="text-[13px] font-bold">chrome.exe</div>
+            </div>
+            <div className="text-right">
+              <Label className="text-[9.5px]">SYSTEM MEMORY · SAMPLE</Label>
+              <div className="text-[13px] font-semibold">
+                {SYSTEM_RAM_GB} GB total · 19.8 GB free
+              </div>
+            </div>
+          </div>
+
+          <div className="mt-3 flex items-end gap-3">
+            <div className="eo-ram-readout tabular-nums" aria-hidden="true">
+              {value.toFixed(2)}
+              <span>GB</span>
+            </div>
+            <div className="pb-1.5 text-[11px] text-muted-foreground">
+              max working set · {share.toFixed(1)}% of system memory
+              <div className={cn("font-bold", atDefault ? "text-success" : "text-cyan")}>
+                {atDefault
+                  ? "RECOMMENDED CONFIGURATION"
+                  : `${value > RAM_DEFAULT_GB ? "+" : "−"}${Math.abs(value - RAM_DEFAULT_GB).toFixed(2)} GB vs recommended`}
+              </div>
+            </div>
+          </div>
+
+          <RangeSlider
+            id="eo-ram-limit"
+            className="mt-3"
+            label="Maximum RAM limit for chrome.exe"
+            value={value}
+            onChange={onChange}
+            min={RAM_MIN_GB}
+            max={RAM_MAX_GB}
+            step={RAM_STEP_GB}
+            valueText={gb(value)}
+            marks={[
+              { value: RAM_MIN_GB, label: `MIN ${RAM_MIN_GB} GB` },
+              { value: RAM_DEFAULT_GB, label: `RECOMMENDED ${RAM_DEFAULT_GB} GB`, tone: "success" },
+              { value: 4, label: "4 GB" },
+              { value: RAM_MAX_GB, label: `MAX ${RAM_MAX_GB} GB` },
+            ]}
+          />
+
+          <div className="mt-4">
+            <div className="mb-1 flex justify-between text-[9.5px] font-bold text-subtle">
+              <span>LIMIT IN CONTEXT OF {SYSTEM_RAM_GB} GB SYSTEM MEMORY</span>
+              <span>{share.toFixed(1)}%</span>
+            </div>
+            <div className="eo-ram-context" style={{ "--share": `${share}%` } as React.CSSProperties}>
+              <span />
+            </div>
+          </div>
+        </div>
+
+        <div className="eo-ram-side flex flex-col gap-2.5">
+          <label htmlFor="eo-ram-number" className="eo-label text-[9.5px] text-muted-foreground">
+            EXACT LIMIT
+          </label>
+          <NumberField
+            id="eo-ram-number"
+            label="Maximum RAM limit in gigabytes"
+            value={value}
+            onChange={onChange}
+            min={RAM_MIN_GB}
+            max={RAM_MAX_GB}
+            step={RAM_STEP_GB}
+            unit="GB"
+          />
+          <p className="text-[10.5px] text-subtle">
+            {RAM_MIN_GB}–{RAM_MAX_GB} GB in {RAM_STEP_GB} GB steps · arrow keys adjust
+          </p>
+          <div className="grid grid-cols-2 gap-2">
+            <Btn
+              size="sm"
+              variant="ghost"
+              disabled={atDefault}
+              onClick={() => onChange(RAM_DEFAULT_GB)}
+              title="Reset to the recommended default (2 GB)"
+            >
+              <RotateCcw aria-hidden="true" className="h-3 w-3" />
+              Reset
+            </Btn>
+            <Btn
+              size="sm"
+              variant="ghost"
+              disabled={enforced === null || !dirty}
+              onClick={() => enforced !== null && onChange(enforced)}
+              title="Discard the change and return to the enforced value"
+            >
+              Revert
+            </Btn>
+          </div>
+          <Btn variant="primary" size="lg" disabled={!dirty} onClick={onEnforce}>
+            Enforce target
+          </Btn>
+          <p className="text-[10.5px] text-muted-foreground" aria-live="polite">
+            {enforced === null
+              ? "No limit enforced yet."
+              : `Enforced at ${gb(enforced)} (simulated).`}
+          </p>
+        </div>
+      </div>
+
+      <div className="mt-4 grid grid-cols-3 gap-2 border-t border-border pt-3 text-[11px]">
+        <div>
+          <Label className="text-[9px]">MODE</Label>
+          <div className="font-semibold">{mode} · working-set trim</div>
+        </div>
+        <div>
+          <Label className="text-[9px]">FOREGROUND SHIELD</Label>
+          <div className={cn("flex items-center gap-1 font-semibold", foreground ? "text-success" : "text-warning")}>
+            <ShieldCheck aria-hidden="true" className="h-3.5 w-3.5" />
+            {foreground ? "Protected while in focus" : "Off — limit applies in focus"}
+          </div>
+        </div>
+        <div>
+          <Label className="text-[9px]">HOW IT WORKS</Label>
+          <div className="text-muted-foreground">
+            Pages above the limit are trimmed to standby; the app is never closed.
+          </div>
+        </div>
+      </div>
+    </Card>
   );
 }
 
@@ -670,17 +864,12 @@ function Seg({ o, d }: { o: string[]; d: string }) {
   const [v, setV] = useState(d);
   return <Chips options={o} value={v} onChange={setV} />;
 }
-function Rng({ d = 60 }: { d?: number }) {
+function Rng({ d = 60, label = "Setting level" }: { d?: number; label?: string }) {
   const [v, setV] = useState(d);
   return (
     <div className="flex w-64 items-center gap-2">
-      <input
-        type="range"
-        value={v}
-        onChange={(e) => setV(+e.target.value)}
-        className="flex-1 accent-[var(--cyan)]"
-      />
-      <span className="w-8 text-right font-mono text-[11px]">{v}</span>
+      <RangeSlider className="flex-1" label={label} value={v} onChange={setV} min={0} max={100} step={1} />
+      <span className="w-8 text-right font-mono text-[11px] tabular-nums">{v}</span>
     </div>
   );
 }
