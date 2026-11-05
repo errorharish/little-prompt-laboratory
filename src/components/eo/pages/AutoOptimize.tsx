@@ -70,7 +70,7 @@ export function AutoOptimizePage() {
   const s = useAutoOptimize();
   const now = useNow();
   const navigate = useNavigate();
-  const [draft, setDraft] = useState<AutoConfig>(() => pendingDraft ?? s.config);
+  const [draft, setDraft] = useState<AutoConfig>(() => { (window as any).__aoI = [...((window as any).__aoI ?? []), pendingDraft?.tasks.length ?? -1, s.config.tasks.length]; return pendingDraft ?? s.config; });
   const dirty = comparable(draft) !== comparable(s.config);
   const dirtyRef = useRef(dirty);
   dirtyRef.current = dirty;
