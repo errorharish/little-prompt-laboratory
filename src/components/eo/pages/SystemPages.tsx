@@ -414,6 +414,8 @@ const REG_ITEMS = REG_LIST.map((i) => ({
   risk: i.risk,
   done: i.state === "OPTIMIZED",
   unsupported: i.state === "NOT APPLICABLE",
+  // Matches the RECOMMENDED filter: low-risk items only; medium ones stay opt-in.
+  recommended: i.risk === "SAFE" || i.risk === "LOW",
 }));
 export function RegistryTweakPage() {
   const [mode, setMode] = useState("NORMAL");

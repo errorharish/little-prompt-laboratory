@@ -60,7 +60,7 @@ export interface PersistedSelection<T extends string | number> {
   sel: Set<T>;
   setSel: (next: Set<T> | ((cur: Set<T>) => Set<T>)) => void;
   toggle: (id: T) => void;
-  /** Select every eligible item (never protected / high-risk / destructive). */
+  /** Select every applicable + recommended item (never protected / high-risk / destructive). */
   selectAll: () => void;
   clear: () => void;
   /** Forget the saved customization and return to the first-use default. */
@@ -87,7 +87,7 @@ export function usePersistedSelection<T extends string | number>(
   const sig = items
     .map(
       (i) =>
-        `${String(i.id)}:${i.risk ?? ""}:${i.done ? 1 : 0}:${i.unsupported ? 1 : 0}:${i.destructive ? 1 : 0}`,
+        `${String(i.id)}:${i.risk ?? ""}:${i.done ? 1 : 0}:${i.unsupported ? 1 : 0}:${i.destructive ? 1 : 0}:${i.incompatible ? 1 : 0}:${i.recommended === false ? 0 : 1}`,
     )
     .join("|");
   // eslint-disable-next-line react-hooks/exhaustive-deps
