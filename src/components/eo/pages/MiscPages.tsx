@@ -21,6 +21,7 @@ import {
   Toggle,
   simulate,
 } from "../kit";
+import { GuideButton, GuideSteps, GuideTip } from "../Guide";
 import { useAppearance } from "../Appearance";
 import { NumberField, RangeSlider, Segmented } from "../controls";
 import { RotateCcw, ShieldCheck, Target } from "lucide-react";

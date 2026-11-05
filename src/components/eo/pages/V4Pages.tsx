@@ -40,6 +40,7 @@ import {
   simulate,
   useSimRun,
 } from "../kit";
+import { GuideButton, GuideSteps, GuideTip } from "../Guide";
 import { cn } from "@/lib/utils";
 import { HW } from "@/lib/eo/data";
 import { Segmented } from "../controls";
@@ -767,20 +768,36 @@ export function EmulatorOptimizationPage() {
             {GUIDE_SECTIONS.map(([t, s], i) => (
               <button
                 key={t}
+                type="button"
+                aria-current={gs === i ? "step" : undefined}
                 onClick={() => setGs(i)}
                 className={cn(
                   "block w-full rounded-lg border-l-[3px] px-3 py-2 text-left",
                   gs === i ? "border-cyan bg-cyan/10" : "border-transparent hover:bg-elevated",
                 )}
               >
-                <div className="text-[12.5px] font-semibold">{t}</div>
-                <div className="text-[10.5px] text-subtle">{s}</div>
+                <span className="flex items-center gap-2.5">
+                  <span aria-hidden="true" className="eo-guide-num h-6 w-6 shrink-0 text-[11px]">
+                    {i + 1}
+                  </span>
+                  <span className="min-w-0">
+                    <span className="eo-guide-step-title block">{t.replace(/^\d+\.\s*/, "")}</span>
+                    <span className="block text-[10.5px] text-subtle">{s}</span>
+                  </span>
+                </span>
               </button>
             ))}
           </div>
           <div className="rounded-xl border border-border bg-window p-5">
-            <div className="text-lg font-bold">{GUIDE_SECTIONS[gs]?.[0]}</div>
-            <p className="mt-2 text-sm text-muted-foreground">
+            <div className="flex items-center gap-3">
+              <span aria-hidden="true" className="eo-guide-num">
+                {gs + 1}
+              </span>
+              <div className="text-[15px] font-bold uppercase">
+                {GUIDE_SECTIONS[gs]?.[0].replace(/^\d+\.\s*/, "")}
+              </div>
+            </div>
+            <p className="mt-3 text-[12.5px] leading-relaxed text-muted-foreground">
               {
                 [
                   "Recommended sequence: 1) Host Maximum Performance, 2) Launch MSI App Player 5 & verify ADB, 3) Engine 1, 4) Engine 2, 5) Engine 3.",
