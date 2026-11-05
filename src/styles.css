@@ -376,15 +376,15 @@ input[type="range"] { accent-color: var(--cyan); }
 
 
 /* ── Hero glass panels: layered translucent surface, inner rim, lit top edge ── */
-.eo-hero { background: radial-gradient(120% 90% at 0% 0%, color-mix(in oklab, var(--cyan) 7%, transparent), transparent 55%), linear-gradient(160deg, var(--surface-light), transparent 45%), var(--glass-panel); backdrop-filter: var(--glass-blur-panel); border-color: color-mix(in oklab, var(--cyan) 18%, var(--border)); box-shadow: inset 0 0 0 1px var(--surface-edge), var(--shadow-card); animation: eo-hero-in var(--duration-entrance) var(--ease-emphasized) both; }
+.eo-hero { background: radial-gradient(120% 90% at 0% 0%, color-mix(in oklab, var(--cyan) 7%, transparent), transparent 55%), linear-gradient(160deg, var(--surface-light), transparent 45%), var(--glass-panel); backdrop-filter: var(--glass-blur-panel); border-color: color-mix(in oklab, var(--cyan) 18%, var(--border)); box-shadow: inset 0 0 0 1px var(--surface-edge), var(--shadow-card); animation: eo-hero-in var(--duration-entrance) var(--ease-emphasized) backwards; }
 .eo-hero::after { content: ""; position: absolute; left: 12px; right: 12px; top: -1px; height: 1px; pointer-events: none; background: var(--edge-highlight); opacity: .7; }
 .eo-hero:hover { box-shadow: inset 0 0 0 1px var(--surface-edge), var(--shadow-elevated); }
-.eo-stagger > * { animation: eo-section-in var(--duration-entrance) var(--ease-emphasized) both; }
+.eo-stagger > * { animation: eo-rise-in var(--duration-entrance) var(--ease-emphasized) backwards; }
 .eo-stagger > :nth-child(2) { animation-delay: calc(var(--stagger) * 2); }
 .eo-stagger > :nth-child(3) { animation-delay: calc(var(--stagger) * 4); }
 .eo-stagger > :nth-child(4) { animation-delay: calc(var(--stagger) * 6); }
 .eo-stagger > :nth-child(n + 5) { animation-delay: calc(var(--stagger) * 8); }
-.eo-swap { animation: eo-section-in var(--duration-slow) var(--ease-out) both; }
+.eo-swap { animation: eo-rise-in var(--duration-slow) var(--ease-out) backwards; }
 
 /* ── Segmented control (one sliding indicator) ── */
 .eo-seg { position: relative; flex-wrap: wrap; gap: 2px; padding: 3px; border-radius: 8px; border: 1px solid var(--border); background: color-mix(in oklab, var(--window) 88%, transparent); box-shadow: inset 0 1px 2px oklch(0 0 0 / .35); }
@@ -523,7 +523,8 @@ input[type="range"] { accent-color: var(--cyan); }
 @keyframes eo-check-pop { from { transform: scale(.4); opacity: 0; } }
 @keyframes eo-step-in { from { transform: scale(.94); } }
 @keyframes eo-success-pop { from { opacity: 0; transform: translateY(8px) scale(.98); } to { opacity: 1; transform: none; } }
-@keyframes eo-hero-in { from { opacity: 0; transform: translateY(10px) scale(.992); } to { opacity: 1; transform: none; } }
+@keyframes eo-hero-in { from { opacity: 0; transform: translateY(10px) scale(.992); } }
+@keyframes eo-rise-in { from { opacity: 0; transform: translateY(8px); } }
 @keyframes eo-score-in { from { stroke-dashoffset: var(--len); } }
 @keyframes eo-tick-in { from { stroke: var(--border-strong); } }
 @keyframes eo-count { from { --num: 0; } }
