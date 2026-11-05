@@ -146,6 +146,15 @@
   --ease-spring: cubic-bezier(.34,1.4,.64,1);
   --stagger: 30ms;
   --lift-hover: -2px;
+  --duration-entrance: 440ms; /* larger entrance sequences (hero panels, staggered workspaces) */
+  --duration-score: 900ms; /* score gauge fill + count-up (data draw, like the chart) */
+  --ease-emphasized: cubic-bezier(.16,1,.3,1);
+
+  /* Hero glass (score, Auto Optimize, RAM limiter, V4 primary workspaces) */
+  --glass-panel: oklch(0.2 0.045 265 / 0.66);
+  --glass-blur-panel: blur(12px) saturate(140%);
+  --edge-highlight: linear-gradient(90deg, transparent 8%, color-mix(in oklab, var(--cyan) 60%, transparent) 50%, transparent 92%);
+  --thumb-r: 10px;
 
   /* Compact density */
   --page-pad-x: 20px;
@@ -341,7 +350,7 @@ input[type="range"] { accent-color: var(--cyan); }
 .eo-console { border-top: 2px solid var(--cyan); background: var(--window); }
 .eo-console .font-mono { border-left: 2px solid var(--border-strong); }
 .eo-page-content .sticky.bottom-0 { z-index: 10; flex-wrap: wrap; gap: 12px; margin-left: calc(var(--page-pad-x) * -1); margin-right: calc(var(--page-pad-x) * -1); padding: 10px var(--page-pad-x); background: linear-gradient(180deg, var(--surface-light), transparent), var(--glass-float); backdrop-filter: var(--glass-blur-float); box-shadow: 0 -12px 28px -20px oklch(0 0 0 / .9), inset 0 1px 0 var(--surface-edge); }
-.eo-quick-link { display: flex; flex-direction: column; min-height: 140px; }
+.eo-quick-link { display: flex; flex-direction: column; min-height: 118px; }
 .eo-quick-link:hover { border-color: var(--cyan); }
 .eo-quick-link:first-child { background: color-mix(in oklab, var(--primary) 12%, var(--window)); border-color: var(--primary); }
 .eo-quick-link p { flex: 1; }
@@ -365,6 +374,139 @@ input[type="range"] { accent-color: var(--cyan); }
 .eo-chart-area { opacity: .18; }
 .eo-result { border-color: color-mix(in oklab, var(--success) 35%, var(--border)); background: linear-gradient(135deg, color-mix(in oklab, var(--success) 8%, transparent), transparent 55%), var(--surface-glass); animation: eo-success-pop 420ms var(--ease-spring) both; }
 
+
+/* ── Hero glass panels: layered translucent surface, inner rim, lit top edge ── */
+.eo-hero { background: radial-gradient(120% 90% at 0% 0%, color-mix(in oklab, var(--cyan) 7%, transparent), transparent 55%), linear-gradient(160deg, var(--surface-light), transparent 45%), var(--glass-panel); backdrop-filter: var(--glass-blur-panel); border-color: color-mix(in oklab, var(--cyan) 18%, var(--border)); box-shadow: inset 0 0 0 1px var(--surface-edge), var(--shadow-card); animation: eo-hero-in var(--duration-entrance) var(--ease-emphasized) both; }
+.eo-hero::after { content: ""; position: absolute; left: 12px; right: 12px; top: -1px; height: 1px; pointer-events: none; background: var(--edge-highlight); opacity: .7; }
+.eo-hero:hover { box-shadow: inset 0 0 0 1px var(--surface-edge), var(--shadow-elevated); }
+.eo-stagger > * { animation: eo-section-in var(--duration-entrance) var(--ease-emphasized) both; }
+.eo-stagger > :nth-child(2) { animation-delay: calc(var(--stagger) * 2); }
+.eo-stagger > :nth-child(3) { animation-delay: calc(var(--stagger) * 4); }
+.eo-stagger > :nth-child(4) { animation-delay: calc(var(--stagger) * 6); }
+.eo-stagger > :nth-child(n + 5) { animation-delay: calc(var(--stagger) * 8); }
+.eo-swap { animation: eo-section-in var(--duration-slow) var(--ease-out) both; }
+
+/* ── Segmented control (one sliding indicator) ── */
+.eo-seg { position: relative; flex-wrap: wrap; gap: 2px; padding: 3px; border-radius: 8px; border: 1px solid var(--border); background: color-mix(in oklab, var(--window) 88%, transparent); box-shadow: inset 0 1px 2px oklch(0 0 0 / .35); }
+.eo-seg-item { position: relative; z-index: 1; height: 26px; padding: 0 10px; border-radius: 6px; font-size: 10px; font-weight: 700; text-transform: uppercase; white-space: nowrap; color: var(--muted-foreground); }
+.eo-seg-item:hover { color: var(--foreground); }
+.eo-seg-item[aria-pressed="true"] { color: var(--cyan); }
+.eo-seg:not([data-ready]) .eo-seg-item[aria-pressed="true"] { background: color-mix(in oklab, var(--cyan) 15%, transparent); }
+.eo-seg-indicator { position: absolute; left: 0; top: 0; z-index: 0; pointer-events: none; border-radius: 6px; background: linear-gradient(180deg, color-mix(in oklab, var(--cyan) 18%, transparent), color-mix(in oklab, var(--primary) 14%, transparent)); box-shadow: inset 0 1px 0 var(--surface-edge), 0 0 0 1px color-mix(in oklab, var(--cyan) 35%, transparent), 0 4px 14px -6px var(--cyan); transition: transform var(--duration-slow) var(--ease-spring), width var(--duration-slow) var(--ease-out), height var(--duration-control) var(--ease-out); }
+
+/* ── Range slider: native input, custom track / fill / thumb, marks share thumb-travel maths ── */
+.eo-range-wrap { position: relative; --p: 0; }
+.eo-range-wrap-marks { padding-bottom: 22px; }
+.eo-range { -webkit-appearance: none; appearance: none; display: block; width: 100%; height: 28px; margin: 0; background: transparent; cursor: pointer; touch-action: pan-y; }
+.eo-range:focus, .eo-range:focus-visible { outline: none; box-shadow: none; }
+.eo-range::-webkit-slider-runnable-track { height: 8px; border-radius: 999px; background: linear-gradient(90deg, var(--cyan), var(--primary)) 0 0 / calc(var(--thumb-r) + (100% - var(--thumb-r) * 2) * var(--p)) 100% no-repeat, var(--window); box-shadow: inset 0 1px 2px oklch(0 0 0 / .55), 0 0 0 1px var(--border), 0 1px 0 var(--surface-edge); }
+.eo-range::-moz-range-track { height: 8px; border-radius: 999px; background: var(--window); box-shadow: inset 0 1px 2px oklch(0 0 0 / .55), 0 0 0 1px var(--border); }
+.eo-range::-moz-range-progress { height: 8px; border-radius: 999px; background: linear-gradient(90deg, var(--cyan), var(--primary)); }
+.eo-range::-webkit-slider-thumb { -webkit-appearance: none; appearance: none; width: calc(var(--thumb-r) * 2); height: calc(var(--thumb-r) * 2); margin-top: calc(4px - var(--thumb-r)); border-radius: 50%; border: 1px solid color-mix(in oklab, var(--foreground) 70%, transparent); background: radial-gradient(circle at 50% 50%, var(--cyan) 0 3px, transparent 3.5px), radial-gradient(circle at 35% 25%, var(--foreground), color-mix(in oklab, var(--foreground) 78%, var(--cyan)) 70%); box-shadow: 0 0 0 0 color-mix(in oklab, var(--cyan) 22%, transparent), 0 2px 6px oklch(0 0 0 / .55), 0 0 14px -3px var(--cyan); transition: transform var(--duration-fast) var(--ease-out), box-shadow var(--duration-control) var(--ease-out); }
+.eo-range::-moz-range-thumb { width: calc(var(--thumb-r) * 2); height: calc(var(--thumb-r) * 2); border-radius: 50%; border: 1px solid color-mix(in oklab, var(--foreground) 70%, transparent); background: radial-gradient(circle at 50% 50%, var(--cyan) 0 3px, transparent 3.5px), radial-gradient(circle at 35% 25%, var(--foreground), color-mix(in oklab, var(--foreground) 78%, var(--cyan)) 70%); box-shadow: 0 2px 6px oklch(0 0 0 / .55), 0 0 14px -3px var(--cyan); transition: transform var(--duration-fast) var(--ease-out), box-shadow var(--duration-control) var(--ease-out); }
+.eo-range:hover::-webkit-slider-thumb { transform: scale(1.06); box-shadow: 0 0 0 5px color-mix(in oklab, var(--cyan) 14%, transparent), 0 2px 6px oklch(0 0 0 / .55), 0 0 16px -2px var(--cyan); }
+.eo-range:active::-webkit-slider-thumb { transform: scale(1.14); box-shadow: 0 0 0 7px color-mix(in oklab, var(--cyan) 20%, transparent), 0 3px 10px oklch(0 0 0 / .6), 0 0 20px -2px var(--cyan); }
+.eo-range:focus-visible::-webkit-slider-thumb { box-shadow: 0 0 0 2px var(--background), 0 0 0 4px var(--cyan), 0 0 16px -2px var(--cyan); }
+.eo-range:hover::-moz-range-thumb { transform: scale(1.06); }
+.eo-range:active::-moz-range-thumb { transform: scale(1.14); }
+.eo-range:focus-visible::-moz-range-thumb { box-shadow: 0 0 0 2px var(--background), 0 0 0 4px var(--cyan); }
+.eo-range-marks { position: absolute; left: 0; right: 0; top: 26px; height: 20px; pointer-events: none; }
+.eo-range-marks span { position: absolute; left: calc(var(--thumb-r) + (100% - var(--thumb-r) * 2) * var(--m)); transform: translateX(-50%); display: flex; flex-direction: column; align-items: center; gap: 3px; font-size: 9px; font-weight: 700; white-space: nowrap; color: var(--subtle); transition: color var(--duration-fast); }
+.eo-range-marks span[data-align="start"] { transform: translateX(calc(var(--thumb-r) * -1)); align-items: flex-start; padding-left: calc(var(--thumb-r) - 1px); }
+.eo-range-marks span[data-align="end"] { transform: translateX(calc(-100% + var(--thumb-r))); align-items: flex-end; padding-right: calc(var(--thumb-r) - 1px); }
+.eo-range-marks i { width: 1px; height: 5px; background: var(--border-strong); }
+.eo-range-marks span[data-tone="success"] { color: var(--success); }
+.eo-range-marks span[data-tone="success"] i { width: 2px; height: 7px; background: var(--success); box-shadow: 0 0 6px var(--success); }
+.eo-range-marks span[data-active="true"] { color: var(--foreground); }
+
+/* ── Numeric field with unit ── */
+.eo-number { position: relative; display: flex; align-items: center; height: 40px; border-radius: 8px; border: 1px solid var(--border-strong); background: var(--window); box-shadow: inset 0 1px 2px oklch(0 0 0 / .4); transition: border-color var(--duration-control), box-shadow var(--duration-control); }
+.eo-number:hover { border-color: color-mix(in oklab, var(--cyan) 35%, var(--border-strong)); }
+.eo-number:focus-within { border-color: color-mix(in oklab, var(--cyan) 65%, transparent); box-shadow: inset 0 1px 2px oklch(0 0 0 / .4), 0 0 0 3px color-mix(in oklab, var(--cyan) 16%, transparent); }
+.eo-number input { width: 100%; height: 100%; padding: 0 44px 0 12px; background: transparent; border: 0; outline: none; box-shadow: none !important; font-size: 18px; font-weight: 700; font-variant-numeric: tabular-nums; color: var(--foreground); }
+.eo-number input:focus-visible { outline: none; }
+.eo-number-unit { position: absolute; right: 12px; font-size: 11px; font-weight: 700; color: var(--muted-foreground); }
+
+/* ── RAM limiter ── */
+.eo-ram-grid { grid-template-columns: minmax(0, 1fr) 232px; }
+.eo-ram-side { border-left: 1px solid var(--border); padding-left: 16px; }
+.eo-ram-readout { font-size: 44px; line-height: 1; font-weight: 800; color: var(--foreground); min-width: 4.2ch; text-shadow: 0 0 24px color-mix(in oklab, var(--cyan) 30%, transparent); }
+.eo-ram-readout span { margin-left: 6px; font-size: 16px; font-weight: 700; color: var(--muted-foreground); text-shadow: none; }
+.eo-ram-context { height: 6px; border-radius: 999px; background: repeating-linear-gradient(90deg, var(--window) 0 calc(12.5% - 1px), var(--border) calc(12.5% - 1px) 12.5%); box-shadow: inset 0 0 0 1px var(--border); overflow: hidden; }
+.eo-ram-context span { display: block; height: 100%; width: var(--share); border-radius: inherit; background: linear-gradient(90deg, var(--cyan), var(--primary)); box-shadow: 0 0 10px -2px var(--cyan); }
+
+/* ── Score gauge ── */
+@property --num { syntax: "<integer>"; inherits: false; initial-value: 0; }
+.eo-score { position: relative; flex-shrink: 0; }
+.eo-score::before { content: ""; position: absolute; inset: 22%; border-radius: 50%; background: radial-gradient(circle, color-mix(in oklab, var(--cyan) 14%, transparent), transparent 70%); filter: blur(6px); }
+.eo-score-track { stroke: color-mix(in oklab, var(--window) 70%, var(--border)); }
+.eo-score-arc { filter: drop-shadow(0 0 6px color-mix(in oklab, var(--cyan) 55%, transparent)); animation: eo-score-in var(--duration-score) var(--ease-emphasized) both; }
+.eo-score-tick { stroke: var(--border-strong); stroke-width: 1.2; stroke-linecap: round; }
+.eo-score-tick[data-lit="true"] { stroke: color-mix(in oklab, var(--cyan) 75%, transparent); animation: eo-tick-in var(--duration-score) var(--ease-out) both; animation-delay: calc(var(--i) * 12ms); }
+.eo-score-center { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; }
+.eo-count { counter-reset: num var(--num); animation: eo-count var(--duration-score) var(--ease-emphasized) both; }
+.eo-count::after { content: counter(num); }
+.eo-score-bar { position: relative; height: 5px; border-radius: 999px; background: var(--window); box-shadow: inset 0 0 0 1px var(--border); overflow: hidden; }
+.eo-score-bar::after { content: ""; position: absolute; inset: 0; width: var(--v); border-radius: inherit; background: linear-gradient(90deg, var(--primary), var(--cyan)); transform-origin: left; animation: eo-grow var(--duration-entrance) var(--ease-emphasized) both; animation-delay: calc(200ms + var(--i) * 60ms); }
+
+/* ── Auto Optimize panel ── */
+.eo-auto-mark { display: flex; height: 34px; width: 34px; flex-shrink: 0; align-items: center; justify-content: center; border-radius: 10px; color: var(--primary-foreground); background: var(--gradient-brand); box-shadow: var(--shadow-glow), inset 0 1px 0 oklch(1 0 0 / .25); }
+.eo-auto-body { height: 212px; }
+.eo-auto-row { display: flex; align-items: center; gap: 10px; height: 34px; padding: 0 10px; border-radius: 8px; border: 1px solid var(--border); background: var(--window); transition: border-color var(--duration-control), background-color var(--duration-control), box-shadow var(--duration-control); }
+.eo-auto-row[data-state="active"] { border-color: color-mix(in oklab, var(--cyan) 55%, transparent); background: color-mix(in oklab, var(--cyan) 8%, var(--window)); box-shadow: 0 0 16px -8px var(--cyan); }
+.eo-auto-row[data-state="done"] { border-color: color-mix(in oklab, var(--success) 35%, var(--border)); }
+.eo-auto-profile { border-radius: 8px; border: 1px solid var(--border); background: linear-gradient(180deg, var(--surface-light), transparent), var(--window); padding: 10px 12px; }
+.eo-auto-rec { display: flex; align-items: center; gap: 10px; min-height: 32px; padding: 4px 10px; border-radius: 8px; border: 1px solid var(--border); background: var(--window); transition: border-color var(--duration-control), background-color var(--duration-fast); }
+.eo-auto-rec[data-selected="true"] { border-color: color-mix(in oklab, var(--cyan) 40%, transparent); background: color-mix(in oklab, var(--cyan) 5%, var(--window)); }
+.eo-auto-list { scrollbar-width: thin; }
+.eo-scan { overflow: hidden; }
+.eo-scan::after { content: ""; position: absolute; left: 0; right: 0; top: 0; height: 40%; pointer-events: none; background: linear-gradient(180deg, transparent, color-mix(in oklab, var(--cyan) 10%, transparent), transparent); animation: eo-scan 1.4s var(--ease-out) infinite; }
+
+/* ── Telemetry console ── */
+.eo-legend { display: inline-flex; align-items: center; gap: 6px; height: 26px; padding: 0 10px; border-radius: 999px; border: 1px solid var(--border); background: var(--window); font-size: 10.5px; font-weight: 700; color: var(--muted-foreground); }
+.eo-legend b { color: var(--foreground); }
+.eo-legend[aria-pressed="true"] { border-color: color-mix(in oklab, var(--series) 50%, transparent); background: color-mix(in oklab, var(--series) 10%, var(--window)); color: var(--foreground); }
+.eo-legend[aria-pressed="false"] { opacity: .6; }
+.eo-legend-dot { display: inline-block; height: 8px; width: 8px; border-radius: 50%; background: var(--series); box-shadow: 0 0 8px var(--series); }
+.eo-tele-plot { cursor: crosshair; border-radius: 6px; }
+.eo-tele-plot:focus-visible { outline: 2px solid var(--cyan); outline-offset: 4px; }
+.eo-morph { transition: d var(--duration-slow) var(--ease-out); }
+.eo-tele-cross { position: absolute; top: 0; bottom: 0; width: 1px; pointer-events: none; background: linear-gradient(180deg, transparent, color-mix(in oklab, var(--cyan) 70%, transparent), transparent); }
+.eo-tele-dot { position: absolute; height: 10px; width: 10px; margin: -5px 0 0 -5px; pointer-events: none; border-radius: 50%; border: 2px solid var(--background); background: var(--series); box-shadow: 0 0 10px var(--series); transition: top var(--duration-fast) var(--ease-out); }
+.eo-tele-tip { position: absolute; top: 8px; z-index: 5; min-width: 150px; pointer-events: none; border-radius: 8px; border: 1px solid var(--border-strong); padding: 8px 10px; background: linear-gradient(160deg, var(--surface-light), transparent 40%), var(--glass-float); backdrop-filter: var(--glass-blur-float); box-shadow: var(--overlay-shadow); transform: translateX(14px); animation: eo-pop-in 160ms var(--ease-out) both; }
+.eo-tele-tip[data-side="left"] { transform: translateX(calc(-100% - 14px)); }
+
+/* ── V4 workspaces ── */
+.eo-v4-banner { border-radius: 8px; border: 1px solid color-mix(in oklab, var(--warning) 32%, var(--border)); padding: 8px 12px; background: linear-gradient(90deg, color-mix(in oklab, var(--warning) 9%, transparent), transparent 60%), var(--surface-glass); }
+.eo-v4-hero { padding: 18px; }
+.eo-v4-scope { display: flex; align-items: center; gap: 10px; padding: 10px 12px; border-radius: 8px; border: 1px solid var(--border); background: var(--window); transition: border-color var(--duration-control), background-color var(--duration-control), box-shadow var(--duration-control), transform var(--duration-control) var(--ease-out); }
+.eo-v4-scope:hover { border-color: var(--border-strong); transform: translateY(-1px); }
+.eo-v4-scope-icon { display: flex; height: 30px; width: 30px; flex-shrink: 0; align-items: center; justify-content: center; border-radius: 8px; color: var(--cyan); background: color-mix(in oklab, var(--cyan) 12%, transparent); box-shadow: inset 0 0 0 1px color-mix(in oklab, var(--cyan) 22%, transparent); transition: color var(--duration-control), background-color var(--duration-control); }
+.eo-v4-scope[data-state="active"] { border-color: color-mix(in oklab, var(--cyan) 55%, transparent); background: color-mix(in oklab, var(--cyan) 8%, var(--window)); box-shadow: 0 0 18px -8px var(--cyan); }
+.eo-v4-scope[data-state="active"] .eo-v4-scope-icon { animation: eo-pulse 1s ease-in-out infinite; }
+.eo-v4-scope[data-state="done"] { border-color: color-mix(in oklab, var(--success) 35%, var(--border)); }
+.eo-v4-scope[data-state="done"] .eo-v4-scope-icon { color: var(--success); background: color-mix(in oklab, var(--success) 12%, transparent); box-shadow: inset 0 0 0 1px color-mix(in oklab, var(--success) 25%, transparent); }
+.eo-v4-cta { min-width: 190px; }
+.eo-v4-guard { display: flex; align-items: center; justify-content: center; gap: 6px; padding: 8px; border-radius: 8px; border: 1px solid color-mix(in oklab, var(--success) 25%, var(--border)); background: color-mix(in oklab, var(--success) 6%, var(--window)); font-size: 11.5px; font-weight: 600; color: var(--success); text-align: center; }
+.eo-v4-rail { padding: 14px; }
+.eo-v4-dot { height: 10px; width: 10px; flex-shrink: 0; border-radius: 50%; background: var(--warning); box-shadow: 0 0 0 3px color-mix(in oklab, var(--warning) 18%, transparent); }
+.eo-v4-dot[data-ok="true"] { background: var(--success); box-shadow: 0 0 0 3px color-mix(in oklab, var(--success) 18%, transparent), 0 0 10px var(--success); }
+.eo-v4-hub:hover { border-color: color-mix(in oklab, var(--cyan) 50%, transparent); color: var(--cyan); }
+.eo-pipeline { position: relative; }
+.eo-pipeline-step { position: relative; display: grid; grid-template-columns: 30px minmax(0, 1fr); gap: 12px; }
+.eo-pipeline-step:not(:last-child)::before { content: ""; position: absolute; left: 14px; top: 34px; bottom: -12px; width: 2px; border-radius: 2px; background: linear-gradient(180deg, color-mix(in oklab, var(--cyan) 45%, transparent), var(--border)); }
+.eo-pipeline-node { position: relative; z-index: 1; display: flex; height: 30px; width: 30px; margin-top: 14px; align-items: center; justify-content: center; border-radius: 50%; border: 1px solid color-mix(in oklab, var(--cyan) 45%, var(--border)); background: var(--window); font-size: 12px; font-weight: 800; color: var(--cyan); box-shadow: 0 0 0 4px var(--background), 0 0 14px -6px var(--cyan); transition: border-color var(--duration-control), color var(--duration-control), box-shadow var(--duration-control); }
+.eo-pipeline-step[data-state="APPLIED"] .eo-pipeline-node { border-color: var(--success); color: var(--success); box-shadow: 0 0 0 4px var(--background), 0 0 14px -4px var(--success); }
+.eo-pipeline-step[data-state="APPLYING"] .eo-pipeline-node { animation: eo-pulse 1s ease-in-out infinite; }
+.eo-pipeline-step[data-state="NEEDS ADB"] .eo-pipeline-node { border-color: color-mix(in oklab, var(--warning) 50%, var(--border)); color: var(--warning); box-shadow: 0 0 0 4px var(--background); }
+.eo-v4-seq li { display: grid; grid-template-columns: 20px minmax(0, 1fr); align-items: start; gap: 6px; color: var(--muted-foreground); }
+.eo-v4-seq li > span:first-child { display: flex; height: 18px; width: 18px; align-items: center; justify-content: center; border-radius: 50%; border: 1px solid var(--border-strong); font-size: 9.5px; font-weight: 800; }
+.eo-v4-seq li[data-done="true"] { color: var(--foreground); }
+.eo-v4-seq li[data-done="true"] > span:first-child { border-color: var(--success); color: var(--success); background: color-mix(in oklab, var(--success) 12%, transparent); }
+.eo-quick-arrow { transition: transform var(--duration-control) var(--ease-spring); }
+.eo-quick-link:hover .eo-quick-arrow { transform: translate(2px, -2px); }
+.eo-activity { max-height: 236px; overflow-y: auto; scrollbar-width: thin; }
+
 @keyframes eo-shimmer { from { background-position: 120% 0; } to { background-position: -120% 0; } }
 @keyframes eo-pulse { 50% { opacity: .35; } }
 @keyframes eo-spin { to { transform: rotate(360deg); } }
@@ -381,16 +523,30 @@ input[type="range"] { accent-color: var(--cyan); }
 @keyframes eo-check-pop { from { transform: scale(.4); opacity: 0; } }
 @keyframes eo-step-in { from { transform: scale(.94); } }
 @keyframes eo-success-pop { from { opacity: 0; transform: translateY(8px) scale(.98); } to { opacity: 1; transform: none; } }
+@keyframes eo-hero-in { from { opacity: 0; transform: translateY(10px) scale(.992); } to { opacity: 1; transform: none; } }
+@keyframes eo-score-in { from { stroke-dashoffset: var(--len); } }
+@keyframes eo-tick-in { from { stroke: var(--border-strong); } }
+@keyframes eo-count { from { --num: 0; } }
+@keyframes eo-grow { from { transform: scaleX(0); } }
+@keyframes eo-scan { from { transform: translateY(-100%); } to { transform: translateY(260%); } }
 
 @container (max-width: 1050px) {
   .eo-page-content .grid-cols-5 { grid-template-columns: repeat(3, minmax(0, 1fr)); }
   .eo-page-content .grid-cols-4 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
   .eo-stat-grid { grid-template-columns: repeat(3, minmax(0, 1fr)) !important; }
   .eo-page-content .eo-telemetry-split { grid-template-columns: minmax(0,1fr) !important; }
+  .eo-page-content .eo-ram-grid { grid-template-columns: minmax(0, 1fr) 200px; }
+}
+@container (max-width: 900px) {
+  .eo-page-content .eo-engine-layout { grid-template-columns: minmax(0,1fr) !important; }
+  .eo-page-content .eo-engine-layout > aside { display: grid; grid-template-columns: repeat(2, minmax(0,1fr)); gap: 12px; }
+  .eo-page-content .eo-engine-layout > aside > * { margin: 0 !important; }
 }
 @container (max-width: 760px) {
   .eo-page-content .grid-cols-3, .eo-page-content .grid-cols-7 { grid-template-columns: repeat(2, minmax(0,1fr)); }
-  .eo-page-content .eo-cols, .eo-page-content .eo-engine-layout, .eo-page-content .eo-profile-overview { grid-template-columns: minmax(0,1fr) !important; }
+  .eo-page-content .eo-cols, .eo-page-content .eo-engine-layout, .eo-page-content .eo-profile-overview, .eo-page-content .eo-dash-hero, .eo-page-content .eo-ram-grid, .eo-page-content .eo-v4-conn { grid-template-columns: minmax(0,1fr) !important; }
+  .eo-page-content .eo-ram-side { border-left: 0; padding-left: 0; }
+  .eo-page-content .eo-auto-body { height: auto; min-height: 212px; }
   .eo-page-content .eo-console { position: static; }
   .eo-page-content .grid-cols-2 { grid-template-columns: minmax(0,1fr); }
 }
