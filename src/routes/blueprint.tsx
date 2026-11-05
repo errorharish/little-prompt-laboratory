@@ -157,8 +157,8 @@ function Blueprint() {
             BLUEPRINT · DEMO DATA · status pill
           </div>
           <div>
-            V3: GlassSidebarDock 84px (60px collapsed), items 68px (16px icon + 9.2px label), 3px cyan active bar
-            with glow
+            V3: GlassSidebarDock 84px (60px collapsed), items 68px (16px icon + 9.2px label), 3px
+            cyan active bar with glow
           </div>
           <div>
             V4: dock hidden, 44px top tab strip with 2 tabs + “INDEPENDENT FROM V3 1-CLICK” badge
@@ -341,7 +341,11 @@ function Blueprint() {
 
       <div className="eo-cols grid grid-cols-2 gap-4">
         <Section id="layout">
-          <SectionTitle id="layout-title" title="PREMIUM LAYOUT RULES" sub="Dashboard, System Telemetry, AI Optimization and V4 workspaces." />
+          <SectionTitle
+            id="layout-title"
+            title="PREMIUM LAYOUT RULES"
+            sub="Dashboard, System Telemetry, AI Optimization and V4 workspaces."
+          />
           <ul className="space-y-1.5 text-[12.5px] text-muted-foreground">
             {LAYOUT_RULES.map((r) => (
               <li key={r}>• {r}</li>
@@ -350,7 +354,11 @@ function Blueprint() {
         </Section>
         <section aria-labelledby="slider-title" className="scroll-mt-4">
           <Card>
-            <SectionTitle id="slider-title" title="SLIDER BEHAVIOUR" sub="RangeSlider + NumberField (RAM Limiter, Settings)." />
+            <SectionTitle
+              id="slider-title"
+              title="SLIDER BEHAVIOUR"
+              sub="RangeSlider + NumberField (RAM Limiter, Settings)."
+            />
             <ul className="space-y-1.5 text-[12.5px] text-muted-foreground">
               {SLIDER_SPEC.map((r) => (
                 <li key={r}>• {r}</li>

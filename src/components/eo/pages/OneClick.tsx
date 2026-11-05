@@ -291,11 +291,7 @@ export function OneClickPage() {
               <SlidersHorizontal aria-hidden="true" className="h-3 w-3" />
               Filter
             </Btn>
-            <Btn
-              size="sm"
-              disabled={!analyzed}
-              onClick={wf.selectRecommended}
-            >
+            <Btn size="sm" disabled={!analyzed} onClick={wf.selectRecommended}>
               Select recommended
             </Btn>
             <Btn size="sm" variant="ghost" disabled={!sel.size} onClick={() => setSel(new Set())}>

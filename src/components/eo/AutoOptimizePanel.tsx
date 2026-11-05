@@ -3,7 +3,16 @@
 // RunModal): Analyze → Review → Confirm → Simulated result. Protected items are never
 // pre-selected, and the result always reports 0 changes on this PC.
 import { Link } from "@tanstack/react-router";
-import { ArrowUpRight, Cpu, MemoryStick, MonitorCog, ScanSearch, ShieldCheck, Sparkles, RotateCcw } from "lucide-react";
+import {
+  ArrowUpRight,
+  Cpu,
+  MemoryStick,
+  MonitorCog,
+  ScanSearch,
+  ShieldCheck,
+  Sparkles,
+  RotateCcw,
+} from "lucide-react";
 import { useState } from "react";
 import { Badge, Bar, Btn, Card, Check, Label, RiskBadge, Stepper } from "./kit";
 import { Segmented } from "./controls";
@@ -23,13 +32,7 @@ export const MODE_TEXT: Record<string, string> = {
 };
 const STEPS = ["Analyze", "Review", "Confirm", "Simulated result"];
 
-export function AutoOptimizePanel({
-  mode,
-  onMode,
-}: {
-  mode: string;
-  onMode: (m: string) => void;
-}) {
+export function AutoOptimizePanel({ mode, onMode }: { mode: string; onMode: (m: string) => void }) {
   const wf = useOptimizeWorkflow(1600);
   const [review, setReview] = useState(false);
   const [run, setRun] = useState(false);
@@ -58,7 +61,12 @@ export function AutoOptimizePanel({
             </p>
           </div>
         </div>
-        <Segmented label="Optimization profile" options={OPTIMIZATION_MODES} value={mode} onChange={onMode} />
+        <Segmented
+          label="Optimization profile"
+          options={OPTIMIZATION_MODES}
+          value={mode}
+          onChange={onMode}
+        />
       </div>
 
       <div className="mt-3 flex flex-wrap items-center justify-between gap-2">
@@ -71,7 +79,11 @@ export function AutoOptimizePanel({
       {/* Body: fixed height so phases swap without moving the page */}
       <div className="eo-auto-body mt-3" aria-live="polite">
         {(phase === "overview" || phase === "scanning") && (
-          <div key="overview" className="eo-swap grid h-full gap-3" style={{ gridTemplateColumns: "minmax(0,1.25fr) minmax(0,1fr)" }}>
+          <div
+            key="overview"
+            className="eo-swap grid h-full gap-3"
+            style={{ gridTemplateColumns: "minmax(0,1.25fr) minmax(0,1fr)" }}
+          >
             <div className={cn("eo-auto-cats relative", phase === "scanning" && "eo-scan")}>
               <Label as="h3" className="mb-1.5 text-[9.5px]">
                 OPTIMIZATION CATEGORIES
@@ -79,11 +91,22 @@ export function AutoOptimizePanel({
               <ul className="space-y-1.5">
                 {ONE_CLICK_GROUPS.map((g, i) => {
                   const count = ONE_CLICK_ACTIONS.filter((a) => a.group === g.key).length;
-                  const checked = phase === "scanning" && progress >= ((i + 1) / ONE_CLICK_GROUPS.length) * 100 - 2;
-                  const checking = phase === "scanning" && !checked && progress >= (i / ONE_CLICK_GROUPS.length) * 100;
+                  const checked =
+                    phase === "scanning" &&
+                    progress >= ((i + 1) / ONE_CLICK_GROUPS.length) * 100 - 2;
+                  const checking =
+                    phase === "scanning" &&
+                    !checked &&
+                    progress >= (i / ONE_CLICK_GROUPS.length) * 100;
                   return (
-                    <li key={g.key} className="eo-auto-row" data-state={checked ? "done" : checking ? "active" : undefined}>
-                      <span className="min-w-0 flex-1 truncate text-[11.5px] font-bold">{g.key}</span>
+                    <li
+                      key={g.key}
+                      className="eo-auto-row"
+                      data-state={checked ? "done" : checking ? "active" : undefined}
+                    >
+                      <span className="min-w-0 flex-1 truncate text-[11.5px] font-bold">
+                        {g.key}
+                      </span>
                       <span className="text-[10px] font-bold text-subtle">{count} REC.</span>
                       <span className="w-20 text-right text-[9.5px] font-bold">
                         {checked ? (
@@ -126,7 +149,9 @@ export function AutoOptimizePanel({
                   </li>
                 ))}
               </ul>
-              <p className="mt-2.5 text-[11px] leading-snug text-muted-foreground">{MODE_TEXT[mode]}</p>
+              <p className="mt-2.5 text-[11px] leading-snug text-muted-foreground">
+                {MODE_TEXT[mode]}
+              </p>
             </div>
           </div>
         )}
@@ -147,10 +172,21 @@ export function AutoOptimizePanel({
                 </Btn>
               </span>
             </div>
-            <ul aria-label="Sample recommendations" className="eo-auto-list min-h-0 flex-1 space-y-1 overflow-y-auto pr-1">
+            <ul
+              aria-label="Sample recommendations"
+              className="eo-auto-list min-h-0 flex-1 space-y-1 overflow-y-auto pr-1"
+            >
               {ONE_CLICK_ACTIONS.map((a) => (
-                <li key={a.id} className="eo-auto-rec" data-selected={sel.has(a.id) ? "true" : undefined}>
-                  <Check label={`Select ${a.title}`} on={sel.has(a.id)} onChange={() => wf.toggle(a.id)} />
+                <li
+                  key={a.id}
+                  className="eo-auto-rec"
+                  data-selected={sel.has(a.id) ? "true" : undefined}
+                >
+                  <Check
+                    label={`Select ${a.title}`}
+                    on={sel.has(a.id)}
+                    onChange={() => wf.toggle(a.id)}
+                  />
                   <span className="min-w-0 flex-1 truncate text-[11.5px] font-bold">{a.title}</span>
                   <RiskBadge risk={a.risk} />
                   {a.restart && <Badge tone="warning">RESTART</Badge>}
@@ -161,7 +197,10 @@ export function AutoOptimizePanel({
         )}
 
         {phase === "done" && lastRun && (
-          <div key="done" className="eo-swap eo-result flex h-full flex-col justify-center rounded-lg border p-3">
+          <div
+            key="done"
+            className="eo-swap eo-result flex h-full flex-col justify-center rounded-lg border p-3"
+          >
             <Label as="h3" className="text-success">
               SIMULATED RUN COMPLETE · {lastRun.at}
             </Label>
@@ -181,8 +220,8 @@ export function AutoOptimizePanel({
               ))}
             </div>
             <p className="mt-2 text-[11px] text-muted-foreground">
-              Demonstration only — no Windows setting, file or service was read or changed. The score
-              is unaffected.
+              Demonstration only — no Windows setting, file or service was read or changed. The
+              score is unaffected.
             </p>
           </div>
         )}
@@ -193,7 +232,9 @@ export function AutoOptimizePanel({
         <span className="flex items-center gap-2 text-[10.5px] font-bold text-success">
           <ShieldCheck aria-hidden="true" className="h-4 w-4" />
           PROTECTED ITEMS NEVER AUTO-SELECTED
-          {analyzed && <span className="text-subtle">· {protectedSelected} PROTECTED IN SELECTION</span>}
+          {analyzed && (
+            <span className="text-subtle">· {protectedSelected} PROTECTED IN SELECTION</span>
+          )}
         </span>
         <div className="flex flex-wrap gap-2">
           <Link to="/$page" params={{ page: "one-click" }} title="Open the full 1-Click workflow">

@@ -71,7 +71,8 @@ function curve(vals: number[], w: number, h: number) {
     })
     .join(" ");
 }
-const areaPath = (vals: number[], w: number, h: number) => `${curve(vals, w, h)} L${w},${h} L0,${h} Z`;
+const areaPath = (vals: number[], w: number, h: number) =>
+  `${curve(vals, w, h)} L${w},${h} L0,${h} Z`;
 /** d as a CSS property lets the browser interpolate between ticks (same command count). */
 const morph = (d: string) => ({ d: `path("${d}")` }) as CSSProperties;
 
@@ -160,7 +161,10 @@ export function TelemetryConsole() {
           <span className="ml-auto flex items-center gap-1.5 text-[10px] font-bold text-subtle">
             <span
               aria-hidden="true"
-              className={cn("h-1.5 w-1.5 rounded-full", paused ? "bg-warning" : "eo-pulse-dot bg-success")}
+              className={cn(
+                "h-1.5 w-1.5 rounded-full",
+                paused ? "bg-warning" : "eo-pulse-dot bg-success",
+              )}
             />
             {paused ? "SAMPLE FEED PAUSED" : "SAMPLE FEED · 1.2 S"}
           </span>
@@ -352,7 +356,10 @@ const TelemetryChart = memo(function TelemetryChart({
                   <span>SAMPLE</span>
                 </div>
                 {visible.map((s) => (
-                  <div key={s.key} className="flex items-center justify-between gap-5 text-[11.5px]">
+                  <div
+                    key={s.key}
+                    className="flex items-center justify-between gap-5 text-[11.5px]"
+                  >
                     <span className="flex items-center gap-1.5">
                       <span
                         aria-hidden="true"
@@ -369,11 +376,17 @@ const TelemetryChart = memo(function TelemetryChart({
           )}
         </div>
         <div className="mt-1 flex justify-between text-[9.5px] text-subtle">
-          {[win === "30 SEC" ? "−30s" : win === "1 MIN" ? "−60s" : "−5m", "", "", "", "", "", "NOW"].map(
-            (x, i) => (
-              <span key={i}>{x}</span>
-            ),
-          )}
+          {[
+            win === "30 SEC" ? "−30s" : win === "1 MIN" ? "−60s" : "−5m",
+            "",
+            "",
+            "",
+            "",
+            "",
+            "NOW",
+          ].map((x, i) => (
+            <span key={i}>{x}</span>
+          ))}
         </div>
       </div>
     </div>
@@ -412,7 +425,10 @@ function MetricCard({
       </div>
       <div className="mt-0.5 truncate text-[11px] text-subtle">{hw}</div>
       {!ready ? (
-        <div aria-hidden="true" className="eo-skeleton mt-3 h-[92px] rounded-lg border border-border" />
+        <div
+          aria-hidden="true"
+          className="eo-skeleton mt-3 h-[92px] rounded-lg border border-border"
+        />
       ) : (
         <>
           <div className={cn("mt-2 text-[26px] font-bold leading-none tabular-nums", text)}>
@@ -431,7 +447,12 @@ function MetricCard({
                 <stop offset="100%" stopColor={color} stopOpacity="0" />
               </linearGradient>
             </defs>
-            <path className="eo-chart-area eo-morph" d={fill} style={morph(fill)} fill={`url(#${gid})`} />
+            <path
+              className="eo-chart-area eo-morph"
+              d={fill}
+              style={morph(fill)}
+              fill={`url(#${gid})`}
+            />
             <path
               className="eo-morph"
               pathLength={1}

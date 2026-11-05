@@ -57,7 +57,10 @@ export function ReviewSelectionModal({
           ))}
         </div>
         {!items.length && (
-          <EmptyState title="Nothing selected" sub="Go back and select at least one recommendation." />
+          <EmptyState
+            title="Nothing selected"
+            sub="Go back and select at least one recommendation."
+          />
         )}
         {ONE_CLICK_GROUPS.filter((g) => items.some((a) => a.group === g.key)).map((g) => (
           <section key={g.key} aria-label={g.key}>

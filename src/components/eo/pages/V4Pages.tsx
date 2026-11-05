@@ -49,7 +49,11 @@ import { HW } from "@/lib/eo/data";
  * No live log: the rail shows engine state and the last simulated result instead. */
 const MP_SCOPE = [
   { icon: Layers, t: "Background reduction", d: "Reduce unnecessary background CPU overhead." },
-  { icon: Activity, t: "Priority balancing", d: "Balance foreground and background scheduling priority." },
+  {
+    icon: Activity,
+    t: "Priority balancing",
+    d: "Balance foreground and background scheduling priority.",
+  },
   { icon: MemoryStick, t: "Working-set refresh", d: "Release idle process working sets." },
   { icon: Gauge, t: "System optimizations", d: "Hardware-aware latency reduction for the host." },
 ];
@@ -103,7 +107,10 @@ export function V4MaxPerformancePage() {
         </Btn>
       </div>
 
-      <div className="eo-engine-layout grid gap-4" style={{ gridTemplateColumns: "minmax(0,1fr) 320px" }}>
+      <div
+        className="eo-engine-layout grid gap-4"
+        style={{ gridTemplateColumns: "minmax(0,1fr) 320px" }}
+      >
         <div className="eo-stagger space-y-4">
           {/* Primary action workspace */}
           <Card className="eo-hero eo-v4-hero">
@@ -131,11 +138,23 @@ export function V4MaxPerformancePage() {
 
             <ol aria-label="Workflow scope" className="mt-4 grid grid-cols-2 gap-2">
               {MP_SCOPE.map((s, i) => {
-                const state = !r.running ? (last ? "done" : undefined) : i < stage ? "done" : i === stage ? "active" : undefined;
+                const state = !r.running
+                  ? last
+                    ? "done"
+                    : undefined
+                  : i < stage
+                    ? "done"
+                    : i === stage
+                      ? "active"
+                      : undefined;
                 return (
                   <li key={s.t} className="eo-v4-scope" data-state={state}>
                     <span className="eo-v4-scope-icon" aria-hidden="true">
-                      {state === "done" ? <CheckCircle2 className="h-4 w-4" /> : <s.icon className="h-4 w-4" />}
+                      {state === "done" ? (
+                        <CheckCircle2 className="h-4 w-4" />
+                      ) : (
+                        <s.icon className="h-4 w-4" />
+                      )}
                     </span>
                     <div className="min-w-0">
                       <div className="text-[12.5px] font-bold">{s.t}</div>
@@ -173,7 +192,13 @@ export function V4MaxPerformancePage() {
                   </p>
                 )}
               </div>
-              <Btn variant="primary" size="lg" className="eo-v4-cta" disabled={r.running} onClick={() => setConfirmRun(true)}>
+              <Btn
+                variant="primary"
+                size="lg"
+                className="eo-v4-cta"
+                disabled={r.running}
+                onClick={() => setConfirmRun(true)}
+              >
                 <Zap aria-hidden="true" className="h-4 w-4" />
                 {r.running ? `Optimizing… ${pct.toFixed(0)}%` : "Optimize now"}
               </Btn>
@@ -182,7 +207,11 @@ export function V4MaxPerformancePage() {
 
           {/* System status */}
           <section aria-labelledby="mp-status-title">
-            <SectionTitle id="mp-status-title" title="SYSTEM STATUS" badge={<DemoBadge label="SIMULATED VALUES" />} />
+            <SectionTitle
+              id="mp-status-title"
+              title="SYSTEM STATUS"
+              badge={<DemoBadge label="SIMULATED VALUES" />}
+            />
             <StatTiles
               items={[
                 { label: "BACKGROUND PROCESSES", value: procs, sub: "Active procs" },
@@ -261,16 +290,23 @@ export function V4MaxPerformancePage() {
                   <div className="text-lg font-bold tabular-nums">
                     {last.before} → {last.after}
                   </div>
-                  <div className="text-[8.5px] font-bold text-muted-foreground">SAMPLE PROCESSES</div>
+                  <div className="text-[8.5px] font-bold text-muted-foreground">
+                    SAMPLE PROCESSES
+                  </div>
                 </div>
                 <div className="rounded-lg border border-border bg-window p-2">
                   <div className="text-lg font-bold tabular-nums">0</div>
-                  <div className="text-[8.5px] font-bold text-muted-foreground">CHANGES ON THIS PC</div>
+                  <div className="text-[8.5px] font-bold text-muted-foreground">
+                    CHANGES ON THIS PC
+                  </div>
                 </div>
               </div>
             </Card>
           ) : (
-            <EmptyState title="No simulated run yet" sub="Results of a confirmed simulated run appear here." />
+            <EmptyState
+              title="No simulated run yet"
+              sub="Results of a confirmed simulated run appear here."
+            />
           )}
         </aside>
       </div>
@@ -303,7 +339,10 @@ export function V4MaxPerformancePage() {
         </p>
         <ul className="mt-3 space-y-1.5">
           {MP_SCOPE.map((s) => (
-            <li key={s.t} className="flex items-center justify-between rounded-lg border border-border bg-window px-3 py-2 text-[12.5px]">
+            <li
+              key={s.t}
+              className="flex items-center justify-between rounded-lg border border-border bg-window px-3 py-2 text-[12.5px]"
+            >
               {s.t}
               <Badge tone="cyan">SIMULATED</Badge>
             </li>
@@ -512,13 +551,23 @@ export function EmulatorOptimizationPage() {
       />
 
       {/* Connection strip */}
-      <Card className="eo-v4-conn grid items-center gap-3 py-3" style={{ gridTemplateColumns: "repeat(3, minmax(0,1fr)) auto" }}>
+      <Card
+        className="eo-v4-conn grid items-center gap-3 py-3"
+        style={{ gridTemplateColumns: "repeat(3, minmax(0,1fr)) auto" }}
+      >
         {connection.map((c) => (
           <div key={c.k} className="flex items-center gap-2.5">
             <span aria-hidden="true" className="eo-v4-dot" data-ok={c.ok ? "true" : undefined} />
             <div className="min-w-0">
               <Label className="text-[9px]">{c.k}</Label>
-              <div className={cn("truncate text-[12.5px] font-bold", c.ok ? "text-success" : "text-warning")}>{c.v}</div>
+              <div
+                className={cn(
+                  "truncate text-[12.5px] font-bold",
+                  c.ok ? "text-success" : "text-warning",
+                )}
+              >
+                {c.v}
+              </div>
             </div>
           </div>
         ))}
@@ -533,7 +582,10 @@ export function EmulatorOptimizationPage() {
         </Link>
       </Card>
 
-      <div className="eo-engine-layout grid gap-4" style={{ gridTemplateColumns: "minmax(0,1fr) 320px" }}>
+      <div
+        className="eo-engine-layout grid gap-4"
+        style={{ gridTemplateColumns: "minmax(0,1fr) 320px" }}
+      >
         <ol aria-label="Engine pipeline" className="eo-pipeline eo-stagger space-y-3">
           {ENGINES.map((e, i) => {
             const st = stateOf(i);
@@ -541,7 +593,13 @@ export function EmulatorOptimizationPage() {
             return (
               <li key={e.n} className="eo-pipeline-step" data-state={st}>
                 <span className="eo-pipeline-node" aria-hidden="true">
-                  {st === "APPLIED" ? <CheckCircle2 className="h-4 w-4" /> : blocked ? <Lock className="h-3.5 w-3.5" /> : i + 1}
+                  {st === "APPLIED" ? (
+                    <CheckCircle2 className="h-4 w-4" />
+                  ) : blocked ? (
+                    <Lock className="h-3.5 w-3.5" />
+                  ) : (
+                    i + 1
+                  )}
                 </span>
                 <Card className={cn("eo-v4-engine", running === i && "eo-glow")}>
                   <div className="flex flex-wrap items-start justify-between gap-3">
@@ -553,7 +611,15 @@ export function EmulatorOptimizationPage() {
                       <p className="mt-1 text-[12px] text-muted-foreground">{e.desc}</p>
                     </div>
                     <Badge
-                      tone={st === "APPLIED" ? "success" : st === "APPLYING" ? "cyan" : blocked ? "warning" : "muted"}
+                      tone={
+                        st === "APPLIED"
+                          ? "success"
+                          : st === "APPLYING"
+                            ? "cyan"
+                            : blocked
+                              ? "warning"
+                              : "muted"
+                      }
                     >
                       {st === "APPLIED" ? "APPLIED · SIMULATED" : st}
                     </Badge>
@@ -589,9 +655,16 @@ export function EmulatorOptimizationPage() {
                     </Details>
                   </div>
                   <div className="mt-3 flex flex-wrap items-center justify-between gap-3 border-t border-border pt-3">
-                    <span className={cn("text-[11px]", blocked ? "text-warning" : "text-subtle")}>{e.pre}</span>
+                    <span className={cn("text-[11px]", blocked ? "text-warning" : "text-subtle")}>
+                      {e.pre}
+                    </span>
                     <div className="flex gap-2">
-                      <Btn size="sm" variant="ghost" disabled={!applied.has(i) || running === i} onClick={() => restore(i)}>
+                      <Btn
+                        size="sm"
+                        variant="ghost"
+                        disabled={!applied.has(i) || running === i}
+                        onClick={() => restore(i)}
+                      >
                         Restore
                       </Btn>
                       <Btn
@@ -630,7 +703,9 @@ export function EmulatorOptimizationPage() {
                 </div>
               ))}
             </div>
-            <p className="mt-2 text-[10.5px] text-subtle">Engine states are simulated for this session only.</p>
+            <p className="mt-2 text-[10.5px] text-subtle">
+              Engine states are simulated for this session only.
+            </p>
           </Card>
           <Card className="eo-v4-rail">
             <Label as="h2" className="mb-2 text-foreground">
@@ -1295,7 +1370,8 @@ export function EmulatorModulesPage() {
           ))}
         </div>
         <p className="mt-3 text-[11px] text-muted-foreground">
-          All planned changes are shown for review before the simulated run. Nothing is executed on this PC.
+          All planned changes are shown for review before the simulated run. Nothing is executed on
+          this PC.
         </p>
       </Modal>
       <Modal

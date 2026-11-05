@@ -4,38 +4,167 @@
 // The full System Performance Telemetry chart lives on the System Telemetry page.
 import { memo, useState, type CSSProperties } from "react";
 import { Link } from "@tanstack/react-router";
-import { Cpu, MemoryStick, MonitorCog, HardDrive, HeartPulse, RefreshCw, ArrowUpRight, Info } from "lucide-react";
-import { Badge, Bar, Btn, Card, DemoBadge, EmptyState, KV, Label, Modal, PageHeader, SectionTitle, SimNotice, simulate } from "../kit";
+import {
+  Cpu,
+  MemoryStick,
+  MonitorCog,
+  HardDrive,
+  HeartPulse,
+  RefreshCw,
+  ArrowUpRight,
+  Info,
+} from "lucide-react";
+import {
+  Badge,
+  Bar,
+  Btn,
+  Card,
+  DemoBadge,
+  EmptyState,
+  KV,
+  Label,
+  Modal,
+  PageHeader,
+  SectionTitle,
+  SimNotice,
+  simulate,
+} from "../kit";
 import { CountUp, ScoreRing } from "../controls";
 import { AutoOptimizePanel, MODE_TEXT } from "../AutoOptimizePanel";
 import { SCORE_CATEGORIES, overallScore, scoreStatus } from "@/lib/eo/score";
 import { cn } from "@/lib/utils";
 
 const TILES = [
-  { icon: Cpu, label: "CPU", value: 18, l1: "AMD Ryzen 7 7800X3D", l2: "8C / 16T · 42°C", foot: "OPTIMAL" },
-  { icon: MemoryStick, label: "RAM", value: 38, l1: "12.2 / 32.0 GB", l2: "DDR5-6000 CL30 · EXPO I", foot: "LOW LATENCY" },
-  { icon: MonitorCog, label: "GPU", value: 14, l1: "RTX 4080 Super", l2: "1.4 / 16 GB VRAM · 44°C", foot: "IDLE / SILENT" },
-  { icon: HardDrive, label: "STORAGE", value: 46, l1: "920 GB / 2 TB", l2: "Samsung 990 PRO · Gen4", foot: "HEALTH 100%" },
+  {
+    icon: Cpu,
+    label: "CPU",
+    value: 18,
+    l1: "AMD Ryzen 7 7800X3D",
+    l2: "8C / 16T · 42°C",
+    foot: "OPTIMAL",
+  },
+  {
+    icon: MemoryStick,
+    label: "RAM",
+    value: 38,
+    l1: "12.2 / 32.0 GB",
+    l2: "DDR5-6000 CL30 · EXPO I",
+    foot: "LOW LATENCY",
+  },
+  {
+    icon: MonitorCog,
+    label: "GPU",
+    value: 14,
+    l1: "RTX 4080 Super",
+    l2: "1.4 / 16 GB VRAM · 44°C",
+    foot: "IDLE / SILENT",
+  },
+  {
+    icon: HardDrive,
+    label: "STORAGE",
+    value: 46,
+    l1: "920 GB / 2 TB",
+    l2: "Samsung 990 PRO · Gen4",
+    foot: "HEALTH 100%",
+  },
 ];
 
 const QUICK = [
-  { cat: "FULL TUNE", title: "One-Click Optimize", desc: "Analyze recommendations, review your selection, and confirm a simulated run", tag: "REVIEW & CONFIRM", to: "one-click" },
-  { cat: "STORAGE", title: "Clean Temporary Files", desc: "Purge Windows temp directories, Direct3D shader caches, and crash logs", tag: "REVIEW CLEANUP", to: "storage" },
-  { cat: "POWER", title: "Boost Performance", desc: "Switch Windows power plan to Ultimate and lock high-priority thread quantum", tag: "POWER PROFILE", to: "max-performance" },
-  { cat: "MEMORY", title: "RAM Cleanup", desc: "Trim inactive standby memory pages and flush fragmented working sets", tag: "REVIEW MEMORY", to: "process-reduction" },
-  { cat: "BOOT", title: "Startup Manager", desc: "Review high-impact startup telemetry agents and delayed services", tag: "STARTUP APPS", to: "startup-manager" },
-  { cat: "NETWORK", title: "Network Boost", desc: "Tune TCP Ack frequency, receive window scaling, and disable throttling", tag: "NETWORK DIAGNOSTICS", to: "network" },
-  { cat: "DIAGNOSTICS", title: "View Telemetry", desc: "Open the simulated CPU, RAM and GPU telemetry console", tag: "DEMO TELEMETRY", to: "system-info" },
-  { cat: "SAFETY", title: "Create Restore Point", desc: "Snapshot Windows registry hives and service configurations before tuning", tag: "BACKUP OPTIONS", to: "backup-restore" },
+  {
+    cat: "FULL TUNE",
+    title: "One-Click Optimize",
+    desc: "Analyze recommendations, review your selection, and confirm a simulated run",
+    tag: "REVIEW & CONFIRM",
+    to: "one-click",
+  },
+  {
+    cat: "STORAGE",
+    title: "Clean Temporary Files",
+    desc: "Purge Windows temp directories, Direct3D shader caches, and crash logs",
+    tag: "REVIEW CLEANUP",
+    to: "storage",
+  },
+  {
+    cat: "POWER",
+    title: "Boost Performance",
+    desc: "Switch Windows power plan to Ultimate and lock high-priority thread quantum",
+    tag: "POWER PROFILE",
+    to: "max-performance",
+  },
+  {
+    cat: "MEMORY",
+    title: "RAM Cleanup",
+    desc: "Trim inactive standby memory pages and flush fragmented working sets",
+    tag: "REVIEW MEMORY",
+    to: "process-reduction",
+  },
+  {
+    cat: "BOOT",
+    title: "Startup Manager",
+    desc: "Review high-impact startup telemetry agents and delayed services",
+    tag: "STARTUP APPS",
+    to: "startup-manager",
+  },
+  {
+    cat: "NETWORK",
+    title: "Network Boost",
+    desc: "Tune TCP Ack frequency, receive window scaling, and disable throttling",
+    tag: "NETWORK DIAGNOSTICS",
+    to: "network",
+  },
+  {
+    cat: "DIAGNOSTICS",
+    title: "View Telemetry",
+    desc: "Open the simulated CPU, RAM and GPU telemetry console",
+    tag: "DEMO TELEMETRY",
+    to: "system-info",
+  },
+  {
+    cat: "SAFETY",
+    title: "Create Restore Point",
+    desc: "Snapshot Windows registry hives and service configurations before tuning",
+    tag: "BACKUP OPTIONS",
+    to: "backup-restore",
+  },
 ];
 
 type Log = [time: string, title: string, cat: string, detail: string, status: string];
 const LOGS: Log[] = [
-  ["10:42:01", "System dashboard initialized", "SYSTEM", "V3 telemetry engine started with low-overhead sampling node", "SUCCESS"],
-  ["10:42:03", "Hardware status sample loaded", "AUDIT", "Identified Ryzen 7 7800X3D, RTX 4080 Super, 32GB DDR5-6000", "DEMO DATA"],
-  ["10:42:08", "Performance profile status checked", "PROFILE", "V3 Normal profile active with conservative latency bias", "ACTIVE"],
-  ["10:42:15", "Optimization readiness displayed", "READINESS", "Sample readiness entry · compatibility not assessed in prototype", "SAMPLE"],
-  ["10:42:22", "Timer resolution benchmark simulated", "TIMING", "Global multimedia timer lock confirmed at 0.5 ms resolution", "0.5 ms LOCKED"],
+  [
+    "10:42:01",
+    "System dashboard initialized",
+    "SYSTEM",
+    "V3 telemetry engine started with low-overhead sampling node",
+    "SUCCESS",
+  ],
+  [
+    "10:42:03",
+    "Hardware status sample loaded",
+    "AUDIT",
+    "Identified Ryzen 7 7800X3D, RTX 4080 Super, 32GB DDR5-6000",
+    "DEMO DATA",
+  ],
+  [
+    "10:42:08",
+    "Performance profile status checked",
+    "PROFILE",
+    "V3 Normal profile active with conservative latency bias",
+    "ACTIVE",
+  ],
+  [
+    "10:42:15",
+    "Optimization readiness displayed",
+    "READINESS",
+    "Sample readiness entry · compatibility not assessed in prototype",
+    "SAMPLE",
+  ],
+  [
+    "10:42:22",
+    "Timer resolution benchmark simulated",
+    "TIMING",
+    "Global multimedia timer lock confirmed at 0.5 ms resolution",
+    "0.5 ms LOCKED",
+  ],
 ];
 
 export function DashboardPage() {
@@ -73,7 +202,10 @@ export function DashboardPage() {
       />
 
       {/* 1 + 2: score (left) and Auto Optimize (right) carry the strongest emphasis */}
-      <div className="eo-dash-hero grid gap-3" style={{ gridTemplateColumns: "minmax(272px, 312px) minmax(0, 1fr)" }}>
+      <div
+        className="eo-dash-hero grid gap-3"
+        style={{ gridTemplateColumns: "minmax(272px, 312px) minmax(0, 1fr)" }}
+      >
         <ScoreCard />
         <AutoOptimizePanel mode={mode} onMode={setMode} />
       </div>
@@ -81,7 +213,10 @@ export function DashboardPage() {
       <SystemOverview />
 
       {/* 4: status + activity */}
-      <div className="eo-telemetry-split grid gap-3" style={{ gridTemplateColumns: "minmax(0,1fr) minmax(0,1fr)" }}>
+      <div
+        className="eo-telemetry-split grid gap-3"
+        style={{ gridTemplateColumns: "minmax(0,1fr) minmax(0,1fr)" }}
+      >
         <Card>
           <SectionTitle
             title="OPTIMIZATION STATUS"
@@ -120,10 +255,17 @@ export function DashboardPage() {
           />
           <div className="eo-activity divide-y divide-border">
             {!logs.length && (
-              <EmptyState title="No sample activity" sub="Activity appears after refreshing the sample dashboard." />
+              <EmptyState
+                title="No sample activity"
+                sub="Activity appears after refreshing the sample dashboard."
+              />
             )}
             {logs.slice(0, 8).map((l, i) => (
-              <div key={`${logs.length - i}-${l[0]}`} className="grid items-center gap-3 py-2" style={{ gridTemplateColumns: "auto minmax(0,1fr) auto" }}>
+              <div
+                key={`${logs.length - i}-${l[0]}`}
+                className="grid items-center gap-3 py-2"
+                style={{ gridTemplateColumns: "auto minmax(0,1fr) auto" }}
+              >
                 <span className="font-mono text-[10.5px] text-subtle">{l[0]}</span>
                 <div className="min-w-0">
                   <div className="truncate text-[12.5px] font-semibold">{l[1]}</div>
@@ -157,7 +299,10 @@ const ScoreCard = memo(function ScoreCard() {
         <DemoBadge label="ILLUSTRATIVE" />
       </div>
       <div className="mt-2 flex justify-center">
-        <ScoreRing value={score} label={`Overall optimization score ${score} out of 100, ${status}. Illustrative demo data.`}>
+        <ScoreRing
+          value={score}
+          label={`Overall optimization score ${score} out of 100, ${status}. Illustrative demo data.`}
+        >
           <CountUp value={score} className="text-[40px] leading-none font-black" />
           <span className="mt-0.5 text-[10.5px] font-bold text-subtle">/ 100</span>
         </ScoreRing>
@@ -169,9 +314,16 @@ const ScoreCard = memo(function ScoreCard() {
       </div>
       <ul className="mt-3 space-y-1.5" aria-label="Score categories">
         {SCORE_CATEGORIES.map((c, i) => (
-          <li key={c.key} className="grid items-center gap-2 text-[11px]" style={{ gridTemplateColumns: "92px minmax(0,1fr) 26px" }}>
+          <li
+            key={c.key}
+            className="grid items-center gap-2 text-[11px]"
+            style={{ gridTemplateColumns: "92px minmax(0,1fr) 26px" }}
+          >
             <span className="truncate font-semibold text-muted-foreground">{c.label}</span>
-            <span className="eo-score-bar" style={{ "--v": `${c.value}%`, "--i": i } as CSSProperties} />
+            <span
+              className="eo-score-bar"
+              style={{ "--v": `${c.value}%`, "--i": i } as CSSProperties}
+            />
             <span className="text-right font-bold tabular-nums">{c.value}</span>
           </li>
         ))}
@@ -202,7 +354,10 @@ const ScoreCard = memo(function ScoreCard() {
               <div className="flex items-center justify-between text-[13px] font-bold">
                 {c.label}
                 <span className="tabular-nums">
-                  {c.value} <span className="text-[10.5px] text-subtle">· weight {Math.round(c.weight * 100)}%</span>
+                  {c.value}{" "}
+                  <span className="text-[10.5px] text-subtle">
+                    · weight {Math.round(c.weight * 100)}%
+                  </span>
                 </span>
               </div>
               <Bar value={c.value} className="mt-2" />
@@ -295,7 +450,10 @@ const QuickActions = memo(function QuickActions() {
             <Label className="text-[9.5px] text-cyan">{q.cat}</Label>
             <div className="mt-1 flex items-start justify-between gap-2 text-[13px] font-bold">
               {q.title}
-              <ArrowUpRight aria-hidden="true" className="eo-quick-arrow h-4 w-4 shrink-0 text-cyan" />
+              <ArrowUpRight
+                aria-hidden="true"
+                className="eo-quick-arrow h-4 w-4 shrink-0 text-cyan"
+              />
             </div>
             <p className="mt-1 text-[11px] leading-snug text-muted-foreground">{q.desc}</p>
             <div className="mt-2">
@@ -306,5 +464,4 @@ const QuickActions = memo(function QuickActions() {
       </div>
     </section>
   );
-}
-);
+});

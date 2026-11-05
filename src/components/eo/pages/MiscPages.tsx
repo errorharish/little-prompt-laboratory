@@ -137,275 +137,275 @@ export function AiOptimizationPage() {
       </div>
 
       <div key={mod} className="eo-swap space-y-4">
-      {mod === "RAM LIMITER" && (
-        <>
-          <Card
-            className="grid items-center gap-3"
-            style={{ gridTemplateColumns: "repeat(5,1fr) auto" } as React.CSSProperties}
-          >
-            {[
-              ["ENGINE", "RAM Limiter (sample)"],
-              ["ACTIVE MODE", mode],
-              ["STRATEGY", "Working-set trim"],
-              ["STARTUP", "Off"],
-              ["STATUS", "Monitoring"],
-            ].map(([k, v]) => (
-              <div key={k}>
-                <Label className="text-[9px]">{k}</Label>
-                <div className="text-[13px] font-semibold">{v}</div>
-              </div>
-            ))}
-            <Badge tone="cyan">RAM CONTROL: ON</Badge>
-          </Card>
-          <Card>
-            <Label as="h2" className="mb-1 text-foreground">
-              PROFILE / TARGET CONFIGURATION
-            </Label>
-            <p className="mb-3 text-xs text-muted-foreground">
-              Control mode is active from the top mode selector.
-            </p>
-            <div className="mb-3 flex flex-wrap items-center gap-3">
-              <Label>ACTIVE MODE</Label>
-              <Segmented
-                label="RAM limiter mode"
-                options={["AUTO", "LIGHT", "AGGRESSIVE"]}
-                value={mode}
-                onChange={setMode}
-              />
-              <span className="ml-auto flex items-center gap-2">
-                <Label>FOREGROUND PROTECTION</Label>
-                <Toggle label="Foreground protection" on={fg} onChange={setFg} />
-              </span>
-            </div>
-            <div className="mb-2 flex items-center justify-between">
-              <Label className="text-foreground">
-                SEARCH & SELECT APPLICATION TO ADD CUSTOM RAM LIMIT
-              </Label>
-              <Btn size="sm" onClick={() => simulate("Add custom app")}>
-                + Add custom app
-              </Btn>
-            </div>
-            <SearchBox
-              placeholder="Search running applications…"
-              value={query}
-              onChange={setQuery}
-            />
-          </Card>
-          {query && !"chrome.exe".includes(query.toLowerCase()) ? (
-            <EmptyState
-              title="No matching application"
-              sub="The sample list only contains chrome.exe. Nothing on this PC is enumerated."
-              action={<Btn onClick={() => setQuery("")}>Clear search</Btn>}
-            />
-          ) : (
-            <RamLimiterPanel
-              value={limit}
-              onChange={setLimit}
-              enforced={enforced}
-              onEnforce={() => {
-                setEnforced(limit);
-                simulate(`Enforce ${limit.toFixed(2)} GB limit for chrome.exe`);
-              }}
-              mode={mode}
-              foreground={fg}
-            />
-          )}
-          <Card>
-            <Label className="mb-2 text-foreground">CONFIGURED CUSTOM TARGETS</Label>
-            <div
-              className="grid items-center gap-3 rounded-lg border border-border bg-window px-3 py-2 text-[12.5px]"
-              style={{ gridTemplateColumns: "minmax(0,1fr) 160px auto" }}
+        {mod === "RAM LIMITER" && (
+          <>
+            <Card
+              className="grid items-center gap-3"
+              style={{ gridTemplateColumns: "repeat(5,1fr) auto" } as React.CSSProperties}
             >
-              <span className="font-semibold">Discord.exe</span>
-              <Bar value={(1 / RAM_MAX_GB) * 100} />
-              <span className="text-right font-mono text-[11.5px] text-muted-foreground">
-                1.00 GB limit
-              </span>
-            </div>
-          </Card>
-          <Card>
-            <Label className="mb-2 text-foreground">CURRENTLY RUNNING WORKLOADS</Label>
-            <p className="text-xs text-muted-foreground">
-              No high-RAM applications currently running.
-            </p>
-          </Card>
-        </>
-      )}
-
-      {mod === "WORKLOAD OPTIMIZATION" && (
-        <>
-          <Card>
-            <Label className="mb-2 text-foreground">CURRENTLY RUNNING WORKLOADS</Label>
-            <div className="flex items-center gap-3 rounded-lg border border-dashed border-border-strong p-4">
-              <span className="text-xl">🎮</span>
-              <div>
-                <div className="text-[13px] font-bold">NO SUPPORTED WORKLOAD RUNNING</div>
-                <p className="text-xs text-muted-foreground">
-                  Launch any supported game, emulator, creative tool, or video AI workload to
-                  activate its profile.
-                </p>
-              </div>
-            </div>
-          </Card>
-          <Card>
-            <Label className="mb-3 text-foreground">INSTALLED WORKLOAD INVENTORY</Label>
-            <div className="mb-3 flex items-center justify-between">
-              <Chips
-                options={["ALL", "GAMES", "CREATIVE", "VIDEO AI", "EMULATORS"]}
-                value={inv}
-                onChange={setInv}
-              />
-              <Btn size="sm" onClick={() => simulate("Add custom app")}>
-                + Add custom app
-              </Btn>
-            </div>
-            <div className="grid grid-cols-3 gap-2">
               {[
-                ["Valorant", "GAMES"],
-                ["Counter-Strike 2", "GAMES"],
-                ["After Effects", "CREATIVE"],
-                ["DaVinci Resolve", "CREATIVE"],
-                ["Topaz Video AI", "VIDEO AI"],
-                ["MSI App Player 5", "EMULATORS"],
-              ]
-                .filter((x) => inv === "ALL" || x[1] === inv)
-                .map(([n, c]) => (
-                  <div
-                    key={n}
-                    className="flex items-center justify-between rounded-lg border border-border bg-window px-3 py-2.5 text-[12.5px]"
-                  >
-                    <span className="font-semibold">{n}</span>
-                    <Badge>{c}</Badge>
-                  </div>
-                ))}
-            </div>
-            <Btn
-              size="sm"
-              variant="ghost"
-              className="mt-3"
-              onClick={() => simulate("Force rescan inventory")}
-            >
-              Force rescan inventory
-            </Btn>
-          </Card>
-          <Card>
-            <div className="mb-3 flex items-center justify-between">
-              <Label className="text-foreground">SELECTED TARGET CONFIGURATION</Label>
-              <Btn size="sm" variant="primary" onClick={() => simulate("Save profile")}>
-                Save profile
-              </Btn>
-            </div>
-            <div className="grid grid-cols-2 gap-2">
-              {[
-                "Foreground CPU priority boost",
-                "GPU preference: High performance",
-                "Suspend background updaters",
-                "Standby memory refresh on launch",
-              ].map((o) => (
-                <div
-                  key={o}
-                  className="flex items-center justify-between rounded-lg border border-border bg-window px-3 py-2.5 text-[12.5px]"
-                >
-                  <span>{o}</span>
-                  <Toggle
-                    label={o}
-                    on={workloadOptions[o] !== false}
-                    onChange={(v) => setWorkloadOptions((s) => ({ ...s, [o]: v }))}
-                  />
-                </div>
-              ))}
-            </div>
-          </Card>
-          <Card>
-            <Label className="mb-2 text-foreground">SAVED CUSTOM PROFILES</Label>
-            <p className="text-xs text-muted-foreground">No saved profiles yet.</p>
-          </Card>
-        </>
-      )}
-
-      {mod === "POWER PLAN OPTIMIZATION" && (
-        <>
-          <Card>
-            <Label className="mb-3 text-cyan">AI POWER RECOMMENDATION</Label>
-            <div className="grid grid-cols-4 gap-3">
-              {[
-                ["RECOMMENDED PLAN:", "AI Max Performance"],
-                ["HARDWARE:", "Desktop · 8C/16T"],
-                ["WORKLOAD:", "Gaming"],
-                ["CURRENT ACTIVE:", "Balanced"],
+                ["ENGINE", "RAM Limiter (sample)"],
+                ["ACTIVE MODE", mode],
+                ["STRATEGY", "Working-set trim"],
+                ["STARTUP", "Off"],
+                ["STATUS", "Monitoring"],
               ].map(([k, v]) => (
                 <div key={k}>
                   <Label className="text-[9px]">{k}</Label>
                   <div className="text-[13px] font-semibold">{v}</div>
                 </div>
               ))}
-            </div>
-            <div className="mt-4 flex flex-wrap gap-2">
-              <Btn variant="primary" onClick={() => setPlan(true)}>
-                + Create power plan
-              </Btn>
-              <Btn onClick={() => simulate("Restore previous plan")}>Restore previous</Btn>
-              <Btn variant="ghost" onClick={() => simulate("Refresh")}>
-                Refresh
-              </Btn>
-            </div>
-          </Card>
-          <Card className="flex items-center justify-between">
-            <div>
-              <div className="text-[13px] font-bold">AUTO ENABLE ON WINDOWS STARTUP</div>
-              <p className="text-xs text-muted-foreground">Continuous Enforcement</p>
-            </div>
-            <Toggle label="Power plan startup policy" on={autoPower} onChange={setAutoPower} />
-          </Card>
-          <Card>
-            <div className="mb-3 flex items-start justify-between">
-              <div>
-                <div className="flex items-center gap-2">
-                  <Label className="text-foreground">ERROR OPTIMIZER AI</Label>
-                  <Badge tone="cyan">MACHINE-SPECIFIC POLICIES</Badge>
+              <Badge tone="cyan">RAM CONTROL: ON</Badge>
+            </Card>
+            <Card>
+              <Label as="h2" className="mb-1 text-foreground">
+                PROFILE / TARGET CONFIGURATION
+              </Label>
+              <p className="mb-3 text-xs text-muted-foreground">
+                Control mode is active from the top mode selector.
+              </p>
+              <div className="mb-3 flex flex-wrap items-center gap-3">
+                <Label>ACTIVE MODE</Label>
+                <Segmented
+                  label="RAM limiter mode"
+                  options={["AUTO", "LIGHT", "AGGRESSIVE"]}
+                  value={mode}
+                  onChange={setMode}
+                />
+                <span className="ml-auto flex items-center gap-2">
+                  <Label>FOREGROUND PROTECTION</Label>
+                  <Toggle label="Foreground protection" on={fg} onChange={setFg} />
+                </span>
+              </div>
+              <div className="mb-2 flex items-center justify-between">
+                <Label className="text-foreground">
+                  SEARCH & SELECT APPLICATION TO ADD CUSTOM RAM LIMIT
+                </Label>
+                <Btn size="sm" onClick={() => simulate("Add custom app")}>
+                  + Add custom app
+                </Btn>
+              </div>
+              <SearchBox
+                placeholder="Search running applications…"
+                value={query}
+                onChange={setQuery}
+              />
+            </Card>
+            {query && !"chrome.exe".includes(query.toLowerCase()) ? (
+              <EmptyState
+                title="No matching application"
+                sub="The sample list only contains chrome.exe. Nothing on this PC is enumerated."
+                action={<Btn onClick={() => setQuery("")}>Clear search</Btn>}
+              />
+            ) : (
+              <RamLimiterPanel
+                value={limit}
+                onChange={setLimit}
+                enforced={enforced}
+                onEnforce={() => {
+                  setEnforced(limit);
+                  simulate(`Enforce ${limit.toFixed(2)} GB limit for chrome.exe`);
+                }}
+                mode={mode}
+                foreground={fg}
+              />
+            )}
+            <Card>
+              <Label className="mb-2 text-foreground">CONFIGURED CUSTOM TARGETS</Label>
+              <div
+                className="grid items-center gap-3 rounded-lg border border-border bg-window px-3 py-2 text-[12.5px]"
+                style={{ gridTemplateColumns: "minmax(0,1fr) 160px auto" }}
+              >
+                <span className="font-semibold">Discord.exe</span>
+                <Bar value={(1 / RAM_MAX_GB) * 100} />
+                <span className="text-right font-mono text-[11.5px] text-muted-foreground">
+                  1.00 GB limit
+                </span>
+              </div>
+            </Card>
+            <Card>
+              <Label className="mb-2 text-foreground">CURRENTLY RUNNING WORKLOADS</Label>
+              <p className="text-xs text-muted-foreground">
+                No high-RAM applications currently running.
+              </p>
+            </Card>
+          </>
+        )}
+
+        {mod === "WORKLOAD OPTIMIZATION" && (
+          <>
+            <Card>
+              <Label className="mb-2 text-foreground">CURRENTLY RUNNING WORKLOADS</Label>
+              <div className="flex items-center gap-3 rounded-lg border border-dashed border-border-strong p-4">
+                <span className="text-xl">🎮</span>
+                <div>
+                  <div className="text-[13px] font-bold">NO SUPPORTED WORKLOAD RUNNING</div>
+                  <p className="text-xs text-muted-foreground">
+                    Launch any supported game, emulator, creative tool, or video AI workload to
+                    activate its profile.
+                  </p>
                 </div>
-                <p className="mt-1 text-xs text-muted-foreground">
-                  Machine-specific AI power schemes calibrated for the sample processor and
-                  workload.
-                </p>
               </div>
-              <div className="flex gap-2">
-                <Btn size="sm" onClick={() => simulate("AI Battery Efficiency")}>
-                  AI battery efficiency
-                </Btn>
-                <Btn size="sm" variant="primary" onClick={() => simulate("AI Max Performance")}>
-                  AI max performance
+            </Card>
+            <Card>
+              <Label className="mb-3 text-foreground">INSTALLED WORKLOAD INVENTORY</Label>
+              <div className="mb-3 flex items-center justify-between">
+                <Chips
+                  options={["ALL", "GAMES", "CREATIVE", "VIDEO AI", "EMULATORS"]}
+                  value={inv}
+                  onChange={setInv}
+                />
+                <Btn size="sm" onClick={() => simulate("Add custom app")}>
+                  + Add custom app
                 </Btn>
               </div>
-            </div>
-          </Card>
-          <Card>
-            <div className="mb-3 flex items-center gap-2">
-              <Label className="text-foreground">WINDOWS POWER PLANS</Label>
-              <Badge tone="warning">SAMPLE PLANS</Badge>
-            </div>
-            <div className="space-y-1.5">
-              {["Balanced", "High performance", "Ultimate Performance", "Power saver"].map(
-                (p, i) => (
+              <div className="grid grid-cols-3 gap-2">
+                {[
+                  ["Valorant", "GAMES"],
+                  ["Counter-Strike 2", "GAMES"],
+                  ["After Effects", "CREATIVE"],
+                  ["DaVinci Resolve", "CREATIVE"],
+                  ["Topaz Video AI", "VIDEO AI"],
+                  ["MSI App Player 5", "EMULATORS"],
+                ]
+                  .filter((x) => inv === "ALL" || x[1] === inv)
+                  .map(([n, c]) => (
+                    <div
+                      key={n}
+                      className="flex items-center justify-between rounded-lg border border-border bg-window px-3 py-2.5 text-[12.5px]"
+                    >
+                      <span className="font-semibold">{n}</span>
+                      <Badge>{c}</Badge>
+                    </div>
+                  ))}
+              </div>
+              <Btn
+                size="sm"
+                variant="ghost"
+                className="mt-3"
+                onClick={() => simulate("Force rescan inventory")}
+              >
+                Force rescan inventory
+              </Btn>
+            </Card>
+            <Card>
+              <div className="mb-3 flex items-center justify-between">
+                <Label className="text-foreground">SELECTED TARGET CONFIGURATION</Label>
+                <Btn size="sm" variant="primary" onClick={() => simulate("Save profile")}>
+                  Save profile
+                </Btn>
+              </div>
+              <div className="grid grid-cols-2 gap-2">
+                {[
+                  "Foreground CPU priority boost",
+                  "GPU preference: High performance",
+                  "Suspend background updaters",
+                  "Standby memory refresh on launch",
+                ].map((o) => (
                   <div
-                    key={p}
+                    key={o}
                     className="flex items-center justify-between rounded-lg border border-border bg-window px-3 py-2.5 text-[12.5px]"
                   >
-                    <span>{p}</span>
-                    {i === 0 ? (
-                      <Badge tone="success">ACTIVE</Badge>
-                    ) : (
-                      <Btn size="sm" variant="ghost" onClick={() => simulate(`Activate ${p}`)}>
-                        Activate
-                      </Btn>
-                    )}
+                    <span>{o}</span>
+                    <Toggle
+                      label={o}
+                      on={workloadOptions[o] !== false}
+                      onChange={(v) => setWorkloadOptions((s) => ({ ...s, [o]: v }))}
+                    />
                   </div>
-                ),
-              )}
-            </div>
-          </Card>
-        </>
-      )}
+                ))}
+              </div>
+            </Card>
+            <Card>
+              <Label className="mb-2 text-foreground">SAVED CUSTOM PROFILES</Label>
+              <p className="text-xs text-muted-foreground">No saved profiles yet.</p>
+            </Card>
+          </>
+        )}
+
+        {mod === "POWER PLAN OPTIMIZATION" && (
+          <>
+            <Card>
+              <Label className="mb-3 text-cyan">AI POWER RECOMMENDATION</Label>
+              <div className="grid grid-cols-4 gap-3">
+                {[
+                  ["RECOMMENDED PLAN:", "AI Max Performance"],
+                  ["HARDWARE:", "Desktop · 8C/16T"],
+                  ["WORKLOAD:", "Gaming"],
+                  ["CURRENT ACTIVE:", "Balanced"],
+                ].map(([k, v]) => (
+                  <div key={k}>
+                    <Label className="text-[9px]">{k}</Label>
+                    <div className="text-[13px] font-semibold">{v}</div>
+                  </div>
+                ))}
+              </div>
+              <div className="mt-4 flex flex-wrap gap-2">
+                <Btn variant="primary" onClick={() => setPlan(true)}>
+                  + Create power plan
+                </Btn>
+                <Btn onClick={() => simulate("Restore previous plan")}>Restore previous</Btn>
+                <Btn variant="ghost" onClick={() => simulate("Refresh")}>
+                  Refresh
+                </Btn>
+              </div>
+            </Card>
+            <Card className="flex items-center justify-between">
+              <div>
+                <div className="text-[13px] font-bold">AUTO ENABLE ON WINDOWS STARTUP</div>
+                <p className="text-xs text-muted-foreground">Continuous Enforcement</p>
+              </div>
+              <Toggle label="Power plan startup policy" on={autoPower} onChange={setAutoPower} />
+            </Card>
+            <Card>
+              <div className="mb-3 flex items-start justify-between">
+                <div>
+                  <div className="flex items-center gap-2">
+                    <Label className="text-foreground">ERROR OPTIMIZER AI</Label>
+                    <Badge tone="cyan">MACHINE-SPECIFIC POLICIES</Badge>
+                  </div>
+                  <p className="mt-1 text-xs text-muted-foreground">
+                    Machine-specific AI power schemes calibrated for the sample processor and
+                    workload.
+                  </p>
+                </div>
+                <div className="flex gap-2">
+                  <Btn size="sm" onClick={() => simulate("AI Battery Efficiency")}>
+                    AI battery efficiency
+                  </Btn>
+                  <Btn size="sm" variant="primary" onClick={() => simulate("AI Max Performance")}>
+                    AI max performance
+                  </Btn>
+                </div>
+              </div>
+            </Card>
+            <Card>
+              <div className="mb-3 flex items-center gap-2">
+                <Label className="text-foreground">WINDOWS POWER PLANS</Label>
+                <Badge tone="warning">SAMPLE PLANS</Badge>
+              </div>
+              <div className="space-y-1.5">
+                {["Balanced", "High performance", "Ultimate Performance", "Power saver"].map(
+                  (p, i) => (
+                    <div
+                      key={p}
+                      className="flex items-center justify-between rounded-lg border border-border bg-window px-3 py-2.5 text-[12.5px]"
+                    >
+                      <span>{p}</span>
+                      {i === 0 ? (
+                        <Badge tone="success">ACTIVE</Badge>
+                      ) : (
+                        <Btn size="sm" variant="ghost" onClick={() => simulate(`Activate ${p}`)}>
+                          Activate
+                        </Btn>
+                      )}
+                    </div>
+                  ),
+                )}
+              </div>
+            </Card>
+          </>
+        )}
       </div>
       <SimNotice />
       <Modal
@@ -449,7 +449,6 @@ export function AiOptimizationPage() {
     </div>
   );
 }
-
 
 /* ── RAM Limiter panel: slider + numeric field always share one value ── */
 const RAM_MIN_GB = 0.5;
@@ -559,7 +558,10 @@ function RamLimiterPanel({
               <span>LIMIT IN CONTEXT OF {SYSTEM_RAM_GB} GB SYSTEM MEMORY</span>
               <span>{share.toFixed(1)}%</span>
             </div>
-            <div className="eo-ram-context" style={{ "--share": `${share}%` } as React.CSSProperties}>
+            <div
+              className="eo-ram-context"
+              style={{ "--share": `${share}%` } as React.CSSProperties}
+            >
               <span />
             </div>
           </div>
@@ -621,7 +623,12 @@ function RamLimiterPanel({
         </div>
         <div>
           <Label className="text-[9px]">FOREGROUND SHIELD</Label>
-          <div className={cn("flex items-center gap-1 font-semibold", foreground ? "text-success" : "text-warning")}>
+          <div
+            className={cn(
+              "flex items-center gap-1 font-semibold",
+              foreground ? "text-success" : "text-warning",
+            )}
+          >
             <ShieldCheck aria-hidden="true" className="h-3.5 w-3.5" />
             {foreground ? "Protected while in focus" : "Off — limit applies in focus"}
           </div>
@@ -868,7 +875,15 @@ function Rng({ d = 60, label = "Setting level" }: { d?: number; label?: string }
   const [v, setV] = useState(d);
   return (
     <div className="flex w-64 items-center gap-2">
-      <RangeSlider className="flex-1" label={label} value={v} onChange={setV} min={0} max={100} step={1} />
+      <RangeSlider
+        className="flex-1"
+        label={label}
+        value={v}
+        onChange={setV}
+        min={0}
+        max={100}
+        step={1}
+      />
       <span className="w-8 text-right font-mono text-[11px] tabular-nums">{v}</span>
     </div>
   );
