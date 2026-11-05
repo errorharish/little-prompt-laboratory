@@ -538,10 +538,10 @@ input[type="range"] { accent-color: var(--cyan); }
 
 /* ── Auto Optimize maintenance engine ── */
 .eo-status-pill { display: inline-flex; align-items: center; gap: 6px; height: 20px; padding: 0 8px; border-radius: 999px; border: 1px solid var(--tone-border, var(--border)); background: var(--tone-bg, var(--window)); color: var(--tone, var(--muted-foreground)); font-size: 10px; font-weight: 800; letter-spacing: .08em; text-transform: uppercase; transition: color var(--duration-control) var(--ease-out), background-color var(--duration-control) var(--ease-out), border-color var(--duration-control) var(--ease-out); }
-[data-tone="success"] { --tone: var(--success); }
-[data-tone="cyan"] { --tone: var(--cyan); }
-[data-tone="warning"] { --tone: var(--warning); }
-[data-tone="muted"] { --tone: var(--muted-foreground); }
+:is(.eo-status-pill, .eo-auto-chip)[data-tone="success"] { --tone: var(--success); }
+:is(.eo-status-pill, .eo-auto-chip)[data-tone="cyan"] { --tone: var(--cyan); }
+:is(.eo-status-pill, .eo-auto-chip)[data-tone="warning"] { --tone: var(--warning); }
+:is(.eo-status-pill, .eo-auto-chip)[data-tone="muted"] { --tone: var(--muted-foreground); }
 .eo-status-pill, .eo-auto-chip { --tone-border: color-mix(in oklab, var(--tone) 35%, transparent); --tone-bg: color-mix(in oklab, var(--tone) 10%, transparent); }
 .eo-status-dot { height: 6px; width: 6px; border-radius: 50%; background: currentColor; box-shadow: 0 0 0 3px color-mix(in oklab, currentColor 18%, transparent); }
 .eo-status-pill[data-tone="cyan"] .eo-status-dot { animation: eo-pulse 1s ease-in-out infinite; }
