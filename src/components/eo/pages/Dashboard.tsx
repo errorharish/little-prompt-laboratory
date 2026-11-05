@@ -53,7 +53,6 @@ import { CountUp, ScoreRing } from "../controls";
 import { AutoOptimizePanel } from "../AutoOptimizePanel";
 import { HW } from "@/lib/eo/data";
 import { SCORE_CATEGORIES, overallScore, scoreStatus } from "@/lib/eo/score";
-import { cn } from "@/lib/utils";
 
 const TILES = [
   {
