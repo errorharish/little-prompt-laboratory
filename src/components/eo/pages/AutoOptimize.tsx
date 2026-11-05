@@ -1,26 +1,33 @@
-// AutoOptimizeView — recurring maintenance engine: task selection, schedule, lifecycle,
-// safety preferences, simulated lifecycle events and history. Prototype only.
-import { useEffect, useMemo, useRef, useState, type ReactNode } from "react";
+// AutoOptimizeView — compact settings workspace for the recurring maintenance engine.
+// Primary view: master switch, task selection, interval, startup preferences, save.
+// Secondary options live under Advanced settings. Prototype only — every run is simulated.
+import { useEffect, useMemo, useRef, useState, type ComponentType } from "react";
+import { useNavigate } from "@tanstack/react-router";
 import {
   ChevronDown,
+  Cpu,
+  Files,
+  Globe,
+  MemoryStick,
   Pause,
   Play,
   Power,
   PowerOff,
   RotateCcw,
   Save,
-  ShieldCheck,
   Square,
   Trash2,
   Zap,
 } from "lucide-react";
 import {
+  BackLink,
   Badge,
   Btn,
   Card,
   Check,
+  Details,
   EmptyState,
-  Label,
+  Modal,
   PageHeader,
   SectionTitle,
   SimNotice,
@@ -39,50 +46,63 @@ import {
   validateCustomInterval,
   type AutoConfig,
   type IntervalUnit,
-  type MaintRisk,
+  type MaintCategory,
 } from "@/lib/eo/autoOptimize";
 import { cn } from "@/lib/utils";
 
-const RISK_TONE: Record<MaintRisk, "success" | "warning"> = {
-  SAFE: "success",
-  LOW: "success",
-  CONFIRM: "warning",
+const CAT_ICON: Record<MaintCategory, ComponentType<{ className?: string }>> = {
+  TEMP: Files,
+  MEMORY: MemoryStick,
+  BROWSER: Globe,
+  RECYCLE: Trash2,
+  SYSTEM: Cpu,
 };
-const RISK_LABEL: Record<MaintRisk, string> = {
-  SAFE: "SAFE",
-  LOW: "LOW RISK",
-  CONFIRM: "PERMANENT",
-};
-const PRESET_LABELS = PRESET_INTERVALS.map((m) => (m === 60 ? "60 min" : `${m} min`));
+const PRESET_LABELS = PRESET_INTERVALS.map((m) => `${m} min`);
 const BROWSERS = ["Chrome", "Edge", "Firefox"];
 
 /** Fields saved through Save & apply (enable / pause are immediate controls). */
 const comparable = ({ enabled: _e, paused: _p, ...rest }: AutoConfig) => JSON.stringify(rest);
 
+/** Unsaved edits survive leaving the page (sidebar, Back) until saved or discarded. */
+let pendingDraft: AutoConfig | null = null;
+
 export function AutoOptimizePage() {
   const s = useAutoOptimize();
   const now = useNow();
-  const [draft, setDraft] = useState<AutoConfig>(s.config);
+  const navigate = useNavigate();
+  const [draft, setDraft] = useState<AutoConfig>(() => pendingDraft ?? s.config);
   const dirty = comparable(draft) !== comparable(s.config);
-  // Adopt the stored configuration when it loads or changes elsewhere, unless you are editing.
   const dirtyRef = useRef(dirty);
   dirtyRef.current = dirty;
+  const draftRef = useRef(draft);
+  draftRef.current = draft;
+  // Adopt the stored configuration when it loads or changes elsewhere, unless you are editing.
   useEffect(() => {
     if (!dirtyRef.current) setDraft(s.config);
   }, [s.config]);
+  useEffect(
+    () => () => {
+      pendingDraft = dirtyRef.current ? draftRef.current : null;
+    },
+    [],
+  );
+  const [leaving, setLeaving] = useState(false);
 
   const presetIdx = PRESET_INTERVALS.indexOf(
     draft.intervalMin as (typeof PRESET_INTERVALS)[number],
   );
   const [custom, setCustom] = useState(presetIdx === -1);
-  const [customText, setCustomText] = useState(String(draft.intervalMin));
-  const [unit, setUnit] = useState<IntervalUnit>("minutes");
+  const [unit, setUnit] = useState<IntervalUnit>(
+    presetIdx === -1 && draft.intervalMin % 60 === 0 ? "hours" : "minutes",
+  );
+  const [customText, setCustomText] = useState(
+    String(presetIdx === -1 && draft.intervalMin % 60 === 0 ? draft.intervalMin / 60 : draft.intervalMin),
+  );
   useEffect(() => {
-    if (
-      PRESET_INTERVALS.indexOf(s.config.intervalMin as (typeof PRESET_INTERVALS)[number]) === -1
-    ) {
+    if (dirtyRef.current) return;
+    const m = s.config.intervalMin;
+    if (PRESET_INTERVALS.indexOf(m as (typeof PRESET_INTERVALS)[number]) === -1) {
       setCustom(true);
-      const m = s.config.intervalMin;
       if (m % 60 === 0) {
         setUnit("hours");
         setCustomText(String(m / 60));
@@ -99,51 +119,40 @@ export function AutoOptimizePage() {
     });
   const status = engineStatus(s);
   const save = () => {
-    if (intervalError) return;
+    if (intervalError) return false;
     autoOptimize.saveConfig({ ...draft, enabled: s.config.enabled, paused: s.config.paused });
+    pendingDraft = null;
+    return true;
   };
-  const nextPreview = s.config.enabled && !s.config.paused ? s.nextAt : null;
+  const discard = () => {
+    pendingDraft = null;
+    setDraft(s.config);
+  };
+  const goBack = () => {
+    if (dirty) setLeaving(true);
+    else navigate({ to: "/" });
+  };
+
+  const nextRun = s.run
+    ? "Running…"
+    : status === "Paused" && s.pausedRemaining !== null
+      ? `Paused · ${formatCountdown(s.pausedRemaining)} left`
+      : status === "Enabled" && s.nextAt && now
+        ? `${clockTime(s.nextAt)} · in ${formatCountdown(s.nextAt - now)}`
+        : "Not scheduled";
 
   return (
-    <div className="space-y-3.5 pb-16">
+    <div className="space-y-4">
       <PageHeader
+        back={<BackLink onClick={goBack} />}
         title="Auto Optimize"
-        badges={
-          <>
-            <Badge tone="cyan">MAINTENANCE ENGINE</Badge>
-            <Badge tone="warning">SIMULATED</Badge>
-          </>
-        }
-        sub="Choose which maintenance tasks run automatically, and how often. Runs are simulated in this prototype."
-        actions={
-          <>
-            <Btn
-              variant="ghost"
-              disabled={!!s.run || !s.config.tasks.length}
-              onClick={autoOptimize.runNow}
-            >
-              <Zap aria-hidden="true" className="h-3.5 w-3.5" /> Run now
-            </Btn>
-            {s.config.enabled &&
-              (s.config.paused ? (
-                <Btn onClick={autoOptimize.resume}>
-                  <Play aria-hidden="true" className="h-3.5 w-3.5" /> Resume
-                </Btn>
-              ) : (
-                <Btn onClick={autoOptimize.pause}>
-                  <Pause aria-hidden="true" className="h-3.5 w-3.5" /> Pause
-                </Btn>
-              ))}
-          </>
-        }
+        badges={<Badge tone="warning">SIMULATED</Badge>}
+        sub="Recurring maintenance for the tasks you choose."
       />
 
-      {/* Master control + live status */}
-      <Card className="eo-hero">
-        <div
-          className="eo-auto-master grid items-center gap-4"
-          style={{ gridTemplateColumns: "auto minmax(0,1fr) auto" }}
-        >
+      {/* Master switch · interval · next run · last run · run controls */}
+      <Card className="eo-hero py-3">
+        <div className="eo-ao-master">
           <Toggle
             on={s.config.enabled}
             label="Auto Optimize"
@@ -151,91 +160,85 @@ export function AutoOptimizePage() {
               if (on) {
                 if (!draft.tasks.length || intervalError) return;
                 autoOptimize.saveConfig({ ...draft, enabled: true, paused: false });
+                pendingDraft = null;
               } else autoOptimize.disable();
             }}
           />
           <div className="min-w-0">
             <div className="flex flex-wrap items-center gap-2">
-              <span className="text-[14px] font-black uppercase">Auto Optimize</span>
+              <span className="text-[13px] font-black uppercase">Auto Optimize</span>
               <StatusPill status={status} />
               {s.power !== "on" && (
                 <Badge tone="warning">
                   {s.power === "background"
-                    ? "BACKGROUND AGENT · SIMULATED"
+                    ? "BACKGROUND · SIMULATED"
                     : s.power === "app-closed"
                       ? "APP CLOSED · SIMULATED"
                       : "PC OFF · SIMULATED"}
                 </Badge>
               )}
             </div>
-            <p className="mt-0.5 text-[11.5px] text-muted-foreground">
+            <p className="truncate text-[11.5px] text-muted-foreground">
               {!draft.tasks.length
-                ? "Select at least one task below to enable automatic maintenance."
+                ? "Select at least one task to turn it on."
                 : s.config.enabled
-                  ? `${formatInterval(s.config.intervalMin)} · ${s.config.tasks.length} tasks · ${s.config.profile} profile`
-                  : "Off — nothing runs automatically. Turning it on saves the settings below."}
+                  ? `${s.config.tasks.length} tasks selected`
+                  : "Off — nothing runs automatically."}
             </p>
           </div>
-          <dl className="eo-auto-strip">
+          <dl className="eo-ao-facts">
             <div>
-              <dt>Next run</dt>
-              <dd className="font-mono tabular-nums">
-                {s.run
-                  ? "Running…"
-                  : status === "Paused" && s.pausedRemaining !== null
-                    ? `Paused · ${formatCountdown(s.pausedRemaining)}`
-                    : status === "Enabled" && s.nextAt && now
-                      ? formatCountdown(s.nextAt - now)
-                      : "—"}
-              </dd>
+              <dt>Interval</dt>
+              <dd>{formatInterval(s.config.intervalMin).replace("Every ", "")}</dd>
             </div>
             <div>
-              <dt>At</dt>
-              <dd>{status === "Enabled" ? clockTime(s.nextAt) : "—"}</dd>
+              <dt>Next run</dt>
+              <dd className="font-mono">{nextRun}</dd>
             </div>
             <div>
               <dt>Last run</dt>
               <dd>{relTime(s.lastRunAt, now)}</dd>
             </div>
           </dl>
-        </div>
-        {s.run && (
-          <div className="mt-3 border-t border-border pt-3" aria-live="polite">
-            <div className="mb-1.5 flex items-center justify-between text-[10.5px] font-bold text-cyan">
-              <span>{s.run.trigger.toUpperCase()} RUN IN PROGRESS · SIMULATED</span>
-              <Btn size="sm" variant="ghost" onClick={autoOptimize.cancel}>
-                <Square aria-hidden="true" className="h-3 w-3" /> Cancel run
+          <div className="flex items-center gap-2">
+            {s.run ? (
+              <Btn variant="danger" onClick={autoOptimize.cancel}>
+                <Square aria-hidden="true" className="h-3 w-3" /> Cancel
               </Btn>
-            </div>
-            <ul className="grid grid-cols-2 gap-1">
-              {s.run.items.map((i) => (
-                <li key={i.taskId} className="eo-run-row" data-state={i.state}>
-                  <span aria-hidden="true" className="eo-run-dot" />
-                  <span className="min-w-0 flex-1 truncate">{i.name}</span>
-                  <span className="eo-run-state">
-                    {i.state === "Running" ? "Working…" : i.state}
-                  </span>
-                </li>
+            ) : (
+              <Btn
+                variant="secondary"
+                disabled={!s.config.tasks.length}
+                onClick={autoOptimize.runNow}
+              >
+                <Zap aria-hidden="true" className="h-3.5 w-3.5" /> Run now
+              </Btn>
+            )}
+            {s.config.enabled &&
+              (s.config.paused ? (
+                <Btn variant="ghost" onClick={autoOptimize.resume}>
+                  <Play aria-hidden="true" className="h-3.5 w-3.5" /> Resume
+                </Btn>
+              ) : (
+                <Btn variant="ghost" onClick={autoOptimize.pause}>
+                  <Pause aria-hidden="true" className="h-3.5 w-3.5" /> Pause
+                </Btn>
               ))}
-            </ul>
           </div>
-        )}
+        </div>
+        {s.run && <RunStrip />}
       </Card>
 
-      <div
-        className="eo-auto-layout grid items-start gap-3.5"
-        style={{ gridTemplateColumns: "minmax(0,1.45fr) minmax(0,1fr)" }}
-      >
+      <div className="eo-ao-layout">
         {/* Maintenance tasks */}
         <Card>
           <SectionTitle
             title="MAINTENANCE TASKS"
             badge={
               <Badge tone="cyan">
-                {draft.tasks.length} OF {MAINT_TASKS.length}
+                {draft.tasks.length}/{MAINT_TASKS.length}
               </Badge>
             }
-            sub="Only checked tasks ever run. Browser cleanup removes cache only."
             right={
               <>
                 <Btn
@@ -258,17 +261,28 @@ export function AutoOptimizePage() {
               </>
             }
           />
-          <div className="space-y-3">
-            {MAINT_CATEGORIES.map((cat) => {
-              const items = MAINT_TASKS.filter((t) => t.category === cat.key);
-              const on = items.filter((t) => draft.tasks.includes(t.id)).length;
-              return (
-                <section
-                  key={cat.key}
-                  aria-labelledby={`eo-cat-${cat.key}`}
-                  className="eo-task-group"
-                >
-                  <div className="eo-task-group-head">
+          {MAINT_CATEGORIES.map((cat) => {
+            const items = MAINT_TASKS.filter((t) => t.category === cat.key);
+            const on = items.filter((t) => draft.tasks.includes(t.id)).length;
+            const Icon = CAT_ICON[cat.key];
+            return (
+              <section key={cat.key} aria-labelledby={`eo-cat-${cat.key}`} className="eo-ao-group">
+                <div className="eo-ao-group-head">
+                  <span aria-hidden="true" className="eo-ao-icon">
+                    <Icon className="h-3.5 w-3.5" />
+                  </span>
+                  <h3 id={`eo-cat-${cat.key}`} className="min-w-0 flex-1 truncate text-[12px] font-bold">
+                    {cat.title}
+                    {cat.key === "BROWSER" && (
+                      <span className="ml-2 text-[10px] font-semibold text-success">
+                        Cache only · logins and history kept
+                      </span>
+                    )}
+                  </h3>
+                  <span className="text-[10.5px] font-bold text-subtle tabular-nums">
+                    {on}/{items.length}
+                  </span>
+                  {items.length > 1 && (
                     <Check
                       label={`Select all ${cat.title}`}
                       on={on === items.length}
@@ -280,42 +294,30 @@ export function AutoOptimizePage() {
                         })
                       }
                     />
-                    <div className="min-w-0 flex-1">
-                      <h3 id={`eo-cat-${cat.key}`} className="text-[12px] font-bold">
-                        {cat.title}
-                      </h3>
-                      <p className="truncate text-[10.5px] text-muted-foreground">{cat.sub}</p>
-                    </div>
-                    <span className="text-[10px] font-bold text-subtle tabular-nums">
-                      {on}/{items.length}
-                    </span>
-                  </div>
-                  <ul>
-                    {items.map((t) => (
-                      <TaskRow
-                        key={t.id}
-                        id={t.id}
-                        on={draft.tasks.includes(t.id)}
-                        onToggle={() => toggleTask(t.id)}
-                        browserOpen={!!t.browser && s.openBrowsers.includes(t.browser)}
-                        recycleAsk={t.id === "recycle-bin" && draft.recycleConfirm}
-                        lowSkipped={t.risk === "LOW" && draft.safeOnly}
-                      />
-                    ))}
-                  </ul>
-                </section>
-              );
-            })}
-          </div>
+                  )}
+                </div>
+                <ul>
+                  {items.map((t) => (
+                    <TaskRow
+                      key={t.id}
+                      id={t.id}
+                      on={draft.tasks.includes(t.id)}
+                      onToggle={() => toggleTask(t.id)}
+                      browserOpen={!!t.browser && s.openBrowsers.includes(t.browser)}
+                      recycleAsk={t.id === "recycle-bin" && draft.recycleConfirm}
+                      lowSkipped={t.risk === "LOW" && draft.safeOnly}
+                    />
+                  ))}
+                </ul>
+              </section>
+            );
+          })}
         </Card>
 
-        <div className="space-y-3.5">
-          {/* Schedule */}
+        {/* Schedule · startup · advanced · save */}
+        <div className="eo-ao-side">
           <Card>
-            <SectionTitle
-              title="SCHEDULE"
-              sub="How often selected tasks run while Auto Optimize is on."
-            />
+            <SectionTitle title="SCHEDULE" />
             <Segmented
               label="Schedule interval"
               fill
@@ -334,14 +336,11 @@ export function AutoOptimizePage() {
               }}
             />
             {custom && (
-              <div className="eo-swap mt-3">
-                <label
-                  htmlFor="eo-custom-interval"
-                  className="eo-label mb-1 block text-[9.5px] text-muted-foreground"
-                >
-                  CUSTOM INTERVAL · 1 MINUTE TO 24 HOURS
-                </label>
+              <div className="eo-swap mt-2.5">
                 <div className="flex items-center gap-2">
+                  <label htmlFor="eo-custom-interval" className="text-[11.5px] font-semibold">
+                    Every
+                  </label>
                   <input
                     id="eo-custom-interval"
                     inputMode="numeric"
@@ -354,7 +353,7 @@ export function AutoOptimizePage() {
                       if (r.ok) patch({ intervalMin: r.minutes });
                     }}
                     className={cn(
-                      "eo-input h-8 w-24 font-mono",
+                      "eo-input h-8 w-20 font-mono",
                       intervalError && "eo-input-invalid",
                     )}
                   />
@@ -375,252 +374,310 @@ export function AutoOptimizePage() {
                   role={intervalError ? "alert" : undefined}
                   className={cn(
                     "mt-1 text-[11px]",
-                    intervalError ? "text-destructive" : "text-muted-foreground",
+                    intervalError ? "text-destructive" : "text-subtle",
                   )}
                 >
-                  {intervalError ??
-                    `${formatInterval(draft.intervalMin)} · examples: 2 min, 45 min, 12 hours`}
+                  {intervalError ?? "1 minute to 24 hours, whole minutes."}
                 </p>
               </div>
             )}
-            <div className="mt-3 grid grid-cols-2 gap-2">
-              <div className="eo-mini-fact">
-                <span>Interval</span>
-                <b>{formatInterval(draft.intervalMin).replace("Every ", "")}</b>
-              </div>
-              <div className="eo-mini-fact">
-                <span>Next run</span>
-                <b>
-                  {dirty && s.config.enabled
-                    ? `≈ ${clockTime((now || 0) + draft.intervalMin * 60_000)} after save`
-                    : nextPreview
-                      ? clockTime(nextPreview)
-                      : "Not scheduled"}
-                </b>
-              </div>
-            </div>
-            <div className="mt-3">
-              <Label className="mb-1.5 text-[9.5px]">IF A RUN IS STILL IN PROGRESS</Label>
-              <Segmented
-                label="Overlap policy"
-                fill
-                options={["Skip next run", "Queue one run"]}
-                value={draft.overlap === "skip" ? "Skip next run" : "Queue one run"}
-                onChange={(v) => patch({ overlap: v === "Skip next run" ? "skip" : "queue" })}
-              />
-              <p className="mt-1 text-[10.5px] text-subtle">
-                Runs never overlap. At most one run waits in the queue.
-              </p>
-            </div>
-            <div className="mt-3">
-              <Label className="mb-1.5 text-[9.5px]">AUTOMATION PROFILE</Label>
-              <Segmented
-                label="Automation profile"
-                fill
-                options={["Light", "Balanced", "Thorough"]}
-                value={draft.profile}
-                onChange={(v) => patch({ profile: v as AutoConfig["profile"] })}
-              />
-            </div>
-          </Card>
 
-          {/* Lifecycle */}
-          <Card>
-            <SectionTitle
-              title="APPLICATION & WINDOWS"
-              sub="When Auto Optimize starts and stops."
-            />
-            <SettingRow
-              title="Run on application launch"
-              sub="Run eligible tasks once when the app opens."
-              control={
-                <Toggle
-                  on={draft.runOnLaunch}
-                  label="Run on application launch"
-                  onChange={(v) => patch({ runOnLaunch: v })}
-                />
-              }
-            />
-            <div className="eo-setting-row block">
-              <div className="text-[12.5px] font-semibold">When the application closes</div>
-              <div
-                role="radiogroup"
-                aria-label="When the application closes"
-                className="mt-2 space-y-1.5"
+            <div className="mt-4">
+              <span className="eo-ao-sub">Application & Windows</span>
+              <ToggleRow
+                title="Run on application launch"
+                sub="Runs selected tasks once when the app opens."
+                on={draft.runOnLaunch}
+                onChange={(v) => patch({ runOnLaunch: v })}
+              />
+              <ToggleRow
+                title="Continue in background after closing"
+                sub="Native app only: a background agent keeps the schedule."
+                on={draft.closeBehavior === "background"}
+                onChange={(v) => patch({ closeBehavior: v ? "background" : "stop" })}
+              />
+              <ToggleRow
+                title="Start with Windows"
+                sub="Native app only: starts after you sign in."
+                on={draft.runOnWindowsStartup}
+                onChange={(v) => patch({ runOnWindowsStartup: v })}
+              />
+            </div>
+
+            <div className="mt-2">
+              <Details
+                inline
+                title="ADVANCED SETTINGS"
+                hint={`${draft.overlap === "skip" ? "Skip" : "Queue"} overlap · ${draft.profile} · ${draft.safeOnly ? "safe only" : "all risks"}`}
               >
-                {(
-                  [
-                    ["stop", "Stop scheduling", "Nothing runs until you open the app again."],
-                    ["exit-run", "Run once, then stop", "Eligible tasks run a final time on exit."],
-                    [
-                      "background",
-                      "Keep running in background",
-                      "Native app: background agent continues the schedule.",
-                    ],
-                  ] as const
-                ).map(([v, t, d]) => (
-                  <button
-                    key={v}
-                    type="button"
-                    role="radio"
-                    aria-checked={draft.closeBehavior === v}
-                    onClick={() => patch({ closeBehavior: v })}
-                    className="eo-radio-card"
-                  >
-                    <span aria-hidden="true" className="eo-radio" />
-                    <span className="min-w-0">
-                      <span className="block text-[12px] font-bold">{t}</span>
-                      <span className="block text-[10.5px] text-muted-foreground">{d}</span>
-                    </span>
-                  </button>
-                ))}
-              </div>
+                <AdvancedSettings
+                  draft={draft}
+                  patch={patch}
+                  openBrowsers={s.openBrowsers}
+                  power={s.power}
+                />
+              </Details>
             </div>
-            <SettingRow
-              title="Start with Windows"
-              sub="Native app: the scheduler starts after you sign in to Windows."
-              control={
-                <Toggle
-                  on={draft.runOnWindowsStartup}
-                  label="Start with Windows"
-                  onChange={(v) => patch({ runOnWindowsStartup: v })}
-                />
-              }
-            />
-            {draft.runOnWindowsStartup && (
-              <div className="eo-swap pb-1">
-                <Label className="mb-1.5 text-[9.5px]">STARTUP MAINTENANCE POLICY</Label>
-                <Segmented
-                  label="Startup maintenance policy"
-                  fill
-                  options={[`Run after ${STARTUP_DELAY_MIN} min`, "Wait for next interval"]}
-                  value={
-                    draft.startupPolicy === "after-delay"
-                      ? `Run after ${STARTUP_DELAY_MIN} min`
-                      : "Wait for next interval"
-                  }
-                  onChange={(v) =>
-                    patch({ startupPolicy: v.startsWith("Run") ? "after-delay" : "next-interval" })
-                  }
-                />
-              </div>
-            )}
-            <p className="mt-2 text-[10.5px] text-subtle">
-              Shutdown and restart are never delayed. Nothing runs while the PC is off; the schedule
-              resumes after the next start.
-            </p>
-          </Card>
 
-          {/* Safety */}
-          <Card>
-            <SectionTitle
-              title="SAFETY PREFERENCES"
-              badge={<ShieldCheck aria-hidden="true" className="h-3.5 w-3.5 text-success" />}
-            />
-            <SettingRow
-              title="Unattended runs: safe tasks only"
-              sub="LOW-risk tasks run only when you press Run now."
-              control={
-                <Toggle
-                  on={draft.safeOnly}
-                  label="Unattended runs: safe tasks only"
-                  onChange={(v) => patch({ safeOnly: v })}
-                />
-              }
-            />
-            <SettingRow
-              title="Keep recent temporary files"
-              sub="Skip temp files changed in the last 24 hours."
-              control={
-                <Toggle
-                  on={draft.skipRecentTemp}
-                  label="Keep recent temporary files"
-                  onChange={(v) => patch({ skipRecentTemp: v })}
-                />
-              }
-            />
-            <SettingRow
-              title="Ask before emptying the Recycle Bin"
-              sub="Scheduled runs then skip the Recycle Bin — there is nobody to ask."
-              control={
-                <Toggle
-                  on={draft.recycleConfirm}
-                  label="Ask before emptying the Recycle Bin"
-                  onChange={(v) => patch({ recycleConfirm: v })}
-                />
-              }
-            />
-            <div className="eo-setting-row">
-              <div>
-                <div className="text-[12.5px] font-semibold">Running browsers</div>
-                <div className="text-[10.5px] text-muted-foreground">
-                  Always skipped, never closed. Locked files are always skipped.
-                </div>
-              </div>
-              <Badge tone="success">ALWAYS ON</Badge>
-            </div>
-            <div className="pt-2">
-              <Label className="mb-1.5 text-[9.5px]">SIMULATE OPEN BROWSERS</Label>
-              <div role="group" aria-label="Simulate open browsers" className="flex gap-1.5">
-                {BROWSERS.map((b) => {
-                  const open = s.openBrowsers.includes(b);
-                  return (
-                    <Btn
-                      key={b}
-                      size="sm"
-                      variant={open ? "secondary" : "ghost"}
-                      pressed={open}
-                      onClick={() =>
-                        autoOptimize.setOpenBrowsers(
-                          open ? s.openBrowsers.filter((x) => x !== b) : [...s.openBrowsers, b],
-                        )
-                      }
-                    >
-                      {b} {open ? "open" : "closed"}
-                    </Btn>
-                  );
-                })}
+            <div className="eo-ao-foot" data-dirty={dirty || undefined}>
+              <span className="min-w-0 truncate text-[11.5px] font-semibold" aria-live="polite">
+                {intervalError ? (
+                  <span className="text-destructive">{intervalError}</span>
+                ) : dirty ? (
+                  <span className="text-cyan">Unsaved changes</span>
+                ) : (
+                  <span className="text-subtle">All changes saved</span>
+                )}
+              </span>
+              <div className="flex shrink-0 gap-2">
+                {dirty && (
+                  <Btn size="sm" variant="ghost" onClick={discard}>
+                    <RotateCcw aria-hidden="true" className="h-3 w-3" /> Discard
+                  </Btn>
+                )}
+                <Btn
+                  size="sm"
+                  variant="primary"
+                  disabled={!dirty || !!intervalError}
+                  onClick={save}
+                >
+                  <Save aria-hidden="true" className="h-3 w-3" /> Save & apply
+                </Btn>
               </div>
             </div>
           </Card>
         </div>
       </div>
 
-      <LifecycleSimulator power={s.power} />
       <History entries={s.history} now={now} />
       <SimNotice>
-        PROTOTYPE: the schedule runs only while this tab is open. No files, browser data, Recycle
-        Bin, memory, service or Windows setting is read or changed. Lifecycle events are simulated.
+        PROTOTYPE: the schedule runs only while this tab is open. Nothing on this PC is read or
+        changed; background and Windows startup behaviour is simulated.
       </SimNotice>
 
-      {/* Save bar — only rendered while there is something to save */}
-      {dirty && (
-        <div className="eo-save-bar eo-swap" role="region" aria-label="Unsaved changes">
-          <span className="text-[12px] font-semibold">
-            {intervalError ? <span className="text-destructive">{intervalError}</span> : "You have unsaved changes"}
-          </span>
-          <div className="flex gap-2">
-            <Btn variant="ghost" onClick={() => setDraft(s.config)}>
-              <RotateCcw aria-hidden="true" className="h-3.5 w-3.5" /> Discard
+      <Modal
+        open={leaving}
+        onClose={() => setLeaving(false)}
+        title="Unsaved changes"
+        sub="Save your Auto Optimize settings before returning to the Dashboard?"
+        width="max-w-md"
+        icon={<Save className="h-4 w-4" />}
+        footer={
+          <>
+            <Btn variant="ghost" onClick={() => setLeaving(false)}>
+              Keep editing
             </Btn>
-            <Btn variant="primary" disabled={!!intervalError} onClick={save}>
-              <Save aria-hidden="true" className="h-3.5 w-3.5" /> Save & apply
+            <Btn
+              variant="secondary"
+              onClick={() => {
+                discard();
+                setLeaving(false);
+                navigate({ to: "/" });
+              }}
+            >
+              Discard
             </Btn>
-          </div>
-        </div>
-      )}
+            <Btn
+              variant="primary"
+              disabled={!!intervalError}
+              onClick={() => {
+                if (save()) {
+                  setLeaving(false);
+                  navigate({ to: "/" });
+                }
+              }}
+            >
+              Save & return
+            </Btn>
+          </>
+        }
+      >
+        <p className="text-[12.5px] text-muted-foreground">
+          Your saved schedule keeps running either way. Discarding only drops the edits you made
+          on this page.
+        </p>
+      </Modal>
     </div>
   );
 }
 
-function SettingRow({ title, sub, control }: { title: string; sub: string; control: ReactNode }) {
+function RunStrip() {
+  const s = useAutoOptimize();
+  const run = s.run;
+  if (!run) return null;
+  const done = run.items.filter((i) => i.state !== "Pending" && i.state !== "Running").length;
+  const current = run.items.find((i) => i.state === "Running");
   return (
-    <div className="eo-setting-row">
+    <div className="eo-swap mt-3 border-t border-border pt-3" aria-live="polite">
+      <div className="mb-2 flex items-center justify-between gap-3 text-[11px] font-bold">
+        <span className="text-cyan">
+          {run.trigger.toUpperCase()} RUN · SIMULATED · {done}/{run.items.length}
+        </span>
+        <span className="min-w-0 truncate text-muted-foreground">
+          {current ? `Working on ${current.name}…` : "Finishing…"}
+        </span>
+      </div>
+      <ul className="grid grid-cols-2 gap-1">
+        {run.items.map((i) => (
+          <li key={i.taskId} className="eo-run-row" data-state={i.state}>
+            <span aria-hidden="true" className="eo-run-dot" />
+            <span className="min-w-0 flex-1 truncate">{i.name}</span>
+            <span className="eo-run-state">{i.state === "Running" ? "Working…" : i.state}</span>
+          </li>
+        ))}
+      </ul>
+    </div>
+  );
+}
+
+function ToggleRow({
+  title,
+  sub,
+  on,
+  onChange,
+}: {
+  title: string;
+  sub: string;
+  on: boolean;
+  onChange: (v: boolean) => void;
+}) {
+  return (
+    <div className="eo-ao-toggle">
       <div className="min-w-0">
         <div className="text-[12.5px] font-semibold">{title}</div>
-        <div className="text-[10.5px] text-muted-foreground">{sub}</div>
+        <div className="truncate text-[11px] text-muted-foreground">{sub}</div>
       </div>
-      {control}
+      <Toggle on={on} label={title} onChange={onChange} />
+    </div>
+  );
+}
+
+function AdvancedSettings({
+  draft,
+  patch,
+  openBrowsers,
+  power,
+}: {
+  draft: AutoConfig;
+  patch: (p: Partial<AutoConfig>) => void;
+  openBrowsers: string[];
+  power: string;
+}) {
+  return (
+    <div className="space-y-3">
+      <div className="grid grid-cols-2 gap-2.5">
+        <div>
+          <span className="eo-ao-sub mb-1.5">If a run is in progress</span>
+          <Segmented
+            label="Overlap policy"
+            fill
+            options={["Skip", "Queue one"]}
+            value={draft.overlap === "skip" ? "Skip" : "Queue one"}
+            onChange={(v) => patch({ overlap: v === "Skip" ? "skip" : "queue" })}
+          />
+        </div>
+        <div>
+          <span className="eo-ao-sub mb-1.5">Profile</span>
+          <Segmented
+            label="Automation profile"
+            fill
+            options={["Light", "Balanced", "Thorough"]}
+            value={draft.profile}
+            onChange={(v) => patch({ profile: v as AutoConfig["profile"] })}
+          />
+        </div>
+      </div>
+      <div>
+        {draft.closeBehavior !== "background" && (
+          <ToggleRow
+            title="Run once when the app closes"
+            sub="Then stop until the app opens again."
+            on={draft.closeBehavior === "exit-run"}
+            onChange={(v) => patch({ closeBehavior: v ? "exit-run" : "stop" })}
+          />
+        )}
+        {draft.runOnWindowsStartup && (
+          <ToggleRow
+            title={`Run ${STARTUP_DELAY_MIN} min after Windows starts`}
+            sub="Off: wait for the next interval instead."
+            on={draft.startupPolicy === "after-delay"}
+            onChange={(v) => patch({ startupPolicy: v ? "after-delay" : "next-interval" })}
+          />
+        )}
+        <ToggleRow
+          title="Unattended runs: safe tasks only"
+          sub="Low-risk tasks run only on Run now."
+          on={draft.safeOnly}
+          onChange={(v) => patch({ safeOnly: v })}
+        />
+        <ToggleRow
+          title="Keep recent temporary files"
+          sub="Skip temp files changed in the last 24 hours."
+          on={draft.skipRecentTemp}
+          onChange={(v) => patch({ skipRecentTemp: v })}
+        />
+        <ToggleRow
+          title="Ask before emptying the Recycle Bin"
+          sub="Scheduled runs then skip it — nobody is there to ask."
+          on={draft.recycleConfirm}
+          onChange={(v) => patch({ recycleConfirm: v })}
+        />
+      </div>
+      <p className="text-[11px] text-subtle">
+        Running browsers are always skipped and never closed. Shutdown is never delayed; nothing
+        runs while the PC is off.
+      </p>
+      <div>
+        <span className="eo-ao-sub mb-1.5">Preview · simulate open browsers</span>
+        <div role="group" aria-label="Simulate open browsers" className="flex gap-1.5">
+          {BROWSERS.map((b) => {
+            const open = openBrowsers.includes(b);
+            return (
+              <Btn
+                key={b}
+                size="sm"
+                variant={open ? "secondary" : "ghost"}
+                pressed={open}
+                onClick={() =>
+                  autoOptimize.setOpenBrowsers(
+                    open ? openBrowsers.filter((x) => x !== b) : [...openBrowsers, b],
+                  )
+                }
+              >
+                {b} {open ? "open" : "closed"}
+              </Btn>
+            );
+          })}
+        </div>
+      </div>
+      <div>
+        <span className="eo-ao-sub mb-1.5">
+          Preview · simulate lifecycle ·{" "}
+          <span className="text-foreground">
+            {power === "on"
+              ? "app open"
+              : power === "background"
+                ? "background agent"
+                : power === "app-closed"
+                  ? "app closed"
+                  : "PC off"}
+          </span>
+        </span>
+        <div className="eo-ao-sim">
+          <button type="button" onClick={autoOptimize.simulateLaunch}>
+            <Power aria-hidden="true" className="h-3.5 w-3.5 text-cyan" /> App launch
+          </button>
+          <button type="button" onClick={autoOptimize.simulateClose}>
+            <PowerOff aria-hidden="true" className="h-3.5 w-3.5 text-cyan" /> App close
+          </button>
+          <button type="button" onClick={autoOptimize.simulateWindowsStartup}>
+            <Play aria-hidden="true" className="h-3.5 w-3.5 text-cyan" /> Windows startup
+          </button>
+          <button type="button" onClick={autoOptimize.simulateShutdown}>
+            <Square aria-hidden="true" className="h-3.5 w-3.5 text-cyan" /> Shutdown / restart
+          </button>
+        </div>
+      </div>
     </div>
   );
 }
@@ -644,33 +701,31 @@ function TaskRow({
   const [open, setOpen] = useState(false);
   if (!t) return null;
   const note = browserOpen
-    ? `${t.browser} is open — will be skipped`
+    ? `${t.browser} is open — skipped`
     : recycleAsk
-      ? "Skipped on scheduled runs while confirmation is on"
+      ? "Skipped on scheduled runs"
       : lowSkipped
-        ? "Runs only on Run now (safe-only mode)"
+        ? "Run now only"
         : null;
   return (
-    <li className="eo-task-row" data-selected={on || undefined}>
-      <div className="flex items-center gap-2.5">
+    <li className="eo-ao-row" data-selected={on || undefined}>
+      <div className="eo-ao-row-main">
         <Check label={t.name} on={on} onChange={onToggle} />
         <div className="min-w-0 flex-1">
-          <div className="flex items-center gap-2">
-            <span className="truncate text-[12px] font-semibold">{t.name}</span>
-            {t.category === "BROWSER" && (
-              <span className="text-[9.5px] font-bold text-success">CACHE ONLY</span>
-            )}
+          <div className="flex min-w-0 items-baseline gap-2">
+            <span className="shrink-0 text-[12px] font-semibold">{t.name}</span>
+            <span className="truncate text-[11px] text-muted-foreground">{t.desc}</span>
           </div>
-          <p className="truncate text-[10.5px] text-muted-foreground">{t.desc}</p>
         </div>
         {on && note && (
-          <span className="hidden text-[10px] font-semibold text-warning xl:inline">{note}</span>
+          <span className="shrink-0 text-[10.5px] font-semibold text-warning">{note}</span>
         )}
-        <Badge tone={RISK_TONE[t.risk]}>{RISK_LABEL[t.risk]}</Badge>
+        {t.risk === "LOW" && <Badge tone="warning">LOW RISK</Badge>}
+        {t.risk === "CONFIRM" && <Badge tone="danger">PERMANENT</Badge>}
         <Btn
           size="sm"
           variant="ghost"
-          className="w-7 px-0"
+          className="h-6 w-6 border-transparent px-0"
           label={`${open ? "Hide" : "Show"} details for ${t.name}`}
           expanded={open}
           controls={`eo-task-${t.id}`}
@@ -683,74 +738,12 @@ function TaskRow({
         </Btn>
       </div>
       {open && (
-        <div id={`eo-task-${t.id}`} className="eo-swap eo-task-details">
+        <div id={`eo-task-${t.id}`} className="eo-swap eo-ao-row-details">
           <p>{t.details}</p>
-          {on && note && <p className="text-warning">{note}</p>}
           <p className="text-subtle">Source in this project: {t.source}</p>
         </div>
       )}
     </li>
-  );
-}
-
-function LifecycleSimulator({ power }: { power: string }) {
-  const items = [
-    {
-      icon: Power,
-      t: "Application launch",
-      d: "Restores the schedule; runs launch maintenance if enabled.",
-      a: autoOptimize.simulateLaunch,
-    },
-    {
-      icon: PowerOff,
-      t: "Application close",
-      d: "Applies the close behaviour you chose.",
-      a: autoOptimize.simulateClose,
-    },
-    {
-      icon: Play,
-      t: "Windows startup",
-      d: "Starts the background agent if Start with Windows is on.",
-      a: autoOptimize.simulateWindowsStartup,
-    },
-    {
-      icon: Square,
-      t: "Shutdown / restart",
-      d: "Stops any run without delaying shutdown; nothing runs while off.",
-      a: autoOptimize.simulateShutdown,
-    },
-  ];
-  return (
-    <Card>
-      <SectionTitle
-        title="LIFECYCLE PREVIEW"
-        badge={<Badge tone="warning">SIMULATED EVENTS</Badge>}
-        sub="Preview how the native app will behave. These buttons do not close this tab or touch Windows."
-        right={
-          <span className="text-[10.5px] font-bold text-subtle">
-            STATE:{" "}
-            <span className="text-foreground">
-              {power === "on"
-                ? "APP OPEN"
-                : power === "background"
-                  ? "BACKGROUND AGENT"
-                  : power === "app-closed"
-                    ? "APP CLOSED"
-                    : "PC OFF"}
-            </span>
-          </span>
-        }
-      />
-      <div className="grid grid-cols-4 gap-2.5 eo-lifecycle">
-        {items.map((i) => (
-          <button key={i.t} type="button" onClick={i.a} className="eo-lifecycle-btn">
-            <i.icon aria-hidden="true" className="h-4 w-4 text-cyan" />
-            <span className="text-[12px] font-bold">Simulate {i.t.toLowerCase()}</span>
-            <span className="text-[10.5px] text-muted-foreground">{i.d}</span>
-          </button>
-        ))}
-      </div>
-    </Card>
   );
 }
 
@@ -769,9 +762,8 @@ function History({ entries, now }: { entries: HistoryEntry[]; now: number }) {
       <Card>
         <SectionTitle
           id="eo-history-title"
-          title="MAINTENANCE HISTORY"
+          title="HISTORY"
           badge={<Badge>{entries.filter((e) => e.kind === "run").length} RUNS</Badge>}
-          sub="Each run lists every selected task and what happened to it. Amounts are sample data."
           right={
             <>
               <Segmented
@@ -798,7 +790,7 @@ function History({ entries, now }: { entries: HistoryEntry[]; now: number }) {
             <div className="eo-history-row eo-history-head">
               <span>TIME</span>
               <span>TRIGGER / EVENT</span>
-              <span>RESULT</span>
+              <span>RESULT · SAMPLE DATA</span>
               <span>STATUS</span>
               <span />
             </div>
@@ -841,7 +833,7 @@ function History({ entries, now }: { entries: HistoryEntry[]; now: number }) {
                       <Btn
                         size="sm"
                         variant="ghost"
-                        className="w-7 px-0"
+                        className="h-6 w-6 border-transparent px-0"
                         label={`${open === e.id ? "Hide" : "Show"} tasks for run at ${clockTime(e.at)}`}
                         expanded={open === e.id}
                         onClick={() => setOpen(open === e.id ? null : e.id)}
