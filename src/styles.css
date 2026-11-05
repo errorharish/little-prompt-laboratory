@@ -177,20 +177,19 @@
     font-family: var(--font-sans);
     -webkit-font-smoothing: antialiased;
   }
-  ::-webkit-scrollbar {
-    width: 8px;
-    height: 8px;
+  /* Hidden scrollbars, everywhere (Firefox + Chromium/WebKit). Scrolling itself is untouched:
+   * wheel, touchpad, keyboard and scroll-into-view all keep working. `.eo-scroll-fade` adds an
+   * edge fade so users can still tell more content is available. */
+  * {
+    scrollbar-width: none;
+    -ms-overflow-style: none;
   }
-  ::-webkit-scrollbar-thumb {
-    background: var(--border-strong);
-    border-radius: 8px;
-    border: 2px solid transparent;
-    background-clip: padding-box;
-  }
-  ::-webkit-scrollbar-thumb:hover {
-    background-color: color-mix(in oklab, var(--cyan) 35%, var(--border-strong));
-  }
-  ::-webkit-scrollbar-track {
+  *::-webkit-scrollbar,
+  *::-webkit-scrollbar-button,
+  *::-webkit-scrollbar-corner {
+    display: none;
+    width: 0;
+    height: 0;
     background: transparent;
   }
   ::selection {
