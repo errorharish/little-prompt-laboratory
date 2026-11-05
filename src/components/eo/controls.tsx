@@ -182,6 +182,7 @@ export function NumberField({
   // While focused the field shows the typed draft; otherwise it always renders the live value,
   // so it can never lag behind the slider.
   const [draft, setDraft] = useState<string | null>(null);
+  const cancelled = useRef(false);
   const commit = (text: string | null) => {
     if (text === null) return;
     const n = parseFloat(text.replace(",", "."));
@@ -199,7 +200,11 @@ export function NumberField({
           setDraft(fmt(value));
           e.currentTarget.select();
         }}
-        onBlur={() => commit(draft)}
+        onBlur={() => {
+          if (cancelled.current) cancelled.current = false;
+          else commit(draft);
+          setDraft(null);
+        }}
         onChange={(e) => {
           setDraft(e.target.value);
           const n = parseFloat(e.target.value.replace(",", "."));
@@ -211,6 +216,7 @@ export function NumberField({
             setDraft(null);
           }
           if (e.key === "Escape") {
+            cancelled.current = true;
             setDraft(null);
             e.currentTarget.blur();
           }
