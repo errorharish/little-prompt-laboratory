@@ -1,12 +1,24 @@
 import { Link, useLocation, useNavigate } from "@tanstack/react-router";
-import * as Icons from "lucide-react";
+import {
+  Activity, Binary, Boxes, BrainCircuit, CalendarClock, Circle, CircuitBoard, Cpu, Feather, Flame, Gamepad2, Gauge, HardDrive,
+  History, Info, LayoutDashboard, LayoutGrid, MemoryStick, MonitorCog, MousePointer2, MousePointerClick, PackageCheck, PackageX,
+  Rocket, Server, Settings, ShieldCheck, SlidersHorizontal, Target, Thermometer, Wifi, Wrench, Zap, type LucideIcon,
+} from "lucide-react";
+
+// Explicit map (instead of `import * as Icons`) keeps the icon bundle to the glyphs the registry uses.
+const ICONS: Record<string, LucideIcon> = {
+  Activity, Binary, Boxes, BrainCircuit, CalendarClock, CircuitBoard, Cpu, Feather, Flame, Gamepad2, Gauge, HardDrive, History, Info,
+  LayoutDashboard, LayoutGrid, MemoryStick, MonitorCog, MousePointer2, MousePointerClick, PackageCheck, PackageX, Rocket, Server,
+  Settings, ShieldCheck, SlidersHorizontal, Target, Thermometer, Wifi, Wrench, Zap,
+};
+const Icons = { Zap };
 import { Fragment, type ReactNode } from "react";
 import { cn } from "@/lib/utils";
 import { Btn } from "./kit";
 import { PAGES, V4_TABS, hrefFor, pageBySlug } from "@/lib/eo/registry";
 
 function Icon({ name, className }: { name: string; className?: string }) {
-  const C = (Icons as unknown as Record<string, Icons.LucideIcon>)[name] ?? Icons.Circle;
+  const C = ICONS[name] ?? Circle;
   return <C aria-hidden="true" className={className} />;
 }
 
