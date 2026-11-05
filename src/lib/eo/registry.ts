@@ -452,6 +452,16 @@ export const V4_TABS = ["v4-max-performance", "emulator-optimization"] as const;
 /** References that could not be fully determined from the uploads. */
 export const MISSING_REFERENCES: { area: string; detail: string }[] = [
   {
+    area: "Overall Optimization Score",
+    detail:
+      "No scoring logic exists in the supplied source. The score (weighted average of four categories in src/lib/eo/score.ts) is illustrative demo data, labelled as such, and is never changed by a simulated run.",
+  },
+  {
+    area: "V4 live activity / log panels",
+    detail:
+      "MaxPerformanceView and EmulatorOptimizationPage had LIVE ACTIVITY / LIVE LOGS rails. By user direction they are replaced with engine-status and session rails; no fake log output is shown.",
+  },
+  {
     area: "Dock icon glyphs",
     detail:
       "GlassSidebarDock passes Tag to controls:NavigationIcon (NavigationIcon.cs). The glyph geometry mapping was not inspected in source form here; icons in this prototype are stand-ins.",
@@ -469,7 +479,7 @@ export const MISSING_REFERENCES: { area: string; detail: string }[] = [
   {
     area: "Dashboard layout",
     detail:
-      "Build report describes a 168px HealthGauge + 1-Click hero card. DashboardView.xaml instead contains 5 telemetry tiles, a telemetry chart + Optimization Status, Hardware Information table, Quick Actions and Recent Activity. Prototype follows the XAML.",
+      "DashboardView.xaml contains 5 telemetry tiles, a telemetry chart + Optimization Status, Hardware Information table, Quick Actions and Recent Activity; the build report describes a HealthGauge + 1-Click hero card. By explicit user direction the prototype now leads with an Overall Optimization Score + Auto Optimize panel, keeps compact tiles, and moves the telemetry chart to System Telemetry. The hardware table's content remains in the tiles and on System Telemetry.",
   },
   {
     area: "EmulatorDeepOptimizeTab",

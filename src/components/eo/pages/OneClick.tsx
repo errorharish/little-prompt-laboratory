@@ -26,17 +26,12 @@ import {
   EmptyState,
   LoadingState,
   Stepper,
-  useSimRun,
 } from "../kit";
 import { RunModal } from "../RunModal";
+import { ReviewSelectionModal } from "../ReviewSelectionModal";
+import { useOptimizeWorkflow } from "../useOptimizeWorkflow";
 import { ONE_CLICK_ACTIONS, ONE_CLICK_GROUPS } from "@/lib/eo/data";
 import { filterRecommendations } from "@/lib/eo/recommendations";
-import {
-  recommendedSelection,
-  summarizeSelection,
-  toggleInSet,
-  type SimulatedRunSummary,
-} from "@/lib/eo/selection";
 import { cn } from "@/lib/utils";
 
 const FILTERS = {
@@ -76,14 +71,11 @@ const PROTECTED = [
 ];
 const STEPS = ["Analyze", "Review", "Confirm", "Simulated result"];
 
-type LastRun = SimulatedRunSummary & { at: string; titles: string[] };
-
 export function OneClickPage() {
-  const scan = useSimRun(1400);
+  const wf = useOptimizeWorkflow(1400);
+  const { scan, analyzed, sel, setSel, summary, selectedItems, lastRun, toggle } = wf;
   const [query, setQuery] = useState("");
-  const [analyzed, setAnalyzed] = useState(false);
   const [area, setArea] = useState<string | null>(null);
-  const [sel, setSel] = useState<Set<string>>(new Set());
   const [filterOpen, setFilterOpen] = useState(false);
   const [filter, setFilter] = useState("All Optimizations");
   const [guide, setGuide] = useState(false);
@@ -91,13 +83,9 @@ export function OneClickPage() {
   const [detail, setDetail] = useState<string | null>(null);
   const [run, setRun] = useState(false);
   const [protOpen, setProtOpen] = useState(false);
-  const [lastRun, setLastRun] = useState<LastRun | null>(null);
   const filterRef = useRef<HTMLDivElement>(null);
 
   const visible = useMemo(() => filterRecommendations(area, filter, query), [area, filter, query]);
-  const summary = useMemo(() => summarizeSelection(ONE_CLICK_ACTIONS, sel), [sel]);
-  const selectedItems = useMemo(() => ONE_CLICK_ACTIONS.filter((a) => sel.has(a.id)), [sel]);
-  const toggle = (id: string) => setSel((s) => toggleInSet(s, id));
   const d = ONE_CLICK_ACTIONS.find((a) => a.id === detail);
   const step = lastRun ? 4 : run ? 2 : review ? 2 : analyzed ? 1 : 0;
 
@@ -120,22 +108,13 @@ export function OneClickPage() {
 
   const analyze = () => {
     setArea(null);
-    scan.start(() => {
-      setAnalyzed(true);
-      setSel(recommendedSelection(ONE_CLICK_ACTIONS));
-    });
+    wf.analyze();
   };
   const resetFilters = () => {
     setFilter("All Optimizations");
     setQuery("");
     setArea(null);
   };
-  const onComplete = (s: SimulatedRunSummary) =>
-    setLastRun({
-      ...s,
-      at: new Date().toLocaleTimeString(),
-      titles: selectedItems.map((a) => a.title),
-    });
 
   return (
     <div className="space-y-4 pb-20">
@@ -312,11 +291,7 @@ export function OneClickPage() {
               <SlidersHorizontal aria-hidden="true" className="h-3 w-3" />
               Filter
             </Btn>
-            <Btn
-              size="sm"
-              disabled={!analyzed}
-              onClick={() => setSel(recommendedSelection(ONE_CLICK_ACTIONS))}
-            >
+            <Btn size="sm" disabled={!analyzed} onClick={wf.selectRecommended}>
               Select recommended
             </Btn>
             <Btn size="sm" variant="ghost" disabled={!sel.size} onClick={() => setSel(new Set())}>
@@ -494,7 +469,7 @@ export function OneClickPage() {
                 changed.
               </p>
             </div>
-            <Btn size="sm" variant="ghost" onClick={() => setLastRun(null)}>
+            <Btn size="sm" variant="ghost" onClick={wf.dismissRun}>
               Dismiss
             </Btn>
           </div>
@@ -576,93 +551,17 @@ export function OneClickPage() {
         </p>
       </Modal>
 
-      <Modal
+      <ReviewSelectionModal
         open={review}
         onClose={() => setReview(false)}
-        title="Review your changes"
-        sub="Simulated run · No Windows settings will be changed."
-        width="max-w-3xl"
-        footer={
-          <>
-            <Btn variant="ghost" onClick={() => setReview(false)}>
-              Back to edit
-            </Btn>
-            <Btn
-              variant="primary"
-              disabled={!sel.size}
-              onClick={() => {
-                setReview(false);
-                setRun(true);
-              }}
-            >
-              Confirm simulated run
-            </Btn>
-          </>
-        }
-      >
-        <div className="space-y-4">
-          <div className="grid grid-cols-4 gap-2">
-            {(
-              [
-                ["SELECTED", summary.total, "text-foreground"],
-                ["SAFE", summary.byRisk.SAFE, "text-success"],
-                ["LOW RISK", summary.byRisk.LOW, "text-success"],
-                ["NEEDS RESTART", summary.restart, "text-warning"],
-              ] as const
-            ).map(([k, v, c]) => (
-              <div key={k} className="rounded-lg border border-border bg-window p-2.5 text-center">
-                <div className={cn("text-xl font-bold tabular-nums", c)}>{v}</div>
-                <div className="text-[9px] font-bold text-muted-foreground">{k}</div>
-              </div>
-            ))}
-          </div>
-          {!sel.size && (
-            <EmptyState
-              title="Nothing selected"
-              sub="Go back and select at least one recommendation."
-            />
-          )}
-          {ONE_CLICK_GROUPS.filter((g) => selectedItems.some((a) => a.group === g.key)).map((g) => (
-            <section key={g.key} aria-label={g.key}>
-              <h3 className="mb-1.5 eo-label text-[10px] text-cyan">{g.key}</h3>
-              <ul className="space-y-1.5">
-                {selectedItems
-                  .filter((a) => a.group === g.key)
-                  .map((a) => (
-                    <li
-                      key={a.id}
-                      className="flex items-center justify-between gap-3 rounded-lg border border-border bg-window px-3 py-2 text-sm"
-                    >
-                      <span className="min-w-0">{a.title}</span>
-                      <span className="flex shrink-0 items-center gap-1.5">
-                        <RiskBadge risk={a.risk} />
-                        {a.restart && <Badge tone="warning">RESTART</Badge>}
-                        <Btn
-                          size="sm"
-                          variant="ghost"
-                          label={`Remove ${a.title}`}
-                          title="Remove from selection"
-                          onClick={() => toggle(a.id)}
-                        >
-                          <X aria-hidden="true" className="h-3 w-3" />
-                        </Btn>
-                      </span>
-                    </li>
-                  ))}
-              </ul>
-            </section>
-          ))}
-          {summary.restart > 0 && (
-            <p className="rounded-lg border border-warning/30 bg-warning/5 p-2.5 text-[11.5px] text-warning">
-              {summary.restart} selected item{summary.restart === 1 ? "" : "s"} would need a Windows
-              restart in the native app.
-            </p>
-          )}
-          <p className="text-[11px] text-muted-foreground">
-            This demonstration does not establish real verification or rollback availability.
-          </p>
-        </div>
-      </Modal>
+        onConfirm={() => {
+          setReview(false);
+          setRun(true);
+        }}
+        items={selectedItems}
+        summary={summary}
+        onRemove={toggle}
+      />
 
       <Modal
         open={!!d}
@@ -713,7 +612,7 @@ export function OneClickPage() {
         profile="1-Click"
         count={sel.size}
         items={selectedItems}
-        onComplete={onComplete}
+        onComplete={wf.complete}
       />
     </div>
   );

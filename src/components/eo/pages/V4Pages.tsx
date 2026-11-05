@@ -2,7 +2,22 @@
 //     EmulatorDebloaterView (deployer), LowEndSteamPage
 import { useEffect, useRef, useState } from "react";
 import { Link } from "@tanstack/react-router";
-import { ShieldCheck, Cpu, Layers, Activity } from "lucide-react";
+import {
+  ShieldCheck,
+  Cpu,
+  Layers,
+  Activity,
+  ArrowUpRight,
+  Boxes,
+  CheckCircle2,
+  CircleDashed,
+  Gauge,
+  Lock,
+  MemoryStick,
+  MonitorCog,
+  RotateCcw,
+  Zap,
+} from "lucide-react";
 import {
   Badge,
   Bar,
@@ -21,145 +36,281 @@ import {
   StatTiles,
   Toggle,
   Details,
+  DemoBadge,
+  KV,
   simulate,
   useSimRun,
 } from "../kit";
 import { cn } from "@/lib/utils";
 import { HW } from "@/lib/eo/data";
 
-/* ───────── V4 MAXIMUM PERFORMANCE (cols=*,16,360) ───────── */
+/* ───────── V4 MAXIMUM PERFORMANCE (cols=*,16,320) ─────────
+ * Host workspace: configuration scope → status → action, with a status rail.
+ * No live log: the rail shows engine state and the last simulated result instead. */
+const MP_SCOPE = [
+  { icon: Layers, t: "Background reduction", d: "Reduce unnecessary background CPU overhead." },
+  {
+    icon: Activity,
+    t: "Priority balancing",
+    d: "Balance foreground and background scheduling priority.",
+  },
+  { icon: MemoryStick, t: "Working-set refresh", d: "Release idle process working sets." },
+  { icon: Gauge, t: "System optimizations", d: "Hardware-aware latency reduction for the host." },
+];
+const MP_SAFEGUARDS = [
+  "Core Windows Safeguarded",
+  "Drivers & Active Apps Shielded",
+  "Reversible via Rollback",
+];
+
 export function V4MaxPerformancePage() {
-  const [log, setLog] = useState<string[]>([]);
   const [guide, setGuide] = useState(false);
   const [procs, setProcs] = useState(142);
+  const [last, setLast] = useState<{ at: string; before: number; after: number } | null>(null);
   const r = useSimRun(3000);
   const [confirmRun, setConfirmRun] = useState(false);
   const run = () =>
     r.start(() => {
       setProcs(118);
-      setLog((l) => [
-        `${new Date().toLocaleTimeString()} · Simulated workflow completed · sample process state updated`,
-        ...l,
-      ]);
+      setLast({ at: new Date().toLocaleTimeString(), before: 142, after: 118 });
     });
+  const pct = r.progress ?? 0;
+  const stage = r.running ? Math.min(MP_SCOPE.length - 1, Math.floor(pct / 25)) : -1;
   return (
-    <div
-      className="eo-engine-layout grid gap-4"
-      style={{ gridTemplateColumns: "minmax(0,1fr) 320px" }}
-    >
-      <div className="space-y-4">
-        <Card className="flex items-center gap-3 border-warning/30 py-3">
-          <span className="h-2 w-2 rounded-full bg-warning" />
-          <div className="flex-1">
-            <div className="text-[13px] font-bold">Optimization service is currently offline</div>
-            <div className="text-xs text-muted-foreground">
-              Live system metrics and optimizations require the background service. Showing
-              simulated values.
-            </div>
-          </div>
-          <Btn size="sm" onClick={() => simulate("Retry service")}>
-            Retry service
+    <div className="space-y-4">
+      <PageHeader
+        title="Maximum Performance"
+        badges={
+          <>
+            <Badge tone="cyan">V4 HOST ENGINE</Badge>
+            <Badge tone="warning">SIMULATED</Badge>
+          </>
+        }
+        sub="Hardware-aware system latency reduction, resource management, and workload protection."
+        actions={
+          <Btn variant="ghost" onClick={() => setGuide(true)}>
+            Guide
           </Btn>
-        </Card>
-        <PageHeader
-          title="Maximum Performance"
-          sub="Hardware-aware system latency reduction, resource management, and workload protection."
-          actions={
-            <Btn variant="ghost" onClick={() => setGuide(true)}>
-              Guide
-            </Btn>
-          }
-        />
-        <Card className="border-success/30">
-          <div className="flex gap-3.5">
-            <ShieldCheck className="h-6 w-6 shrink-0 text-success" />
-            <div>
-              <div className="text-[13px] font-bold">Protected System Optimization · Simulated</div>
-              <p className="text-xs text-muted-foreground">
-                Maximum Performance safely reduces unnecessary background CPU overhead without
-                touching core Windows, drivers or your active apps.
-              </p>
-            </div>
+        }
+      />
+      <div className="eo-v4-banner flex flex-wrap items-center gap-3" role="status">
+        <span aria-hidden="true" className="eo-pulse-dot h-2 w-2 rounded-full bg-warning" />
+        <div className="min-w-0 flex-1">
+          <div className="text-[12.5px] font-bold">Optimization service is currently offline</div>
+          <div className="text-[11px] text-muted-foreground">
+            Live system metrics and optimizations require the background service. Showing simulated
+            values.
           </div>
-          <div className="mt-4 grid grid-cols-3 divide-x divide-border rounded-lg border border-border bg-window">
-            {[
-              "Core Windows Safeguarded",
-              "Drivers & Active Apps Shielded",
-              "Reversible via Rollback",
-            ].map((x) => (
-              <div key={x} className="p-2.5 text-center text-[11.5px] font-semibold text-success">
-                ✓ {x}
-              </div>
-            ))}
-          </div>
-        </Card>
-        <StatTiles
-          items={[
-            { label: "BACKGROUND PROCESSES", value: procs, sub: "Active procs" },
-            { label: "SERVICE STATUS", value: "Sim", tone: "warning" },
-            { label: "CPU USAGE", value: "12%", sub: "Utilization" },
-            { label: "GPU USAGE", value: "9%" },
-            { label: "RAM USAGE", value: "36%", sub: "Physical memory" },
-          ]}
-        />
-        <Card glow>
-          <div className="flex items-start justify-between gap-4">
-            <div>
-              <div className="flex items-center gap-2">
-                <span className="text-lg font-bold">One-Click System Optimization</span>
-                <Badge tone="success">SAFE DEFAULTS</Badge>
-              </div>
-              <p className="mt-1 text-xs text-muted-foreground">
-                Simulates system optimizations, priority balancing, memory working-set
-                refresh and background reduction.
-              </p>
-            </div>
-            <Btn
-              variant="ghost"
-              onClick={() => simulate("Rollback")}
-              title="Restore system configuration to the pre-optimization state"
-            >
-              Rollback
-            </Btn>
-          </div>
-          {r.running && <Bar value={r.progress ?? 0} className="mt-4" />}
-          <Btn
-            variant="primary"
-            size="lg"
-            className="mt-4 w-full"
-            disabled={r.running}
-            onClick={() => setConfirmRun(true)}
-          >
-            {r.running ? `Optimizing… ${(r.progress ?? 0).toFixed(0)}%` : "Optimize now"}
-          </Btn>
-        </Card>
-        <SimNotice />
-      </div>
-      <Card className="eo-console flex h-fit flex-col">
-        <div className="mb-3 flex items-center justify-between">
-          <Label className="text-foreground">LIVE ACTIVITY</Label>
-          <Btn size="sm" variant="ghost" onClick={() => setLog([])}>
-            Clear
-          </Btn>
         </div>
-        {log.length ? (
-          <div className="space-y-1.5">
-            {log.map((l) => (
-              <div
-                key={l}
-                className="rounded-md border border-border bg-window px-2.5 py-2 font-mono text-[11px] text-muted-foreground"
-              >
-                {l}
+        <Btn size="sm" onClick={() => simulate("Retry service")}>
+          Retry service
+        </Btn>
+      </div>
+
+      <div
+        className="eo-engine-layout grid gap-4"
+        style={{ gridTemplateColumns: "minmax(0,1fr) 320px" }}
+      >
+        <div className="eo-stagger space-y-4">
+          {/* Primary action workspace */}
+          <Card className="eo-hero eo-v4-hero">
+            <div className="flex flex-wrap items-start justify-between gap-4">
+              <div className="min-w-0">
+                <Label className="text-cyan">ONE-CLICK SYSTEM OPTIMIZATION</Label>
+                <div className="mt-1 flex flex-wrap items-center gap-2">
+                  <h2 className="text-lg font-black uppercase">Host latency workflow</h2>
+                  <Badge tone="success">SAFE DEFAULTS</Badge>
+                </div>
+                <p className="mt-1 max-w-xl text-xs text-muted-foreground">
+                  Simulates system optimizations, priority balancing, memory working-set refresh and
+                  background reduction.
+                </p>
               </div>
-            ))}
-          </div>
-        ) : (
-          <EmptyState
-            title="No activity recorded yet."
-            sub="Real-time optimization events, verifications, and progress will stream here."
-          />
-        )}
-      </Card>
+              <Btn
+                variant="ghost"
+                onClick={() => simulate("Rollback")}
+                title="Restore system configuration to the pre-optimization state"
+              >
+                <RotateCcw aria-hidden="true" className="h-3.5 w-3.5" />
+                Rollback
+              </Btn>
+            </div>
+
+            <ol aria-label="Workflow scope" className="mt-4 grid grid-cols-2 gap-2">
+              {MP_SCOPE.map((s, i) => {
+                const state = !r.running
+                  ? last
+                    ? "done"
+                    : undefined
+                  : i < stage
+                    ? "done"
+                    : i === stage
+                      ? "active"
+                      : undefined;
+                return (
+                  <li key={s.t} className="eo-v4-scope" data-state={state}>
+                    <span className="eo-v4-scope-icon" aria-hidden="true">
+                      {state === "done" ? (
+                        <CheckCircle2 className="h-4 w-4" />
+                      ) : (
+                        <s.icon className="h-4 w-4" />
+                      )}
+                    </span>
+                    <div className="min-w-0">
+                      <div className="text-[12.5px] font-bold">{s.t}</div>
+                      <div className="text-[11px] text-muted-foreground">{s.d}</div>
+                    </div>
+                    <span className="ml-auto text-[9.5px] font-bold">
+                      {state === "active" ? (
+                        <span className="text-cyan">RUNNING</span>
+                      ) : state === "done" ? (
+                        <span className="text-success">SIMULATED</span>
+                      ) : (
+                        <span className="text-subtle">READY</span>
+                      )}
+                    </span>
+                  </li>
+                );
+              })}
+            </ol>
+
+            <div className="mt-4 flex flex-wrap items-center gap-3">
+              <div className="min-w-0 flex-1" aria-live="polite">
+                {r.running ? (
+                  <>
+                    <div className="mb-1 flex justify-between text-[10.5px] font-bold text-cyan">
+                      <span>{MP_SCOPE[stage]?.t.toUpperCase()} · SIMULATED</span>
+                      <span className="font-mono">{pct.toFixed(0)}%</span>
+                    </div>
+                    <Bar value={pct} active />
+                  </>
+                ) : (
+                  <p className="text-[11px] text-muted-foreground">
+                    {last
+                      ? `Last simulated run at ${last.at}. Nothing on this PC changed.`
+                      : "Review the scope, then confirm a simulated run."}
+                  </p>
+                )}
+              </div>
+              <Btn
+                variant="primary"
+                size="lg"
+                className="eo-v4-cta"
+                disabled={r.running}
+                onClick={() => setConfirmRun(true)}
+              >
+                <Zap aria-hidden="true" className="h-4 w-4" />
+                {r.running ? `Optimizing… ${pct.toFixed(0)}%` : "Optimize now"}
+              </Btn>
+            </div>
+          </Card>
+
+          {/* System status */}
+          <section aria-labelledby="mp-status-title">
+            <SectionTitle
+              id="mp-status-title"
+              title="SYSTEM STATUS"
+              badge={<DemoBadge label="SIMULATED VALUES" />}
+            />
+            <StatTiles
+              items={[
+                { label: "BACKGROUND PROCESSES", value: procs, sub: "Active procs" },
+                { label: "SERVICE STATUS", value: "Sim", tone: "warning" },
+                { label: "CPU USAGE", value: "12%", sub: "Utilization" },
+                { label: "GPU USAGE", value: "9%" },
+                { label: "RAM USAGE", value: "36%", sub: "Physical memory" },
+              ]}
+            />
+          </section>
+
+          {/* Protection */}
+          <Card className="border-success/30">
+            <div className="flex gap-3.5">
+              <ShieldCheck aria-hidden="true" className="h-6 w-6 shrink-0 text-success" />
+              <div>
+                <h2 className="text-[13px] font-bold">Protected System Optimization · Simulated</h2>
+                <p className="text-xs text-muted-foreground">
+                  Maximum Performance safely reduces unnecessary background CPU overhead without
+                  touching core Windows, drivers or your active apps.
+                </p>
+              </div>
+            </div>
+            <ul className="mt-3 grid grid-cols-3 gap-2">
+              {MP_SAFEGUARDS.map((x) => (
+                <li key={x} className="eo-v4-guard">
+                  <CheckCircle2 aria-hidden="true" className="h-3.5 w-3.5 shrink-0" />
+                  {x}
+                </li>
+              ))}
+            </ul>
+          </Card>
+          <SimNotice />
+        </div>
+
+        {/* Status rail */}
+        <aside aria-label="Engine status" className="eo-stagger space-y-3">
+          <Card className="eo-v4-rail">
+            <Label as="h2" className="mb-2 text-foreground">
+              ENGINE STATUS
+            </Label>
+            <KV k="Service" v={<span className="text-warning">Offline · simulated</span>} />
+            <KV k="Profile" v="Maximum Performance" />
+            <KV k="Background processes" v={<span className="tabular-nums">{procs}</span>} />
+            <KV k="Last run" v={last ? last.at : "Not run"} />
+          </Card>
+          <Card className="eo-v4-rail">
+            <Label as="h2" className="mb-2 text-foreground">
+              HARDWARE PROFILE · SAMPLE
+            </Label>
+            <ul className="space-y-2 text-[12px]">
+              {(
+                [
+                  [Cpu, HW.cpu, HW.cpuSub],
+                  [MonitorCog, HW.gpu, HW.gpuSub],
+                  [MemoryStick, HW.ram, HW.ramSub],
+                ] as const
+              ).map(([Icon, a, b]) => (
+                <li key={a} className="flex gap-2">
+                  <Icon aria-hidden="true" className="mt-0.5 h-3.5 w-3.5 shrink-0 text-cyan" />
+                  <div className="min-w-0">
+                    <div className="truncate font-semibold">{a}</div>
+                    <div className="truncate text-[10.5px] text-subtle">{b}</div>
+                  </div>
+                </li>
+              ))}
+            </ul>
+          </Card>
+          {last ? (
+            <Card className="eo-result">
+              <Label as="h2" className="text-success">
+                LAST SIMULATED RUN · {last.at}
+              </Label>
+              <div className="mt-2 grid grid-cols-2 gap-2 text-center">
+                <div className="rounded-lg border border-border bg-window p-2">
+                  <div className="text-lg font-bold tabular-nums">
+                    {last.before} → {last.after}
+                  </div>
+                  <div className="text-[8.5px] font-bold text-muted-foreground">
+                    SAMPLE PROCESSES
+                  </div>
+                </div>
+                <div className="rounded-lg border border-border bg-window p-2">
+                  <div className="text-lg font-bold tabular-nums">0</div>
+                  <div className="text-[8.5px] font-bold text-muted-foreground">
+                    CHANGES ON THIS PC
+                  </div>
+                </div>
+              </div>
+            </Card>
+          ) : (
+            <EmptyState
+              title="No simulated run yet"
+              sub="Results of a confirmed simulated run appear here."
+            />
+          )}
+        </aside>
+      </div>
+
       <Modal
         open={confirmRun}
         onClose={() => setConfirmRun(false)}
@@ -186,6 +337,17 @@ export function V4MaxPerformancePage() {
           Preview the background-workload, memory and scheduling workflow. Sample results do not
           establish actual performance gains or recovery guarantees.
         </p>
+        <ul className="mt-3 space-y-1.5">
+          {MP_SCOPE.map((s) => (
+            <li
+              key={s.t}
+              className="flex items-center justify-between rounded-lg border border-border bg-window px-3 py-2 text-[12.5px]"
+            >
+              {s.t}
+              <Badge tone="cyan">SIMULATED</Badge>
+            </li>
+          ))}
+        </ul>
       </Modal>
       <Modal
         open={guide}
@@ -226,7 +388,8 @@ export function V4MaxPerformancePage() {
   );
 }
 
-/* ───────── EMULATOR OPTIMIZATION SUITE (cols=*,14,350) ───────── */
+/* ───────── EMULATOR OPTIMIZATION SUITE (cols=*,14,320) ─────────
+ * Guest workspace: connection → three-engine pipeline → session rail. No live log panel. */
 const ENGINES = [
   {
     n: "EMULATOR OPTIMIZATION",
@@ -278,6 +441,8 @@ const GUIDE_SECTIONS = [
   ["7. One-Time State", "Persistent store & idempotency"],
   ["8. Restore & Rollback", "Reversible operations & fixes"],
 ];
+type EngineState = "NOT RUN" | "APPLYING" | "APPLIED" | "NEEDS ADB";
+
 export function EmulatorOptimizationPage() {
   const engineTimer = useRef<ReturnType<typeof setInterval> | null>(null);
   useEffect(
@@ -288,176 +453,310 @@ export function EmulatorOptimizationPage() {
   );
   const [pendingEngine, setPendingEngine] = useState<number | null>(null);
   const [adb, setAdb] = useState(false);
-  const [logs, setLogs] = useState<string[]>([]);
+  const [applied, setApplied] = useState<Set<number>>(new Set());
   const [guide, setGuide] = useState(false);
   const [gs, setGs] = useState(0);
   const [running, setRunning] = useState<number | null>(null);
   const [p, setP] = useState(0);
-  const push = (s: string) => setLogs((l) => [`${new Date().toLocaleTimeString()}  ${s}`, ...l]);
   const runEngine = (i: number) => {
     setRunning(i);
     setP(0);
-    push(`${ENGINES[i]?.n}: started (simulated)`);
     let v = 0;
     const id = setInterval(() => {
       v += 4;
       setP(v);
       if (v >= 100) {
         clearInterval(id);
+        engineTimer.current = null;
         setRunning(null);
-        push(`${ENGINES[i]?.n}: applied & verified (simulated)`);
+        setApplied((s) => new Set(s).add(i));
+        simulate(`${ENGINES[i]?.n} applied`);
       }
     }, 70);
     engineTimer.current = id;
   };
+  const restore = (i: number) => {
+    setApplied((s) => {
+      const n = new Set(s);
+      n.delete(i);
+      return n;
+    });
+    simulate(`${ENGINES[i]?.n} restored`);
+  };
+  const recheck = () => {
+    setAdb(!adb);
+    simulate(adb ? "ADB disconnected" : "Sample connection enabled");
+  };
+  const stateOf = (i: number): EngineState =>
+    running === i
+      ? "APPLYING"
+      : applied.has(i)
+        ? "APPLIED"
+        : ENGINES[i]?.needsAdb && !adb
+          ? "NEEDS ADB"
+          : "NOT RUN";
+  const counts = ENGINES.reduce(
+    (c, _, i) => {
+      const s = stateOf(i);
+      if (s === "APPLIED") c.applied += 1;
+      else if (s === "NEEDS ADB") c.blocked += 1;
+      else c.ready += 1;
+      return c;
+    },
+    { applied: 0, ready: 0, blocked: 0 },
+  );
+  const connection = [
+    { k: "MSI App Player", v: adb ? "Running" : "Not running", ok: adb },
+    { k: "Android Debug Bridge", v: adb ? "Connected" : "Offline", ok: adb },
+    { k: "Guest subsystem", v: adb ? "Android 9 · x86_64" : "—", ok: adb },
+  ];
+  const sequence: { t: string; done: boolean; to?: string }[] = [
+    { t: "Host Maximum Performance", done: false, to: "v4-max-performance" },
+    { t: "Launch MSI App Player 5 & verify ADB", done: adb },
+    ...ENGINES.map((e, i) => ({
+      t: `Engine ${i + 1} · ${e.n.toLowerCase().replace(/\b\w/g, (c) => c.toUpperCase())}`,
+      done: applied.has(i),
+    })),
+  ];
+
   return (
-    <div
-      className="eo-engine-layout grid gap-3.5"
-      style={{ gridTemplateColumns: "minmax(0,1fr) 320px" }}
-    >
-      <div className="space-y-4">
-        <PageHeader
-          title="Emulator Optimization Suite"
-          badges={<Badge tone="cyan">V4 COMMERCIAL ENGINE</Badge>}
-          sub="Unified MSI App Player 5 & Free Fire performance engine: host scheduling, guest debloat and graphics pipeline."
-          actions={
-            <>
-              <Btn variant="ghost" onClick={() => setGuide(true)}>
-                Guide
-              </Btn>
-              <Btn variant="ghost" onClick={() => push("Restore all (simulated)")}>
-                Restore all
-              </Btn>
-              <Btn
-                onClick={() => {
-                  setAdb(!adb);
-                  push(
-                    adb ? "ADB disconnected (simulated)" : "Sample connection enabled (simulated)",
-                  );
-                }}
+    <div className="space-y-4">
+      <PageHeader
+        title="Emulator Optimization Suite"
+        badges={
+          <>
+            <Badge tone="cyan">V4 COMMERCIAL ENGINE</Badge>
+            <Badge tone="warning">SIMULATED</Badge>
+          </>
+        }
+        sub="Unified MSI App Player 5 & Free Fire performance engine: host scheduling, guest debloat and graphics pipeline."
+        actions={
+          <>
+            <Btn variant="ghost" onClick={() => setGuide(true)}>
+              Guide
+            </Btn>
+            <Btn
+              variant="ghost"
+              disabled={!applied.size}
+              onClick={() => {
+                setApplied(new Set());
+                simulate("Restore all engines");
+              }}
+            >
+              Restore all
+            </Btn>
+            <Btn onClick={recheck}>Recheck connection</Btn>
+          </>
+        }
+      />
+
+      {/* Connection strip */}
+      <Card
+        className="eo-v4-conn grid items-center gap-3 py-3"
+        style={{ gridTemplateColumns: "repeat(3, minmax(0,1fr)) auto" }}
+      >
+        {connection.map((c) => (
+          <div key={c.k} className="flex items-center gap-2.5">
+            <span aria-hidden="true" className="eo-v4-dot" data-ok={c.ok ? "true" : undefined} />
+            <div className="min-w-0">
+              <Label className="text-[9px]">{c.k}</Label>
+              <div
+                className={cn(
+                  "truncate text-[12.5px] font-bold",
+                  c.ok ? "text-success" : "text-warning",
+                )}
               >
-                Recheck connection
-              </Btn>
-            </>
-          }
-        />
-        <Card className="flex flex-wrap items-center justify-between gap-3 py-3">
-          <div className="flex gap-5 text-[12.5px]">
-            {[
-              ["MSI App Player:", adb ? "Running" : "Not running"],
-              ["Android Debug Bridge:", adb ? "Connected" : "Offline"],
-              ["Guest Subsystem:", adb ? "Android 9 · x86_64" : "—"],
-            ].map(([k, v]) => (
-              <span key={k}>
-                {k} <b className={adb ? "text-success" : "text-warning"}>{v}</b>
-              </span>
-            ))}
+                {c.v}
+              </div>
+            </div>
           </div>
-          <Btn size="sm" variant="ghost" onClick={() => setAdb(!adb)}>
-            Recheck
-          </Btn>
-        </Card>
+        ))}
         <Link
           to="/$page"
           params={{ page: "emulator-modules" }}
-          className="block rounded-lg border border-border bg-window px-4 py-2.5 text-[11.5px] text-muted-foreground hover:border-cyan/40 hover:text-cyan"
+          className="eo-v4-hub inline-flex items-center gap-1.5 rounded-lg border border-border px-3 py-1.5 text-[10.5px] font-bold uppercase text-muted-foreground"
         >
-          MSI App Player 5 · Open module hub →
+          <Boxes aria-hidden="true" className="h-3.5 w-3.5" />
+          Module hub
+          <ArrowUpRight aria-hidden="true" className="h-3.5 w-3.5" />
         </Link>
-        {ENGINES.map((e, i) => {
-          const blocked = e.needsAdb && !adb;
-          return (
-            <Card key={e.n} className={cn(running === i && "eo-glow")}>
-              <div className="flex items-start justify-between gap-4">
-                <div>
-                  <div className="flex items-center gap-2">
-                    <Badge tone="cyan">ENGINE {i + 1}</Badge>
-                    <h2 className="text-[15px] font-bold tracking-wide">{e.n}</h2>
+      </Card>
+
+      <div
+        className="eo-engine-layout grid gap-4"
+        style={{ gridTemplateColumns: "minmax(0,1fr) 320px" }}
+      >
+        <ol aria-label="Engine pipeline" className="eo-pipeline eo-stagger space-y-3">
+          {ENGINES.map((e, i) => {
+            const st = stateOf(i);
+            const blocked = st === "NEEDS ADB";
+            return (
+              <li key={e.n} className="eo-pipeline-step" data-state={st}>
+                <span className="eo-pipeline-node" aria-hidden="true">
+                  {st === "APPLIED" ? (
+                    <CheckCircle2 className="h-4 w-4" />
+                  ) : blocked ? (
+                    <Lock className="h-3.5 w-3.5" />
+                  ) : (
+                    i + 1
+                  )}
+                </span>
+                <Card className={cn("eo-v4-engine", running === i && "eo-glow")}>
+                  <div className="flex flex-wrap items-start justify-between gap-3">
+                    <div className="min-w-0">
+                      <div className="flex flex-wrap items-center gap-2">
+                        <Badge tone="cyan">ENGINE {i + 1}</Badge>
+                        <h2 className="text-[14.5px] font-bold">{e.n}</h2>
+                      </div>
+                      <p className="mt-1 text-[12px] text-muted-foreground">{e.desc}</p>
+                    </div>
+                    <Badge
+                      tone={
+                        st === "APPLIED"
+                          ? "success"
+                          : st === "APPLYING"
+                            ? "cyan"
+                            : blocked
+                              ? "warning"
+                              : "muted"
+                      }
+                    >
+                      {st === "APPLIED" ? "APPLIED · SIMULATED" : st}
+                    </Badge>
                   </div>
-                  <p className="mt-1 text-xs text-muted-foreground">{e.desc}</p>
-                </div>
-              </div>
-              <div className="mt-3">
-                <Details title="ENGINE TECHNICAL DETAILS">
-                  <p className="text-xs text-muted-foreground">{e.sub}</p>
-                  <div className="mt-3 flex flex-wrap gap-1.5">
-                    {e.tags.map((t) => (
+                  <div className="mt-2.5 flex flex-wrap gap-1.5">
+                    {e.tags.slice(0, 2).map((t) => (
                       <Badge key={t}>{t}</Badge>
                     ))}
                   </div>
-                </Details>
-              </div>
-              <p className="mt-3 text-[13px]">{e.desc}</p>
-              {i === 2 && (
-                <p className="mt-2 rounded-md border border-warning/30 bg-warning/5 p-2 text-[11px] text-warning">
-                  SurfaceFlinger latch overrides bypass buffer fence synchronization for lower
-                  latency. Calibrated per hardware tier.
-                </p>
-              )}
-              {running === i && (
-                <div className="mt-3">
-                  <Bar value={p} />
-                  <div className="mt-1 text-[10.5px] text-cyan">Applying… {p}%</div>
+                  {i === 2 && (
+                    <p className="mt-2.5 rounded-md border border-warning/30 bg-warning/5 p-2 text-[11px] text-warning">
+                      SurfaceFlinger latch overrides bypass buffer fence synchronization for lower
+                      latency. Calibrated per hardware tier.
+                    </p>
+                  )}
+                  {running === i && (
+                    <div className="mt-3" aria-live="polite">
+                      <div className="mb-1 flex justify-between text-[10.5px] font-bold text-cyan">
+                        <span>APPLYING · SIMULATED</span>
+                        <span className="font-mono">{p}%</span>
+                      </div>
+                      <Bar value={p} active />
+                    </div>
+                  )}
+                  <div className="mt-3">
+                    <Details title="ENGINE TECHNICAL DETAILS">
+                      <p className="text-xs text-muted-foreground">{e.sub}</p>
+                      <div className="mt-3 flex flex-wrap gap-1.5">
+                        {e.tags.map((t) => (
+                          <Badge key={t}>{t}</Badge>
+                        ))}
+                      </div>
+                    </Details>
+                  </div>
+                  <div className="mt-3 flex flex-wrap items-center justify-between gap-3 border-t border-border pt-3">
+                    <span className={cn("text-[11px]", blocked ? "text-warning" : "text-subtle")}>
+                      {e.pre}
+                    </span>
+                    <div className="flex gap-2">
+                      <Btn
+                        size="sm"
+                        variant="ghost"
+                        disabled={!applied.has(i) || running === i}
+                        onClick={() => restore(i)}
+                      >
+                        Restore
+                      </Btn>
+                      <Btn
+                        size="sm"
+                        variant="primary"
+                        disabled={blocked || running !== null}
+                        onClick={() => setPendingEngine(i)}
+                      >
+                        {i === 1 ? "Scan & debloat" : "Apply"}
+                      </Btn>
+                    </div>
+                  </div>
+                </Card>
+              </li>
+            );
+          })}
+        </ol>
+
+        {/* Session rail */}
+        <aside aria-label="Session overview" className="eo-stagger space-y-3">
+          <Card className="eo-v4-rail">
+            <Label as="h2" className="mb-2 text-foreground">
+              SESSION OVERVIEW
+            </Label>
+            <div className="grid grid-cols-3 gap-2 text-center">
+              {(
+                [
+                  ["APPLIED", counts.applied, "text-success"],
+                  ["READY", counts.ready, "text-cyan"],
+                  ["NEEDS ADB", counts.blocked, "text-warning"],
+                ] as const
+              ).map(([k, v, c]) => (
+                <div key={k} className="rounded-lg border border-border bg-window py-2">
+                  <div className={cn("text-lg font-bold tabular-nums", c)}>{v}</div>
+                  <div className="text-[8.5px] font-bold text-muted-foreground">{k}</div>
                 </div>
-              )}
-              <div className="mt-4 flex items-center justify-between gap-3 border-t border-border pt-3">
-                <span className={cn("text-[11px]", blocked ? "text-warning" : "text-subtle")}>
-                  {e.pre}
-                </span>
-                <div className="flex gap-2">
-                  <Btn
-                    size="sm"
-                    variant="ghost"
-                    onClick={() => push(`${e.n}: restored (simulated)`)}
-                  >
-                    Restore
-                  </Btn>
-                  <Btn
-                    size="sm"
-                    variant="primary"
-                    disabled={blocked || running !== null}
-                    onClick={() => setPendingEngine(i)}
-                  >
-                    {i === 1 ? "Scan & debloat" : "Apply"}
-                  </Btn>
-                </div>
-              </div>
-            </Card>
-          );
-        })}
-        <SimNotice>
-          No emulator, ADB connection or Android guest is touched — connection state is a toggle for
-          demonstration.
-        </SimNotice>
+              ))}
+            </div>
+            <p className="mt-2 text-[10.5px] text-subtle">
+              Engine states are simulated for this session only.
+            </p>
+          </Card>
+          <Card className="eo-v4-rail">
+            <Label as="h2" className="mb-2 text-foreground">
+              PREREQUISITES
+            </Label>
+            <ul className="space-y-1.5 text-[12px]">
+              {[
+                ["MSI App Player running", adb],
+                ["Android Debug Bridge connected", adb],
+              ].map(([t, ok]) => (
+                <li key={t as string} className="flex items-center gap-2">
+                  {ok ? (
+                    <CheckCircle2 aria-hidden="true" className="h-3.5 w-3.5 text-success" />
+                  ) : (
+                    <CircleDashed aria-hidden="true" className="h-3.5 w-3.5 text-warning" />
+                  )}
+                  <span className={ok ? "" : "text-muted-foreground"}>{t}</span>
+                  <span className="sr-only">{ok ? "(met)" : "(not met)"}</span>
+                </li>
+              ))}
+            </ul>
+            <Btn size="sm" className="mt-3 w-full" onClick={recheck}>
+              Recheck connection
+            </Btn>
+          </Card>
+          <Card className="eo-v4-rail">
+            <Label as="h2" className="mb-2 text-foreground">
+              RECOMMENDED SEQUENCE
+            </Label>
+            <ol className="eo-v4-seq space-y-1.5 text-[11.5px]">
+              {sequence.map((s, i) => (
+                <li key={s.t} data-done={s.done ? "true" : undefined}>
+                  <span aria-hidden="true">{s.done ? "✓" : i + 1}</span>
+                  {s.to ? (
+                    <Link to="/$page" params={{ page: s.to }} className="hover:text-cyan">
+                      {s.t}
+                    </Link>
+                  ) : (
+                    <span>{s.t}</span>
+                  )}
+                </li>
+              ))}
+            </ol>
+          </Card>
+          <SimNotice>
+            No emulator, ADB connection or Android guest is touched — connection state is a toggle
+            for demonstration.
+          </SimNotice>
+        </aside>
       </div>
-      <Card className="eo-console sticky top-0 flex h-fit max-h-[80vh] flex-col">
-        <div className="mb-3 flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <Label className="text-foreground">LIVE LOGS</Label>
-            <Badge tone="success">ACTIVE</Badge>
-          </div>
-          <Btn size="sm" variant="ghost" onClick={() => setLogs([])}>
-            Clear
-          </Btn>
-        </div>
-        <div className="space-y-1 overflow-y-auto">
-          {logs.length ? (
-            logs.map((l) => (
-              <div
-                key={l}
-                className="rounded border border-border bg-background px-2 py-1.5 font-mono text-[10.5px] text-muted-foreground"
-              >
-                {l}
-              </div>
-            ))
-          ) : (
-            <EmptyState
-              title="No activity recorded yet."
-              sub="Click 'RECHECK CONNECTION' or run an optimization."
-            />
-          )}
-        </div>
-      </Card>
+
       <Modal
         open={pendingEngine !== null}
         onClose={() => setPendingEngine(null)}
@@ -486,6 +785,13 @@ export function EmulatorOptimizationPage() {
           Review the engine scope and prerequisites before continuing. Verification and restore
           outcomes are illustrative.
         </p>
+        {pendingEngine !== null && (
+          <div className="mt-3 flex flex-wrap gap-1.5">
+            {ENGINES[pendingEngine]?.tags.map((t) => (
+              <Badge key={t}>{t}</Badge>
+            ))}
+          </div>
+        )}
       </Modal>
       <Modal
         open={guide}
@@ -1064,7 +1370,8 @@ export function EmulatorModulesPage() {
           ))}
         </div>
         <p className="mt-3 text-[11px] text-muted-foreground">
-          All planned changes are shown for review before the simulated run. Nothing is executed on this PC.
+          All planned changes are shown for review before the simulated run. Nothing is executed on
+          this PC.
         </p>
       </Modal>
       <Modal

@@ -129,6 +129,16 @@ export const DEPTH: { name: string; css: string; use: string }[] = [
     use: "Dialogs, menus, toasts, sticky bars: 80% surface + 20px blur. Dense data cards get no blur.",
   },
   {
+    name: "Hero glass",
+    css: "--glass-blur-panel",
+    use: "Score, Auto Optimize, RAM Limiter, telemetry console and V4 primary workspaces: 66% surface + 12px blur, cyan-tinted rim, inner 1px edge. WPF: AcrylicBrush on the hero Border only.",
+  },
+  {
+    name: "Lit top edge",
+    css: "--edge-highlight",
+    use: "1px cyan gradient line across the top of hero panels (fades out at both ends).",
+  },
+  {
     name: "Pointer light",
     css: "--light-x",
     use: "Mouse-following 7% cyan highlight on card hover. Off on touch, LOW depth and reduced motion.",
@@ -267,6 +277,55 @@ export const MOTION: {
     wpf: "LinearGradientBrush offset animation, RepeatBehavior=Forever",
   },
   {
+    name: "Large entrance (hero panels, staggered workspaces)",
+    duration: "440ms, +60ms per child (max 4 steps)",
+    easing: "cubic-bezier(.16,1,.3,1)",
+    css: "--duration-entrance: 440ms",
+    wpf: "Storyboard: Opacity 0→1 + TranslateY 10→0 (Scale 0.992→1 on hero), BeginTime offsets",
+  },
+  {
+    name: "Score gauge fill + count-up",
+    duration: "900ms",
+    easing: "cubic-bezier(.16,1,.3,1)",
+    css: "eo-score-in var(--duration-score)",
+    wpf: "Arc StrokeDashOffset + Int32Animation on the score text; skip when animations are off",
+  },
+  {
+    name: "Segmented indicator slide",
+    duration: "320ms",
+    easing: "spring",
+    css: "transform var(--duration-slow) var(--ease-spring), width var(--duration-slow)",
+    wpf: "Single Border behind the RadioButtons; animate TranslateTransform.X and Width",
+  },
+  {
+    name: "Slider thumb hover / press",
+    duration: "120ms scale, 180ms halo",
+    easing: "cubic-bezier(.2,.8,.2,1)",
+    css: "transform var(--duration-fast) var(--ease-out), box-shadow var(--duration-control)",
+    wpf: "Thumb ScaleTransform 1→1.06 (hover) / 1.14 (drag); halo via DropShadowEffect. Track fill has no animation.",
+  },
+  {
+    name: "Chart morph between samples",
+    duration: "320ms",
+    easing: "cubic-bezier(.2,.8,.2,1)",
+    css: "transition: d var(--duration-slow)",
+    wpf: "PointAnimation per Path point, or redraw without animation",
+  },
+  {
+    name: "Tab / module content swap",
+    duration: "320ms",
+    easing: "cubic-bezier(.2,.8,.2,1)",
+    css: "eo-rise-in var(--duration-slow)",
+    wpf: "ContentControl transition: Opacity 0→1 + TranslateY 8→0",
+  },
+  {
+    name: "Analysis sweep",
+    duration: "1.4s loop while analyzing",
+    easing: "cubic-bezier(.2,.8,.2,1)",
+    css: "eo-scan 1.4s",
+    wpf: "Gradient Rectangle TranslateTransform.Y loop while IsAnalyzing",
+  },
+  {
     name: "Completion",
     duration: "420ms",
     easing: "spring",
@@ -297,6 +356,14 @@ export const STATES: { state: string; spec: string }[] = [
     spec: "Rows: cyan 40% border + cyan 5% fill. Chips: cyan 50% border + cyan 15% fill (aria-pressed).",
   },
   { state: "Disabled", spec: "40% opacity, no pointer events." },
+  {
+    state: "Slider",
+    spec: "Hover: thumb 1.06 + 5px cyan halo. Drag: 1.14 + 7px halo. Focus: 2px canvas gap + 2px cyan ring on the thumb (no outline on the track).",
+  },
+  {
+    state: "Engine / scope step",
+    spec: "READY muted · RUNNING cyan border + glow + pulsing icon · SIMULATED / APPLIED green · NEEDS ADB amber with lock node.",
+  },
   { state: "Current step", spec: "Cyan pill + glow; done steps green with check; upcoming muted." },
 ];
 
@@ -355,4 +422,51 @@ export const COMPONENT_MAP: { web: string; wpf: string; note: string }[] = [
     note: "New in prototype; shimmer Border suggested",
   },
   { web: "SimNotice", wpf: "None (prototype only)", note: "Omit in the native app" },
+  {
+    web: "ScoreRing + CountUp",
+    wpf: "No original reference (build report HealthGauge)",
+    note: "Gradient arc Path + 48 tick Lines; score value is illustrative demo data",
+  },
+  {
+    web: "AutoOptimizePanel",
+    wpf: "Dashboard hero card bound to OneClickOptimizationViewModel",
+    note: "Same Analyze → Review → Confirm → Result flow as the 1-Click page",
+  },
+  {
+    web: "Segmented",
+    wpf: "RadioButton row + sliding Border",
+    note: "aria-pressed options; one shared indicator",
+  },
+  {
+    web: "RangeSlider + NumberField",
+    wpf: "Slider (custom Track / Thumb template) + TextBox",
+    note: "Shared clamp-and-snap rule; see slider behaviour",
+  },
+  {
+    web: "TelemetryConsole",
+    wpf: "SystemInfoView telemetry section (Canvas + Path)",
+    note: "Moved from the Dashboard; legend toggles, tooltip, window chips",
+  },
+  {
+    web: "Engine pipeline step",
+    wpf: "ItemsControl with a vertical connector Line",
+    note: "Numbered node shows engine state",
+  },
+];
+
+export const LAYOUT_RULES: string[] = [
+  "Dashboard order: Overall Optimization Score (left, 272–312px) and Auto Optimize (remaining width) share the first row; then System Overview tiles, Optimization Status + Recent Activity, Quick Actions.",
+  "The full telemetry chart lives only on System Telemetry. The Dashboard keeps compact sample tiles and a link to it.",
+  "Hero panels (score, Auto Optimize, RAM Limiter, telemetry console, V4 primary action) are the only surfaces with hero glass; dense data panels stay solid.",
+  "Phase areas that swap content (Auto Optimize body) keep a fixed 212px height so the page never jumps.",
+  "V4 pages: main column + 320px status rail. Maximum Performance = scope → status → protection; Emulator Optimization = connection strip → three-engine pipeline → session rail. Neither shows a live log.",
+  "Below 900px content width the V4 rail moves under the main column as a two-column grid; below 760px everything stacks.",
+];
+
+export const SLIDER_SPEC: string[] = [
+  "Built on a native range input, so arrow keys, Page Up/Down, Home/End, touch drag and screen readers work without custom code.",
+  "Track 8px with an inset shadow; the cyan → blue fill ends exactly under the thumb centre (thumb radius 10px). The fill updates instantly — no transition.",
+  "Marks (min, recommended, intermediate, max) sit under the track using the same thumb-travel formula; the recommended mark is green.",
+  "The numeric field and slider share one value. Valid typing updates live; blur or Enter clamps to min/max and snaps to the step; Esc reverts; arrow keys step.",
+  "RAM Limiter: 0.5–8 GB in 0.25 GB steps, recommended / default 2 GB (the original 2048 MB default). Reset returns to 2 GB; Revert returns to the last enforced value; Enforce target is simulated.",
 ];

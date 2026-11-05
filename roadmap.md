@@ -13,3 +13,10 @@
 - [x] Shared components: cards (pointer light, large-card tilt), buttons (loading, sheen, pressed), toggles, checks, progress, expander, dialogs, menus, toasts, stepper.
 - [x] Shell: glass chrome, sliding dock/tab indicators, collapsible dock, compact bars.
 - [x] Blueprint updated; all 34 destinations, flows, reduced motion and tests verified.
+
+# Focused upgrade (prompt-5)
+- [x] Dashboard: illustrative Overall Optimization Score + Auto Optimize panel reusing the One-Click workflow.
+- [x] Large telemetry chart moved to System Telemetry (tooltips, legend toggles, window, pause).
+- [x] Premium RAM Limiter (slider + synced number field, reset/revert, simulated enforce) and shared Segmented/slider controls.
+- [x] V4 Maximum Performance and Emulator Optimization redesigned; fake live logs removed.
+- [x] Blueprint updated; all 34 destinations at 1280 / 1024, flows, and 22 tests verified.
