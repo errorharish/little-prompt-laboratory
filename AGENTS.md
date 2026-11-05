@@ -28,3 +28,8 @@ use the editor.
   own key and store it in Secrets.
 - **Secrets.** Lovable manages them. Do not put secret values in the repo.
 <!-- LOVABLE:END -->
+
+## Project rules
+- ERROR OPTIMIZER is a browser visual prototype of a WPF app: every action is simulated (`simulate`, `useSimRun`) and must stay labeled as such — never call real system APIs. Why: the user wants a blueprint, not real optimizations.
+- Page registry lives in `src/lib/eo/registry.ts` (route key, XAML view, ViewModel, dock group); `src/routes/$page.tsx` renders `PAGE_COMPONENTS` from `src/components/eo/pageMap.tsx`. Why: one place maps original WPF routes to prototype pages.
+- Uploaded XAML is the layout source of truth over the build report; conflicts go in `MISSING_REFERENCES`, not silent guesses.
