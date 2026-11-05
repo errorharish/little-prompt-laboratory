@@ -2,7 +2,7 @@ import { useEffect, useRef, useId, useState, type ReactNode } from "react";
 import type React from "react";
 import { cn } from "@/lib/utils";
 import type { Risk } from "@/lib/eo/data";
-import { X, ChevronDown, FlaskConical, Search } from "lucide-react";
+import { X, ChevronDown, FlaskConical, Search, Check as CheckIcon } from "lucide-react";
 import { toast } from "sonner";
 
 /* ── Card (FigmaCardStyle / GlassCard) ── */
@@ -19,8 +19,9 @@ export function Card({ className, children, glow, style }: { className?: string 
   }} onPointerLeave={() => { ref.current?.style.setProperty("--tilt-x", "0deg"); ref.current?.style.setProperty("--tilt-y", "0deg"); }} className={cn("eo-card eo-depth p-5", glow && "eo-glow", className)}>{children}</div>;
 }
 
-export function Label({ children, className }: { children: ReactNode; className?: string | undefined }) {
-  return <div className={cn("eo-label text-muted-foreground", className)}>{children}</div>;
+/** Small uppercase caption. Pass `as="h2"`/`"h3"` when it titles a page section. */
+export function Label({ children, className, as: Tag = "div", id }: { children: ReactNode; className?: string | undefined; as?: "div" | "h2" | "h3" | undefined; id?: string | undefined }) {
+  return <Tag id={id} className={cn("eo-label text-muted-foreground", className)}>{children}</Tag>;
 }
 
 export function SectionTitle({ title, sub, right, badge }: { title: string; sub?: string | undefined; right?: ReactNode | undefined; badge?: ReactNode | undefined }) {
@@ -29,7 +30,7 @@ export function SectionTitle({ title, sub, right, badge }: { title: string; sub?
       <div>
         <div className="flex items-center gap-2">
           <span className="h-3.5 w-1 rounded-full bg-cyan" />
-          <h3 className="eo-label text-[11.5px] text-foreground">{title}</h3>
+          <h2 className="eo-label text-[11.5px] text-foreground">{title}</h2>
           {badge}
         </div>
         {sub && <p className="mt-1 pl-3 text-xs text-muted-foreground">{sub}</p>}
@@ -73,16 +74,24 @@ const btnCls: Record<BtnVariant, string> = {
   danger: "bg-destructive/10 text-destructive border-destructive/40 hover:bg-destructive/20",
   success: "bg-success/10 text-success border-success/40 hover:bg-success/20",
 };
-export function Btn({ variant = "secondary", children, onClick, className, size = "md", title, disabled }: { variant?: BtnVariant | undefined; children: ReactNode; onClick?: (() => void) | undefined; className?: string | undefined; size?: "sm" | "md" | "lg" | undefined; title?: string | undefined; disabled?: boolean | undefined }) {
+/**
+ * `title` is the tooltip. The accessible name is the visible text; icon-only buttons
+ * fall back to `label` (or `title`) so screen readers never get an unnamed control.
+ */
+export function Btn({ variant = "secondary", children, onClick, className, size = "md", title, disabled, label, pressed, expanded, controls }: { variant?: BtnVariant | undefined; children: ReactNode; onClick?: (() => void) | undefined; className?: string | undefined; size?: "sm" | "md" | "lg" | undefined; title?: string | undefined; disabled?: boolean | undefined; label?: string | undefined; pressed?: boolean | undefined; expanded?: boolean | undefined; controls?: string | undefined }) {
+  const textOnly = typeof children === "string" || typeof children === "number";
   return (
     <button
       type="button"
       title={title}
-      aria-label={title}
+      aria-label={label ?? (textOnly ? undefined : title)}
+      aria-pressed={pressed}
+      aria-expanded={expanded}
+      aria-controls={controls}
       disabled={disabled}
       onClick={onClick}
       className={cn(
-        "inline-flex items-center justify-center gap-1.5 whitespace-nowrap rounded-lg border font-bold tracking-[0.08em] uppercase transition-all active:scale-[0.98] disabled:opacity-40 disabled:pointer-events-none",
+        "eo-btn inline-flex items-center justify-center gap-1.5 whitespace-nowrap rounded-lg border font-bold tracking-[0.08em] uppercase transition-all active:scale-[0.98] disabled:opacity-40 disabled:pointer-events-none",
         size === "sm" ? "h-7 px-2.5 text-[10px]" : size === "lg" ? "h-11 px-5 text-xs" : "h-9 px-3.5 text-[10.5px]",
         btnCls[variant],
         className,
@@ -182,7 +191,7 @@ export function Toggle({ on, onChange, label = "Toggle setting" }: { on: boolean
 export function Check({ on, onChange, label = "Select item" }: { on: boolean; onChange: (v: boolean) => void; label?: string }) {
   return (
     <button type="button" role="checkbox" aria-checked={on} aria-label={label} onClick={() => onChange(!on)} className={cn("eo-check flex h-4.5 w-4.5 shrink-0 items-center justify-center rounded border text-[10px] font-black", on ? "border-cyan bg-cyan text-sidebar-primary-foreground" : "border-border-strong bg-window")}>
-      {on ? "✓" : ""}
+      {on && <CheckIcon aria-hidden="true" className="h-3 w-3" strokeWidth={3.5} />}
     </button>
   );
 }
@@ -200,13 +209,14 @@ export function KV({ k, v, mono }: { k: string | undefined; v: ReactNode; mono?:
 /* ── DETAILS expander: hides raw technical inventories (build report §1 rule) ── */
 export function Details({ title = "ADVANCED DETAILS", children }: { title?: string | undefined; children: ReactNode }) {
   const [open, setOpen] = useState(false);
+  const panelId = useId();
   return (
     <div className="eo-card overflow-hidden">
-      <button aria-expanded={open} onClick={() => setOpen(!open)} className="flex w-full items-center justify-between px-5 py-3.5">
+      <button type="button" aria-expanded={open} aria-controls={panelId} onClick={() => setOpen(!open)} className="flex w-full items-center justify-between px-5 py-3.5 text-left hover:bg-highlight/40">
         <span className="eo-label text-muted-foreground">{title}</span>
-        <ChevronDown className={cn("h-4 w-4 text-muted-foreground transition-transform", open && "rotate-180")} />
+        <ChevronDown aria-hidden="true" className={cn("h-4 w-4 text-muted-foreground transition-transform", open && "rotate-180")} />
       </button>
-      {open && <div className="border-t border-border px-5 py-4 eo-enter">{children}</div>}
+      {open && <div id={panelId} className="border-t border-border px-5 py-4 eo-enter">{children}</div>}
     </div>
   );
 }
@@ -217,6 +227,7 @@ export function Modal({ open, onClose, title, sub, children, footer, width = "ma
   const closeRef = useRef(onClose);
   closeRef.current = onClose;
   const titleId = useId();
+  const subId = useId();
   const [visible, setVisible] = useState(open);
   useEffect(() => {
     if (open) { setVisible(true); return; }
@@ -226,7 +237,7 @@ export function Modal({ open, onClose, title, sub, children, footer, width = "ma
   useEffect(() => {
     if (!open || !visible) return;
     const previous = document.activeElement instanceof HTMLElement ? document.activeElement : null;
-    const elements = () => Array.from(dialog.current?.querySelectorAll<HTMLElement>('button:not([disabled]), input, select, a[href], [tabindex="0"]') ?? []);
+    const elements = () => Array.from(dialog.current?.querySelectorAll<HTMLElement>('button:not([disabled]), input:not([disabled]), select:not([disabled]), textarea, a[href], [tabindex]:not([tabindex="-1"])') ?? []);
     elements()[0]?.focus();
     const h = (e: KeyboardEvent) => {
       if (e.key === "Escape") { e.preventDefault(); closeRef.current(); }
@@ -241,10 +252,10 @@ export function Modal({ open, onClose, title, sub, children, footer, width = "ma
   if (!visible) return null;
   return (
     <div className={cn("eo-overlay fixed inset-0 z-50 flex items-center justify-center bg-background/80 p-6 backdrop-blur-sm", !open && "eo-dismiss")} onClick={onClose}>
-      <div ref={dialog} role="dialog" aria-modal="true" aria-labelledby={titleId} className={cn("eo-card eo-modal flex max-h-[86vh] w-full flex-col p-0", width)} onClick={(e) => e.stopPropagation()}>
-        <div className="flex items-start justify-between gap-4 border-b border-border px-6 py-4">
-          <div><h2 id={titleId} className="text-base font-bold uppercase">{title}</h2>{sub && <p className="mt-1 text-xs text-muted-foreground">{sub}</p>}</div>
-          <Btn onClick={onClose} size="sm" variant="ghost" title="Close dialog"><X className="h-4 w-4" /></Btn>
+      <div ref={dialog} role="dialog" aria-modal="true" aria-labelledby={titleId} aria-describedby={sub ? subId : undefined} className={cn("eo-card eo-modal flex max-h-[86vh] w-full flex-col p-0", width)} onClick={(e) => e.stopPropagation()}>
+        <div className="eo-modal-head flex items-start justify-between gap-4 border-b border-border px-6 py-4">
+          <div className="min-w-0"><h2 id={titleId} className="text-base font-bold uppercase">{title}</h2>{sub && <p id={subId} className="mt-1 text-xs text-muted-foreground">{sub}</p>}</div>
+          <Btn onClick={onClose} size="sm" variant="ghost" title="Close dialog (Esc)" label="Close dialog"><X aria-hidden="true" className="h-4 w-4" /></Btn>
         </div>
         <div className="min-h-0 overflow-y-auto px-6 py-5">{children}</div>
         {footer && <div className="flex flex-wrap items-center justify-end gap-2 border-t border-border px-6 py-3.5">{footer}</div>}
@@ -256,8 +267,8 @@ export function Modal({ open, onClose, title, sub, children, footer, width = "ma
 /* ── Simulation helpers ── */
 export function SimNotice({ children }: { children?: ReactNode | undefined }) {
   return (
-    <div className="flex items-center gap-2 rounded-lg border border-warning/30 bg-warning/5 px-3 py-2 text-[11.5px] text-warning">
-      <FlaskConical className="h-3.5 w-3.5 shrink-0" />
+    <div role="note" className="flex items-center gap-2 rounded-lg border border-warning/30 bg-warning/5 px-3 py-2 text-[11.5px] text-warning">
+      <FlaskConical aria-hidden="true" className="h-3.5 w-3.5 shrink-0" />
       <span>{children ?? "PROTOTYPE NOTICE: Demonstration data only. No Windows registry, service, file or driver is read or changed."}</span>
     </div>
   );
@@ -294,9 +305,43 @@ export function useSimRun(durationMs = 2200) {
   return { progress, running: progress !== null, start, cancel };
 }
 
+/* ── Stepper (workflow progress: done / current / upcoming) ── */
+export function Stepper({ steps, current, label = "Workflow progress" }: { steps: string[]; current: number; label?: string | undefined }) {
+  return (
+    <ol aria-label={label} className="eo-stepper flex flex-wrap items-center gap-1.5">
+      {steps.map((s, i) => {
+        const state = i < current ? "done" : i === current ? "current" : "upcoming";
+        return (
+          <li key={s} data-state={state} aria-current={state === "current" ? "step" : undefined} className="eo-step flex items-center gap-2 rounded-full border px-2.5 py-1 text-[10px] font-bold uppercase">
+            <span className="eo-step-dot flex h-4 w-4 items-center justify-center rounded-full text-[9px]">{state === "done" ? <CheckIcon aria-hidden="true" className="h-2.5 w-2.5" strokeWidth={4} /> : i + 1}</span>
+            {s}
+            {state === "done" && <span className="sr-only">(completed)</span>}
+          </li>
+        );
+      })}
+    </ol>
+  );
+}
+
+/* ── Loading state (skeleton rows with a live status message) ── */
+export function LoadingState({ label, rows = 3, progress }: { label: string; rows?: number | undefined; progress?: number | null | undefined }) {
+  return (
+    <div role="status" aria-live="polite" className="space-y-2">
+      <div className="flex items-center justify-between text-[11px] font-bold uppercase text-cyan">
+        <span className="flex items-center gap-2"><span aria-hidden="true" className="eo-pulse-dot h-1.5 w-1.5 rounded-full bg-cyan" />{label}</span>
+        {progress != null && <span className="font-mono">{Math.round(progress)}%</span>}
+      </div>
+      {progress != null && <Bar value={progress} />}
+      {Array.from({ length: rows }, (_, i) => (
+        <div key={i} aria-hidden="true" className="eo-skeleton h-14 rounded-xl border border-border" style={{ animationDelay: `${i * 120}ms` }} />
+      ))}
+    </div>
+  );
+}
+
 export function EmptyState({ title, sub, action }: { title: string; sub: string; action?: ReactNode | undefined }) {
   return (
-    <div className="flex flex-col items-center justify-center rounded-xl border border-dashed border-border-strong px-6 py-10 text-center">
+    <div className="eo-empty flex flex-col items-center justify-center rounded-xl border border-dashed border-border-strong px-6 py-10 text-center">
       <div className="eo-label text-foreground">{title}</div>
       <p className="mt-1 max-w-md text-xs text-muted-foreground">{sub}</p>
       {action && <div className="mt-4">{action}</div>}
