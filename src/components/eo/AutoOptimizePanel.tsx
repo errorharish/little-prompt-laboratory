@@ -9,7 +9,9 @@ import { autoOptimize, useAutoOptimize, useNow, type AutoState } from "./autoOpt
 import { MAINT_TASKS, formatCountdown, formatInterval } from "@/lib/eo/autoOptimize";
 
 export const clockTime = (t: number | null) =>
-  t ? new Date(t).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit", hour12: false }) : "—";
+  t
+    ? new Date(t).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit", hour12: false })
+    : "—";
 
 export function relTime(t: number | null, now: number) {
   if (!t) return "Never";

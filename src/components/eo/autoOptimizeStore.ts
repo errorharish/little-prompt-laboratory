@@ -148,7 +148,9 @@ function step() {
   const cur = run.items[idx];
   if (!cur) return finish();
   if (cur.state === "Pending") {
-    set({ run: { ...run, items: run.items.map((i, j) => (j === idx ? { ...i, state: "Running" } : i)) } });
+    set({
+      run: { ...run, items: run.items.map((i, j) => (j === idx ? { ...i, state: "Running" } : i)) },
+    });
     stepTimer = setTimeout(step, STEP_MS);
     return;
   }
@@ -204,7 +206,12 @@ function tick() {
   set({ nextAt: nextRunAt(Date.now(), s.config.intervalMin) });
   if (decision === "start") startRun("Schedule");
   else if (decision === "queue") set({ queued: true });
-  else event("Scheduled run skipped", "The previous run was still in progress (overlap policy: skip).", "warning");
+  else
+    event(
+      "Scheduled run skipped",
+      "The previous run was still in progress (overlap policy: skip).",
+      "warning",
+    );
 }
 
 /* ── Boot: load persisted state once per page load (= "application launch") ── */
@@ -249,13 +256,25 @@ export const autoOptimize = {
   saveConfig(next: AutoConfig) {
     const prev = state.config;
     const cfg = sanitizeConfig(next);
-    const resched = cfg.enabled && !cfg.paused && (!prev.enabled || prev.intervalMin !== cfg.intervalMin || prev.paused);
+    const resched =
+      cfg.enabled &&
+      !cfg.paused &&
+      (!prev.enabled || prev.intervalMin !== cfg.intervalMin || prev.paused);
     set({
       config: cfg,
-      nextAt: cfg.enabled && !cfg.paused ? (resched ? nextRunAt(Date.now(), cfg.intervalMin) : state.nextAt) : null,
+      nextAt:
+        cfg.enabled && !cfg.paused
+          ? resched
+            ? nextRunAt(Date.now(), cfg.intervalMin)
+            : state.nextAt
+          : null,
       pausedRemaining: cfg.paused ? state.pausedRemaining : null,
     });
-    event("Configuration saved", `${cfg.tasks.length} tasks · interval ${cfg.intervalMin} min.`, "cyan");
+    event(
+      "Configuration saved",
+      `${cfg.tasks.length} tasks · interval ${cfg.intervalMin} min.`,
+      "cyan",
+    );
   },
   enable() {
     if (!state.config.tasks.length) return;
@@ -264,10 +283,19 @@ export const autoOptimize = {
       nextAt: nextRunAt(Date.now(), s.config.intervalMin),
       pausedRemaining: null,
     }));
-    event("Auto Optimize enabled", "Schedule started (simulated, runs while this tab is open).", "cyan");
+    event(
+      "Auto Optimize enabled",
+      "Schedule started (simulated, runs while this tab is open).",
+      "cyan",
+    );
   },
   disable() {
-    set((s) => ({ config: { ...s.config, enabled: false, paused: false }, nextAt: null, pausedRemaining: null, queued: false }));
+    set((s) => ({
+      config: { ...s.config, enabled: false, paused: false },
+      nextAt: null,
+      pausedRemaining: null,
+      queued: false,
+    }));
     event("Auto Optimize disabled", "No further maintenance is scheduled.");
   },
   pause() {
@@ -308,7 +336,11 @@ export const autoOptimize = {
     }
     event(
       "Application launched (simulated)",
-      c.enabled ? (c.runOnLaunch ? "Schedule restored; launch maintenance started." : "Schedule restored.") : "Auto Optimize is disabled.",
+      c.enabled
+        ? c.runOnLaunch
+          ? "Schedule restored; launch maintenance started."
+          : "Schedule restored."
+        : "Auto Optimize is disabled.",
       "cyan",
     );
   },
@@ -316,7 +348,11 @@ export const autoOptimize = {
     const c = state.config;
     if (c.closeBehavior === "background" && c.enabled) {
       set({ power: "background" });
-      event("Application closed (simulated)", "Background agent keeps the schedule running.", "cyan");
+      event(
+        "Application closed (simulated)",
+        "Background agent keeps the schedule running.",
+        "cyan",
+      );
       return;
     }
     if (c.closeBehavior === "exit-run" && c.enabled && !state.run) startRun("App exit");
@@ -332,7 +368,10 @@ export const autoOptimize = {
     const c = state.config;
     set({ power: c.runOnWindowsStartup ? "background" : "pc-off" });
     if (!c.runOnWindowsStartup) {
-      event("Windows started (simulated)", "Windows Startup integration is off — Auto Optimize waits until you open the app.");
+      event(
+        "Windows started (simulated)",
+        "Windows Startup integration is off — Auto Optimize waits until you open the app.",
+      );
       return;
     }
     if (c.enabled && !c.paused)
@@ -370,7 +409,11 @@ export function useAutoOptimizeBoot() {
 
 export function useAutoOptimize(): AutoState {
   useEffect(() => boot(), []);
-  return useSyncExternalStore(subscribe, () => state, () => INITIAL);
+  return useSyncExternalStore(
+    subscribe,
+    () => state,
+    () => INITIAL,
+  );
 }
 
 /* ── 1-second clock for countdowns (only subscribed components re-render) ── */
@@ -407,4 +450,3 @@ export function useNow() {
   );
   return s * 1000;
 }
-

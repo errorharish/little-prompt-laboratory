@@ -429,8 +429,28 @@ export const COMPONENT_MAP: { web: string; wpf: string; note: string }[] = [
   },
   {
     web: "AutoOptimizePanel",
-    wpf: "Dashboard hero card bound to OneClickOptimizationViewModel",
-    note: "Same Analyze → Review → Confirm → Result flow as the 1-Click page",
+    wpf: "Dashboard hero card bound to AutoOptimizeViewModel",
+    note: "Status pill, countdown, interval track, facts grid, recent maintenance, Enable / Pause / Resume / Run now / Configure",
+  },
+  {
+    web: "AutoChip",
+    wpf: "Title-bar Border bound to AutoOptimizeViewModel.NextRunCountdown",
+    note: "Hidden while Auto Optimize is disabled",
+  },
+  {
+    web: "Maintenance task group / row",
+    wpf: "Grouped ItemsControl (CollectionViewSource GroupDescriptions = Category)",
+    note: "Group select-all CheckBox, risk Badge, Expander for details",
+  },
+  {
+    web: "Radio card",
+    wpf: "RadioButton with card ControlTemplate",
+    note: "role=radio, aria-checked; used for close behaviour",
+  },
+  {
+    web: "Save bar",
+    wpf: "Bottom-docked Border, visible when ViewModel.IsDirty",
+    note: "Discard / Save & apply; Save disabled while the interval is invalid",
   },
   {
     web: "Segmented",
@@ -455,7 +475,7 @@ export const COMPONENT_MAP: { web: string; wpf: string; note: string }[] = [
 ];
 
 export const LAYOUT_RULES: string[] = [
-  "Dashboard order: Overall Optimization Score (left, 272–312px) and Auto Optimize (remaining width) share the first row; then System Overview tiles, Optimization Status + Recent Activity, Quick Actions.",
+  "Dashboard order: Overall Optimization Score (left, 272–312px) and the Auto Optimize maintenance panel (remaining width) share the first row; then System Overview tiles, a single-row System Information strip, Quick Actions. Optimization Status is removed.",
   "The full telemetry chart lives only on System Telemetry. The Dashboard keeps compact sample tiles and a link to it.",
   "Hero panels (score, Auto Optimize, RAM Limiter, telemetry console, V4 primary action) are the only surfaces with hero glass; dense data panels stay solid.",
   "Phase areas that swap content (Auto Optimize body) keep a fixed 212px height so the page never jumps.",
@@ -469,4 +489,92 @@ export const SLIDER_SPEC: string[] = [
   "Marks (min, recommended, intermediate, max) sit under the track using the same thumb-travel formula; the recommended mark is green.",
   "The numeric field and slider share one value. Valid typing updates live; blur or Enter clamps to min/max and snaps to the step; Esc reverts; arrow keys step.",
   "RAM Limiter: 0.5–8 GB in 0.25 GB steps, recommended / default 2 GB (the original 2048 MB default). Reset returns to 2 GB; Revert returns to the last enforced value; Enforce target is simulated.",
+];
+
+/** Auto Optimize — recurring maintenance engine (prototype behaviour = intended native behaviour). */
+export const AUTO_OPTIMIZE_SPEC: { area: string; detail: string }[] = [
+  {
+    area: "Concept",
+    detail:
+      "A recurring maintenance engine that runs only the tasks the user selected, on a schedule. It is separate from the 1-Click Analyze → Review → Confirm workflow.",
+  },
+  {
+    area: "Tasks",
+    detail:
+      "Grouped: Temporary files (Windows, current user, crash dumps) · Memory (Empty Standby List) · Browser cache (Chrome, Edge, Firefox — cache only) · Recycle Bin · System caches (DirectX shader cache, DNS). Fresh configuration selects only the SAFE recommended tasks; browser and Recycle Bin tasks start unselected.",
+  },
+  {
+    area: "Schedule",
+    detail:
+      "Presets 1 / 5 / 10 / 30 / 60 minutes, plus Custom from 1 minute to 24 hours in whole minutes (minutes or hours unit). Zero, negative, empty and >24 h values are rejected inline and block Save.",
+  },
+  {
+    area: "Status",
+    detail:
+      "Enabled · Paused · Running · Disabled · Suspended. Shows interval, next run time, live countdown, interval progress, last run, task count and profile. Pause holds the remaining time; Resume continues it.",
+  },
+  {
+    area: "Overlap",
+    detail:
+      "Runs never overlap. Policy Skip: a due run is skipped and logged. Policy Queue: one run waits; further due runs are skipped.",
+  },
+  {
+    area: "Unattended runs",
+    detail:
+      "Schedule, launch, exit and Windows-startup runs are unattended: LOW-risk tasks are skipped in safe-only mode, the Recycle Bin is skipped while “Ask before emptying” is on, and a running browser's cache is skipped — the browser is never closed.",
+  },
+  {
+    area: "Results",
+    detail:
+      "Every selected task ends as Completed, Skipped (with reason), Cancelled or Not run. A run with any cancelled task is reported Cancelled, with skips Partial; success is never reported for unfinished work. Amounts shown are sample data.",
+  },
+  {
+    area: "Configuration",
+    detail:
+      "Edits are a draft; Save & apply commits. The master switch and Pause / Resume apply immediately. Saving with a new interval restarts the countdown.",
+  },
+  {
+    area: "Prototype limits",
+    detail:
+      "The schedule runs only while the browser tab is open. App close, Windows startup and shutdown are simulated events on the Auto Optimize page; a missed schedule while the tab was closed is logged honestly.",
+  },
+];
+
+/** Future native (.NET 8 WPF) architecture — documented, not implemented in the prototype. */
+export const NATIVE_AUTO_ARCHITECTURE: { area: string; detail: string }[] = [
+  {
+    area: "Background agent",
+    detail:
+      "A small per-user agent process (no admin service required for user-scope tasks) hosts the scheduler, started at sign-in via HKCU\\…\\Run or a Task Scheduler logon trigger when “Start with Windows” is on. The WPF UI talks to it over a named pipe.",
+  },
+  {
+    area: "Persistent scheduling",
+    detail:
+      "Config (tasks, interval, policies) and LastRunUtc / NextRunUtc are stored as JSON in %LOCALAPPDATA%\\ErrorOptimizer. A PeriodicTimer computes NextRunUtc from LastRunUtc; on resume from sleep the agent re-evaluates rather than firing a backlog.",
+  },
+  {
+    area: "Application close",
+    detail:
+      "Stop: the UI tells the agent to stop scheduling until next launch. Run once: the UI requests one exit run, then exits without waiting for it. Background: the agent keeps scheduling with the UI closed.",
+  },
+  {
+    area: "Shutdown / restart",
+    detail:
+      "The agent listens for session-ending (WM_QUERYENDSESSION / SystemEvents.SessionEnding), cancels the active run via CancellationToken and never blocks or delays shutdown. Nothing runs while the PC is off; the schedule resumes after the next sign-in according to the startup policy.",
+  },
+  {
+    area: "Task execution",
+    detail:
+      "One SemaphoreSlim(1) guards runs (no overlap). Each task is an IMaintenanceTask with a CancellationToken; locked files are skipped (IOException / UnauthorizedAccess), files are never force-unlocked, and browser tasks check for the browser process first and skip if it is running.",
+  },
+  {
+    area: "Safe cleanup",
+    detail:
+      "Temp cleanup honours the age threshold; browser tasks delete only cache folders (never Cookies, Login Data, Web Data or History). Recycle Bin uses SHEmptyRecycleBin and requires explicit opt-out of confirmation for unattended runs.",
+  },
+  {
+    area: "History & errors",
+    detail:
+      "Each run writes a history record (trigger, start/end, per-task outcome, bytes freed when measured, error message). Failures are shown verbatim; there is no simulated or fabricated output.",
+  },
 ];

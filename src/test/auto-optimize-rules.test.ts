@@ -28,7 +28,8 @@ describe("Auto Optimize schedule", () => {
     expect(validateCustomInterval("1441", "minutes").ok).toBe(false);
   });
   it("rejects zero, negative, empty and non-numeric intervals", () => {
-    for (const v of ["0", "-5", "", "abc"]) expect(validateCustomInterval(v, "minutes").ok).toBe(false);
+    for (const v of ["0", "-5", "", "abc"])
+      expect(validateCustomInterval(v, "minutes").ok).toBe(false);
   });
   it("rejects fractions of a minute", () => {
     expect(validateCustomInterval("1.5", "minutes").ok).toBe(false);
@@ -55,9 +56,15 @@ describe("Auto Optimize safety rules", () => {
     expect(p?.run).toBe(false);
   });
   it("skips the Recycle Bin on unattended runs while confirmation is on", () => {
-    expect(planRun(cfg({ tasks: ["recycle-bin"], recycleConfirm: true }), "Schedule")[0]?.run).toBe(false);
-    expect(planRun(cfg({ tasks: ["recycle-bin"], recycleConfirm: true }), "Manual")[0]?.run).toBe(true);
-    expect(planRun(cfg({ tasks: ["recycle-bin"], recycleConfirm: false }), "Schedule")[0]?.run).toBe(true);
+    expect(planRun(cfg({ tasks: ["recycle-bin"], recycleConfirm: true }), "Schedule")[0]?.run).toBe(
+      false,
+    );
+    expect(planRun(cfg({ tasks: ["recycle-bin"], recycleConfirm: true }), "Manual")[0]?.run).toBe(
+      true,
+    );
+    expect(
+      planRun(cfg({ tasks: ["recycle-bin"], recycleConfirm: false }), "Schedule")[0]?.run,
+    ).toBe(true);
   });
   it("browser tasks are cache-only and never selected by default", () => {
     const browser = MAINT_TASKS.filter((t) => t.category === "BROWSER");

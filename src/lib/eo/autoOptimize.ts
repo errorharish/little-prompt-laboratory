@@ -42,7 +42,8 @@ export const MAINT_TASKS: MaintTask[] = [
     desc: "Clears C:\\Windows\\Temp. Files in use are skipped.",
     risk: "SAFE",
     source: "Auto Optimize · Clean Temp Files",
-    details: "Only files older than the safe-age threshold are removed. Locked files are skipped, never forced.",
+    details:
+      "Only files older than the safe-age threshold are removed. Locked files are skipped, never forced.",
     recommended: true,
     sample: "412 MB · 1,284 files",
   },
@@ -87,7 +88,8 @@ export const MAINT_TASKS: MaintTask[] = [
     risk: "SAFE",
     browser: "Chrome",
     source: "Storage · Browser caches (logins preserved)",
-    details: "Cache folders only. Skipped while Chrome is running — Chrome is never closed for you.",
+    details:
+      "Cache folders only. Skipped while Chrome is running — Chrome is never closed for you.",
     recommended: false,
     sample: "540 MB",
   },
@@ -111,7 +113,8 @@ export const MAINT_TASKS: MaintTask[] = [
     risk: "SAFE",
     browser: "Firefox",
     source: "Storage · Browser caches (logins preserved)",
-    details: "Cache folders only. Skipped while Firefox is running — Firefox is never closed for you.",
+    details:
+      "Cache folders only. Skipped while Firefox is running — Firefox is never closed for you.",
     recommended: false,
     sample: "188 MB",
   },
@@ -122,7 +125,8 @@ export const MAINT_TASKS: MaintTask[] = [
     desc: "Permanently deletes everything in the Recycle Bin on all drives.",
     risk: "CONFIRM",
     source: "Storage · Windows Recycle Bin",
-    details: "Deleted items cannot be restored afterwards. Governed by the Recycle Bin confirmation setting.",
+    details:
+      "Deleted items cannot be restored afterwards. Governed by the Recycle Bin confirmation setting.",
     recommended: false,
     sample: "1.4 GB · 61 items",
   },

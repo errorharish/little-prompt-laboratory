@@ -14,7 +14,18 @@ import {
   Trash2,
   Zap,
 } from "lucide-react";
-import { Badge, Btn, Card, Check, EmptyState, Label, PageHeader, SectionTitle, SimNotice, Toggle } from "../kit";
+import {
+  Badge,
+  Btn,
+  Card,
+  Check,
+  EmptyState,
+  Label,
+  PageHeader,
+  SectionTitle,
+  SimNotice,
+  Toggle,
+} from "../kit";
 import { Segmented } from "../controls";
 import { autoOptimize, useAutoOptimize, useNow, type HistoryEntry } from "../autoOptimizeStore";
 import { StatusPill, clockTime, engineStatus, relTime } from "../AutoOptimizePanel";
@@ -32,8 +43,16 @@ import {
 } from "@/lib/eo/autoOptimize";
 import { cn } from "@/lib/utils";
 
-const RISK_TONE: Record<MaintRisk, "success" | "warning"> = { SAFE: "success", LOW: "success", CONFIRM: "warning" };
-const RISK_LABEL: Record<MaintRisk, string> = { SAFE: "SAFE", LOW: "LOW RISK", CONFIRM: "PERMANENT" };
+const RISK_TONE: Record<MaintRisk, "success" | "warning"> = {
+  SAFE: "success",
+  LOW: "success",
+  CONFIRM: "warning",
+};
+const RISK_LABEL: Record<MaintRisk, string> = {
+  SAFE: "SAFE",
+  LOW: "LOW RISK",
+  CONFIRM: "PERMANENT",
+};
 const PRESET_LABELS = PRESET_INTERVALS.map((m) => (m === 60 ? "60 min" : `${m} min`));
 const BROWSERS = ["Chrome", "Edge", "Firefox"];
 
@@ -52,12 +71,16 @@ export function AutoOptimizePage() {
     if (!dirtyRef.current) setDraft(s.config);
   }, [s.config]);
 
-  const presetIdx = PRESET_INTERVALS.indexOf(draft.intervalMin as (typeof PRESET_INTERVALS)[number]);
+  const presetIdx = PRESET_INTERVALS.indexOf(
+    draft.intervalMin as (typeof PRESET_INTERVALS)[number],
+  );
   const [custom, setCustom] = useState(presetIdx === -1);
   const [customText, setCustomText] = useState(String(draft.intervalMin));
   const [unit, setUnit] = useState<IntervalUnit>("minutes");
   useEffect(() => {
-    if (PRESET_INTERVALS.indexOf(s.config.intervalMin as (typeof PRESET_INTERVALS)[number]) === -1) {
+    if (
+      PRESET_INTERVALS.indexOf(s.config.intervalMin as (typeof PRESET_INTERVALS)[number]) === -1
+    ) {
       setCustom(true);
       const m = s.config.intervalMin;
       if (m % 60 === 0) {
@@ -71,7 +94,9 @@ export function AutoOptimizePage() {
 
   const patch = (p: Partial<AutoConfig>) => setDraft((d) => ({ ...d, ...p }));
   const toggleTask = (id: string) =>
-    patch({ tasks: draft.tasks.includes(id) ? draft.tasks.filter((t) => t !== id) : [...draft.tasks, id] });
+    patch({
+      tasks: draft.tasks.includes(id) ? draft.tasks.filter((t) => t !== id) : [...draft.tasks, id],
+    });
   const status = engineStatus(s);
   const save = () => {
     if (intervalError) return;
@@ -92,7 +117,11 @@ export function AutoOptimizePage() {
         sub="Choose which maintenance tasks run automatically, and how often. Runs are simulated in this prototype."
         actions={
           <>
-            <Btn variant="ghost" disabled={!!s.run || !s.config.tasks.length} onClick={autoOptimize.runNow}>
+            <Btn
+              variant="ghost"
+              disabled={!!s.run || !s.config.tasks.length}
+              onClick={autoOptimize.runNow}
+            >
               <Zap aria-hidden="true" className="h-3.5 w-3.5" /> Run now
             </Btn>
             {s.config.enabled &&
@@ -111,7 +140,10 @@ export function AutoOptimizePage() {
 
       {/* Master control + live status */}
       <Card className="eo-hero">
-        <div className="eo-auto-master grid items-center gap-4" style={{ gridTemplateColumns: "auto minmax(0,1fr) auto" }}>
+        <div
+          className="eo-auto-master grid items-center gap-4"
+          style={{ gridTemplateColumns: "auto minmax(0,1fr) auto" }}
+        >
           <Toggle
             on={s.config.enabled}
             label="Auto Optimize"
@@ -180,7 +212,9 @@ export function AutoOptimizePage() {
                 <li key={i.taskId} className="eo-run-row" data-state={i.state}>
                   <span aria-hidden="true" className="eo-run-dot" />
                   <span className="min-w-0 flex-1 truncate">{i.name}</span>
-                  <span className="eo-run-state">{i.state === "Running" ? "Working…" : i.state}</span>
+                  <span className="eo-run-state">
+                    {i.state === "Running" ? "Working…" : i.state}
+                  </span>
                 </li>
               ))}
             </ul>
@@ -188,23 +222,37 @@ export function AutoOptimizePage() {
         )}
       </Card>
 
-      <div className="eo-auto-layout grid items-start gap-3.5" style={{ gridTemplateColumns: "minmax(0,1.45fr) minmax(0,1fr)" }}>
+      <div
+        className="eo-auto-layout grid items-start gap-3.5"
+        style={{ gridTemplateColumns: "minmax(0,1.45fr) minmax(0,1fr)" }}
+      >
         {/* Maintenance tasks */}
         <Card>
           <SectionTitle
             title="MAINTENANCE TASKS"
-            badge={<Badge tone="cyan">{draft.tasks.length} OF {MAINT_TASKS.length}</Badge>}
+            badge={
+              <Badge tone="cyan">
+                {draft.tasks.length} OF {MAINT_TASKS.length}
+              </Badge>
+            }
             sub="Only checked tasks ever run. Browser cleanup removes cache only."
             right={
               <>
                 <Btn
                   size="sm"
                   variant="ghost"
-                  onClick={() => patch({ tasks: MAINT_TASKS.filter((t) => t.recommended).map((t) => t.id) })}
+                  onClick={() =>
+                    patch({ tasks: MAINT_TASKS.filter((t) => t.recommended).map((t) => t.id) })
+                  }
                 >
                   Recommended
                 </Btn>
-                <Btn size="sm" variant="ghost" disabled={!draft.tasks.length} onClick={() => patch({ tasks: [] })}>
+                <Btn
+                  size="sm"
+                  variant="ghost"
+                  disabled={!draft.tasks.length}
+                  onClick={() => patch({ tasks: [] })}
+                >
                   Clear
                 </Btn>
               </>
@@ -215,7 +263,11 @@ export function AutoOptimizePage() {
               const items = MAINT_TASKS.filter((t) => t.category === cat.key);
               const on = items.filter((t) => draft.tasks.includes(t.id)).length;
               return (
-                <section key={cat.key} aria-labelledby={`eo-cat-${cat.key}`} className="eo-task-group">
+                <section
+                  key={cat.key}
+                  aria-labelledby={`eo-cat-${cat.key}`}
+                  className="eo-task-group"
+                >
                   <div className="eo-task-group-head">
                     <Check
                       label={`Select all ${cat.title}`}
@@ -260,7 +312,10 @@ export function AutoOptimizePage() {
         <div className="space-y-3.5">
           {/* Schedule */}
           <Card>
-            <SectionTitle title="SCHEDULE" sub="How often selected tasks run while Auto Optimize is on." />
+            <SectionTitle
+              title="SCHEDULE"
+              sub="How often selected tasks run while Auto Optimize is on."
+            />
             <Segmented
               label="Schedule interval"
               fill
@@ -280,7 +335,10 @@ export function AutoOptimizePage() {
             />
             {custom && (
               <div className="eo-swap mt-3">
-                <label htmlFor="eo-custom-interval" className="eo-label mb-1 block text-[9.5px] text-muted-foreground">
+                <label
+                  htmlFor="eo-custom-interval"
+                  className="eo-label mb-1 block text-[9.5px] text-muted-foreground"
+                >
                   CUSTOM INTERVAL · 1 MINUTE TO 24 HOURS
                 </label>
                 <div className="flex items-center gap-2">
@@ -295,7 +353,10 @@ export function AutoOptimizePage() {
                       const r = validateCustomInterval(e.target.value, unit);
                       if (r.ok) patch({ intervalMin: r.minutes });
                     }}
-                    className={cn("eo-input h-8 w-24 font-mono", intervalError && "eo-input-invalid")}
+                    className={cn(
+                      "eo-input h-8 w-24 font-mono",
+                      intervalError && "eo-input-invalid",
+                    )}
                   />
                   <Segmented
                     label="Interval unit"
@@ -312,9 +373,13 @@ export function AutoOptimizePage() {
                 <p
                   id="eo-custom-interval-hint"
                   role={intervalError ? "alert" : undefined}
-                  className={cn("mt-1 text-[11px]", intervalError ? "text-destructive" : "text-muted-foreground")}
+                  className={cn(
+                    "mt-1 text-[11px]",
+                    intervalError ? "text-destructive" : "text-muted-foreground",
+                  )}
                 >
-                  {intervalError ?? `${formatInterval(draft.intervalMin)} · examples: 2 min, 45 min, 12 hours`}
+                  {intervalError ??
+                    `${formatInterval(draft.intervalMin)} · examples: 2 min, 45 min, 12 hours`}
                 </p>
               </div>
             )}
@@ -343,7 +408,9 @@ export function AutoOptimizePage() {
                 value={draft.overlap === "skip" ? "Skip next run" : "Queue one run"}
                 onChange={(v) => patch({ overlap: v === "Skip next run" ? "skip" : "queue" })}
               />
-              <p className="mt-1 text-[10.5px] text-subtle">Runs never overlap. At most one run waits in the queue.</p>
+              <p className="mt-1 text-[10.5px] text-subtle">
+                Runs never overlap. At most one run waits in the queue.
+              </p>
             </div>
             <div className="mt-3">
               <Label className="mb-1.5 text-[9.5px]">AUTOMATION PROFILE</Label>
@@ -359,20 +426,37 @@ export function AutoOptimizePage() {
 
           {/* Lifecycle */}
           <Card>
-            <SectionTitle title="APPLICATION & WINDOWS" sub="When Auto Optimize starts and stops." />
+            <SectionTitle
+              title="APPLICATION & WINDOWS"
+              sub="When Auto Optimize starts and stops."
+            />
             <SettingRow
               title="Run on application launch"
               sub="Run eligible tasks once when the app opens."
-              control={<Toggle on={draft.runOnLaunch} label="Run on application launch" onChange={(v) => patch({ runOnLaunch: v })} />}
+              control={
+                <Toggle
+                  on={draft.runOnLaunch}
+                  label="Run on application launch"
+                  onChange={(v) => patch({ runOnLaunch: v })}
+                />
+              }
             />
             <div className="eo-setting-row block">
               <div className="text-[12.5px] font-semibold">When the application closes</div>
-              <div role="radiogroup" aria-label="When the application closes" className="mt-2 space-y-1.5">
+              <div
+                role="radiogroup"
+                aria-label="When the application closes"
+                className="mt-2 space-y-1.5"
+              >
                 {(
                   [
                     ["stop", "Stop scheduling", "Nothing runs until you open the app again."],
                     ["exit-run", "Run once, then stop", "Eligible tasks run a final time on exit."],
-                    ["background", "Keep running in background", "Native app: background agent continues the schedule."],
+                    [
+                      "background",
+                      "Keep running in background",
+                      "Native app: background agent continues the schedule.",
+                    ],
                   ] as const
                 ).map(([v, t, d]) => (
                   <button
@@ -396,7 +480,11 @@ export function AutoOptimizePage() {
               title="Start with Windows"
               sub="Native app: the scheduler starts after you sign in to Windows."
               control={
-                <Toggle on={draft.runOnWindowsStartup} label="Start with Windows" onChange={(v) => patch({ runOnWindowsStartup: v })} />
+                <Toggle
+                  on={draft.runOnWindowsStartup}
+                  label="Start with Windows"
+                  onChange={(v) => patch({ runOnWindowsStartup: v })}
+                />
               }
             />
             {draft.runOnWindowsStartup && (
@@ -406,34 +494,60 @@ export function AutoOptimizePage() {
                   label="Startup maintenance policy"
                   fill
                   options={[`Run after ${STARTUP_DELAY_MIN} min`, "Wait for next interval"]}
-                  value={draft.startupPolicy === "after-delay" ? `Run after ${STARTUP_DELAY_MIN} min` : "Wait for next interval"}
-                  onChange={(v) => patch({ startupPolicy: v.startsWith("Run") ? "after-delay" : "next-interval" })}
+                  value={
+                    draft.startupPolicy === "after-delay"
+                      ? `Run after ${STARTUP_DELAY_MIN} min`
+                      : "Wait for next interval"
+                  }
+                  onChange={(v) =>
+                    patch({ startupPolicy: v.startsWith("Run") ? "after-delay" : "next-interval" })
+                  }
                 />
               </div>
             )}
             <p className="mt-2 text-[10.5px] text-subtle">
-              Shutdown and restart are never delayed. Nothing runs while the PC is off; the schedule resumes after the next start.
+              Shutdown and restart are never delayed. Nothing runs while the PC is off; the schedule
+              resumes after the next start.
             </p>
           </Card>
 
           {/* Safety */}
           <Card>
-            <SectionTitle title="SAFETY PREFERENCES" badge={<ShieldCheck aria-hidden="true" className="h-3.5 w-3.5 text-success" />} />
+            <SectionTitle
+              title="SAFETY PREFERENCES"
+              badge={<ShieldCheck aria-hidden="true" className="h-3.5 w-3.5 text-success" />}
+            />
             <SettingRow
               title="Unattended runs: safe tasks only"
               sub="LOW-risk tasks run only when you press Run now."
-              control={<Toggle on={draft.safeOnly} label="Unattended runs: safe tasks only" onChange={(v) => patch({ safeOnly: v })} />}
+              control={
+                <Toggle
+                  on={draft.safeOnly}
+                  label="Unattended runs: safe tasks only"
+                  onChange={(v) => patch({ safeOnly: v })}
+                />
+              }
             />
             <SettingRow
               title="Keep recent temporary files"
               sub="Skip temp files changed in the last 24 hours."
-              control={<Toggle on={draft.skipRecentTemp} label="Keep recent temporary files" onChange={(v) => patch({ skipRecentTemp: v })} />}
+              control={
+                <Toggle
+                  on={draft.skipRecentTemp}
+                  label="Keep recent temporary files"
+                  onChange={(v) => patch({ skipRecentTemp: v })}
+                />
+              }
             />
             <SettingRow
               title="Ask before emptying the Recycle Bin"
               sub="Scheduled runs then skip the Recycle Bin — there is nobody to ask."
               control={
-                <Toggle on={draft.recycleConfirm} label="Ask before emptying the Recycle Bin" onChange={(v) => patch({ recycleConfirm: v })} />
+                <Toggle
+                  on={draft.recycleConfirm}
+                  label="Ask before emptying the Recycle Bin"
+                  onChange={(v) => patch({ recycleConfirm: v })}
+                />
               }
             />
             <div className="eo-setting-row">
@@ -457,7 +571,9 @@ export function AutoOptimizePage() {
                       variant={open ? "secondary" : "ghost"}
                       pressed={open}
                       onClick={() =>
-                        autoOptimize.setOpenBrowsers(open ? s.openBrowsers.filter((x) => x !== b) : [...s.openBrowsers, b])
+                        autoOptimize.setOpenBrowsers(
+                          open ? s.openBrowsers.filter((x) => x !== b) : [...s.openBrowsers, b],
+                        )
                       }
                     >
                       {b} {open ? "open" : "closed"}
@@ -473,14 +589,18 @@ export function AutoOptimizePage() {
       <LifecycleSimulator power={s.power} />
       <History entries={s.history} now={now} />
       <SimNotice>
-        PROTOTYPE: the schedule runs only while this tab is open. No files, browser data, Recycle Bin, memory, service or
-        Windows setting is read or changed. Lifecycle events are simulated.
+        PROTOTYPE: the schedule runs only while this tab is open. No files, browser data, Recycle
+        Bin, memory, service or Windows setting is read or changed. Lifecycle events are simulated.
       </SimNotice>
 
       {/* Save bar */}
       <div className="eo-save-bar" data-visible={dirty || undefined} aria-hidden={!dirty}>
         <span className="text-[12px] font-semibold">
-          {intervalError ? <span className="text-destructive">{intervalError}</span> : "You have unsaved changes"}
+          {intervalError ? (
+            <span className="text-destructive">{intervalError}</span>
+          ) : (
+            "You have unsaved changes"
+          )}
         </span>
         <div className="flex gap-2">
           <Btn variant="ghost" disabled={!dirty} onClick={() => setDraft(s.config)}>
@@ -539,11 +659,15 @@ function TaskRow({
         <div className="min-w-0 flex-1">
           <div className="flex items-center gap-2">
             <span className="truncate text-[12px] font-semibold">{t.name}</span>
-            {t.category === "BROWSER" && <span className="text-[9.5px] font-bold text-success">CACHE ONLY</span>}
+            {t.category === "BROWSER" && (
+              <span className="text-[9.5px] font-bold text-success">CACHE ONLY</span>
+            )}
           </div>
           <p className="truncate text-[10.5px] text-muted-foreground">{t.desc}</p>
         </div>
-        {on && note && <span className="hidden text-[10px] font-semibold text-warning xl:inline">{note}</span>}
+        {on && note && (
+          <span className="hidden text-[10px] font-semibold text-warning xl:inline">{note}</span>
+        )}
         <Badge tone={RISK_TONE[t.risk]}>{RISK_LABEL[t.risk]}</Badge>
         <Btn
           size="sm"
@@ -554,7 +678,10 @@ function TaskRow({
           controls={`eo-task-${t.id}`}
           onClick={() => setOpen((o) => !o)}
         >
-          <ChevronDown aria-hidden="true" className={cn("eo-chevron h-3.5 w-3.5", open && "rotate-180")} />
+          <ChevronDown
+            aria-hidden="true"
+            className={cn("eo-chevron h-3.5 w-3.5", open && "rotate-180")}
+          />
         </Btn>
       </div>
       {open && (
@@ -633,7 +760,10 @@ function History({ entries, now }: { entries: HistoryEntry[]; now: number }) {
   const [open, setOpen] = useState<number | null>(null);
   const [filter, setFilter] = useState("All");
   const shown = useMemo(
-    () => entries.filter((e) => (filter === "All" ? true : filter === "Runs" ? e.kind === "run" : e.kind === "event")),
+    () =>
+      entries.filter((e) =>
+        filter === "All" ? true : filter === "Runs" ? e.kind === "run" : e.kind === "event",
+      ),
     [entries, filter],
   );
   return (
@@ -646,8 +776,18 @@ function History({ entries, now }: { entries: HistoryEntry[]; now: number }) {
           sub="Each run lists every selected task and what happened to it. Amounts are sample data."
           right={
             <>
-              <Segmented label="History filter" options={["All", "Runs", "Events"]} value={filter} onChange={setFilter} />
-              <Btn size="sm" variant="ghost" disabled={!entries.length} onClick={autoOptimize.clearHistory}>
+              <Segmented
+                label="History filter"
+                options={["All", "Runs", "Events"]}
+                value={filter}
+                onChange={setFilter}
+              />
+              <Btn
+                size="sm"
+                variant="ghost"
+                disabled={!entries.length}
+                onClick={autoOptimize.clearHistory}
+              >
                 <Trash2 aria-hidden="true" className="h-3.5 w-3.5" /> Clear
               </Btn>
             </>
@@ -677,17 +817,26 @@ function History({ entries, now }: { entries: HistoryEntry[]; now: number }) {
                 ) : (
                   <li key={e.id}>
                     <div className="eo-history-row">
-                      <span className="font-mono text-[11px] text-subtle" title={relTime(e.at, now)}>
+                      <span
+                        className="font-mono text-[11px] text-subtle"
+                        title={relTime(e.at, now)}
+                      >
                         {clockTime(e.at)}
                       </span>
                       <span className="truncate font-semibold">{e.trigger} run</span>
                       <span className="truncate text-muted-foreground">
                         {e.summary.completed} completed · {e.summary.skipped} skipped
-                        {e.summary.cancelled ? ` · ${e.summary.cancelled} cancelled` : ""} · {(e.durationMs / 1000).toFixed(1)} s ·
-                        0 changes on this PC
+                        {e.summary.cancelled ? ` · ${e.summary.cancelled} cancelled` : ""} ·{" "}
+                        {(e.durationMs / 1000).toFixed(1)} s · 0 changes on this PC
                       </span>
                       <Badge
-                        tone={e.summary.status === "Completed" ? "success" : e.summary.status === "Cancelled" ? "danger" : "warning"}
+                        tone={
+                          e.summary.status === "Completed"
+                            ? "success"
+                            : e.summary.status === "Cancelled"
+                              ? "danger"
+                              : "warning"
+                        }
                       >
                         {e.summary.status}
                       </Badge>
@@ -699,7 +848,10 @@ function History({ entries, now }: { entries: HistoryEntry[]; now: number }) {
                         expanded={open === e.id}
                         onClick={() => setOpen(open === e.id ? null : e.id)}
                       >
-                        <ChevronDown aria-hidden="true" className={cn("eo-chevron h-3.5 w-3.5", open === e.id && "rotate-180")} />
+                        <ChevronDown
+                          aria-hidden="true"
+                          className={cn("eo-chevron h-3.5 w-3.5", open === e.id && "rotate-180")}
+                        />
                       </Btn>
                     </div>
                     {open === e.id && (
@@ -708,7 +860,9 @@ function History({ entries, now }: { entries: HistoryEntry[]; now: number }) {
                           <li key={i.taskId} className="eo-run-row" data-state={i.state}>
                             <span aria-hidden="true" className="eo-run-dot" />
                             <span className="w-56 shrink-0 truncate font-semibold">{i.name}</span>
-                            <span className="min-w-0 flex-1 truncate text-muted-foreground">{i.note ?? ""}</span>
+                            <span className="min-w-0 flex-1 truncate text-muted-foreground">
+                              {i.note ?? ""}
+                            </span>
                             <span className="eo-run-state">{i.state}</span>
                           </li>
                         ))}
