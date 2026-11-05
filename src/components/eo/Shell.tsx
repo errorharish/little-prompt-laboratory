@@ -7,7 +7,7 @@ import { PAGES, V4_TABS, hrefFor, pageBySlug } from "@/lib/eo/registry";
 
 function Icon({ name, className }: { name: string; className?: string }) {
   const C = (Icons as unknown as Record<string, Icons.LucideIcon>)[name] ?? Icons.Circle;
-  return <C className={className} />;
+  return <C aria-hidden="true" className={className} />;
 }
 
 const DOCK_LABEL: Record<string, string> = {
@@ -28,6 +28,7 @@ export function Shell({ children }: { children: ReactNode }) {
 
   return (
     <div className="flex h-screen flex-col overflow-hidden">
+      <a href="#main-content" className="eo-skip">Skip to page content</a>
       {/* ── Title bar (56px) ── */}
       <header className="eo-shell-header flex h-14 shrink-0 items-center justify-between border-b border-border bg-window/80 px-4 backdrop-blur">
         <div className="flex items-center gap-3">
@@ -35,11 +36,12 @@ export function Shell({ children }: { children: ReactNode }) {
             <Icons.Zap className="h-4 w-4 fill-current text-primary-foreground" />
           </div>
           <span className="eo-shell-brand text-[15px] font-black">ERROR OPTIMIZER</span>
-          <div className="flex rounded-md border border-border bg-background p-0.5">
+          <div role="group" aria-label="Suite" className="flex rounded-md border border-border bg-background p-0.5">
             {(["V3", "V4"] as const).map((v) => (
               <Btn
                 key={v}
-                 size="sm" variant="ghost"
+                size="sm" variant="ghost"
+                pressed={(v === "V4") === !!isV4}
                 title={v === "V3" ? "Switch to Error Optimizer V3 Classic Suite" : "Switch to Error Optimizer V4 Professional Suite"}
                 onClick={() => navigate({ to: v === "V3" ? "/" : "/$page", params: v === "V4" ? { page: "v4-max-performance" } : undefined } as never)}
                 className={cn("h-6 rounded px-3 text-[10.5px] font-black tracking-widest transition-colors", (v === "V4") === !!isV4 ? "eo-brand text-primary-foreground" : "text-muted-foreground hover:text-foreground")}
@@ -51,7 +53,7 @@ export function Shell({ children }: { children: ReactNode }) {
           <span className="hidden text-[10px] font-semibold text-subtle xl:inline">PERFORMANCE ENGINEERING SUITE</span>
         </div>
         <div className="flex items-center gap-2">
-          <Link to="/blueprint" className={cn("rounded-md border px-2.5 py-1 text-[10px] font-bold tracking-widest", isBlueprint ? "border-cyan/60 bg-cyan/15 text-cyan" : "border-border text-muted-foreground hover:text-foreground")}>
+          <Link to="/blueprint" title="Design and WPF handoff documentation" aria-current={isBlueprint ? "page" : undefined} className={cn("rounded-md border px-2.5 py-1 text-[10px] font-bold tracking-widest", isBlueprint ? "border-cyan/60 bg-cyan/15 text-cyan" : "border-border text-muted-foreground hover:text-foreground")}>
             BLUEPRINT
           </Link>
           <span className="rounded-md border border-warning/40 bg-warning/10 px-2.5 py-1 text-[10px] font-bold tracking-widest text-warning">DEMO DATA</span>
@@ -64,19 +66,19 @@ export function Shell({ children }: { children: ReactNode }) {
       {/* ── V4 top navigation (MainWindow.xaml: exactly 2 tabs) ── */}
       {isV4 && (
         <div className="eo-shell-tabs flex h-12 shrink-0 items-center justify-between border-b border-border bg-window/60 px-4">
-          <div className="flex gap-1">
+          <nav aria-label="V4 sections" className="flex gap-1">
             {V4_TABS.map((s) => {
               const p = pageBySlug(s);
               if (!p) return null;
               const active = slug === s || (s === "emulator-optimization" && ["emulator-modules", "emulator-deployer", "low-end-steam"].includes(slug)) || (s === "v4-max-performance" && ["v4-dashboard", "v4-core-optimizer"].includes(slug));
               return (
-                <Link key={s} to="/$page" params={{ page: s }} title={p.tooltip} className={cn("flex h-9 items-center gap-2 rounded-lg px-4 text-[11px] font-bold tracking-[0.12em] transition-colors", active ? "bg-primary/15 text-cyan shadow-[inset_0_-2px_0_var(--cyan)]" : "text-muted-foreground hover:text-foreground")}>
+                <Link key={s} to="/$page" params={{ page: s }} title={p.tooltip} aria-current={active ? "page" : undefined} className={cn("flex h-9 items-center gap-2 rounded-lg px-4 text-[11px] font-bold tracking-[0.12em] transition-colors", active ? "bg-primary/15 text-cyan shadow-[inset_0_-2px_0_var(--cyan)]" : "text-muted-foreground hover:text-foreground")}>
                   <Icon name={p.icon} className="h-4 w-4" />
                   {s === "v4-max-performance" ? "MAXIMUM PERFORMANCE" : "EMULATOR OPTIMIZATION"}
                 </Link>
               );
             })}
-          </div>
+          </nav>
           <span className="rounded border border-cyan/30 bg-cyan/10 px-2 py-1 text-[9.5px] font-bold tracking-widest text-cyan">INDEPENDENT FROM V3 1-CLICK</span>
         </div>
       )}
@@ -111,7 +113,7 @@ export function Shell({ children }: { children: ReactNode }) {
           </nav>
         )}
 
-        <main className="min-w-0 flex-1 overflow-y-auto">
+        <main id="main-content" tabIndex={-1} className="min-w-0 flex-1 overflow-y-auto outline-none">
           <div key={loc.pathname} className="eo-page-content eo-enter mx-auto max-w-[1440px] p-6">{children}</div>
         </main>
       </div>
