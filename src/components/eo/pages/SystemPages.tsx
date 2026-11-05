@@ -25,6 +25,7 @@ import {
 import { RunModal } from "../RunModal";
 import { TelemetryConsole } from "../Telemetry";
 import { toggleInSet } from "@/lib/eo/selection";
+import { usePersistedSelection } from "../useSelection";
 import { CATALOG, HW } from "@/lib/eo/data";
 import { cn } from "@/lib/utils";
 
@@ -41,9 +42,15 @@ const ADV_INPUT = [
   "High-precision timer request",
   "USB selective suspend (input devices)",
 ];
+// First row of each list is already applied on the sample system (shown as OPTIMIZED).
+const INPUT_ITEMS = [...NORMAL_INPUT, ...ADV_INPUT].map((id) => ({
+  id,
+  risk: "LOW" as const,
+  done: id === NORMAL_INPUT[0] || id === ADV_INPUT[0],
+}));
 export function InputOptimizerPage() {
   const [mode, setMode] = useState("NORMAL");
-  const [sel, setSel] = useState<Set<string>>(new Set());
+  const { sel, setSel } = usePersistedSelection("input-optimizer", INPUT_ITEMS);
   const test = useSimRun(2500);
   const [run, setRun] = useState(false);
   const [tested, setTested] = useState(false);
@@ -52,7 +59,12 @@ export function InputOptimizerPage() {
       <SectionTitle title={title} sub={sub} right={<Badge>{items.length} sample settings</Badge>} />
       {mode === "CUSTOM" && (
         <div className="mb-2 flex gap-1.5">
-          <Btn size="sm" onClick={() => setSel((s) => new Set([...s, ...items]))}>
+          <Btn
+            size="sm"
+            onClick={() =>
+              setSel((s) => new Set([...s, ...items.filter((x, n) => n > 0 || !s.has(x))]))
+            }
+          >
             Select all
           </Btn>
           <Btn
@@ -378,17 +390,26 @@ const REG_CATS = [
   "NTFS",
   "SYSTEM",
 ];
+const REG_LIST = CATALOG.map((c, i) => ({
+  ...c,
+  state: i % 5 === 0 ? "OPTIMIZED" : i % 7 === 0 ? "NOT APPLICABLE" : "PENDING",
+}));
+// Already-optimized rows are not re-selected; not-applicable rows can never be selected.
+const REG_ITEMS = REG_LIST.map((i) => ({
+  id: i.id,
+  risk: i.risk,
+  done: i.state === "OPTIMIZED",
+  unsupported: i.state === "NOT APPLICABLE",
+}));
 export function RegistryTweakPage() {
   const [mode, setMode] = useState("NORMAL");
   const [cat, setCat] = useState("ALL");
   const [q, setQ] = useState("");
-  const [sel, setSel] = useState<Set<string>>(new Set());
+  const reg = usePersistedSelection("registry-tweak", REG_ITEMS);
+  const { sel, setSel } = reg;
   const [detail, setDetail] = useState<(typeof CATALOG)[number] | null>(null);
   const [run, setRun] = useState(false);
-  const list = CATALOG.map((c, i) => ({
-    ...c,
-    state: i % 5 === 0 ? "OPTIMIZED" : i % 7 === 0 ? "NOT APPLICABLE" : "PENDING",
-  }));
+  const list = REG_LIST;
   const vis = list.filter(
     (i) =>
       (cat === "ALL" ||
@@ -506,6 +527,9 @@ export function RegistryTweakPage() {
             </div>
             <Chips options={REG_CATS} value={cat} onChange={setCat} />
             <div className="mt-3 flex justify-end gap-1.5">
+              <Btn size="sm" onClick={reg.selectAll}>
+                Select all eligible
+              </Btn>
               <Btn size="sm" variant="ghost" onClick={() => setSel(new Set())}>
                 Deselect all
               </Btn>
