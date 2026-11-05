@@ -23,6 +23,7 @@ import {
   useSimRun,
 } from "../kit";
 import { RunModal } from "../RunModal";
+import { TelemetryConsole } from "../Telemetry";
 import { toggleInSet } from "@/lib/eo/selection";
 import { CATALOG, HW } from "@/lib/eo/data";
 import { cn } from "@/lib/utils";
@@ -252,7 +253,7 @@ export function SystemInfoPage() {
       <PageHeader
         title="System Telemetry"
         badges={<Badge tone="cyan">HARDWARE & DIAGNOSTICS</Badge>}
-        sub="Sample hardware, Windows architecture, and system health diagnostics."
+        sub="Simulated performance monitoring, sample hardware, Windows architecture and system health diagnostics."
         actions={<Btn onClick={() => simulate("Refresh telemetry")}>Refresh</Btn>}
       />
       <Card className="flex flex-wrap items-center gap-4 py-3">
@@ -272,6 +273,7 @@ export function SystemInfoPage() {
           System health analysis
         </Btn>
       </Card>
+      <TelemetryConsole />
       <SectionTitle title="ESSENTIAL HARDWARE OVERVIEW" />
       <div className="grid grid-cols-3 gap-3">
         {[
