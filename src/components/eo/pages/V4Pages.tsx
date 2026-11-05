@@ -982,7 +982,7 @@ export function EmulatorModulesPage() {
           </Card>
         </>
       )}
-      <div className="sticky bottom-0 -mx-6 flex items-center justify-between border-t border-border bg-window/95 px-6 py-3 backdrop-blur">
+      <div className="sticky bottom-0 flex items-center justify-between border-t border-border">
         <span className="text-xs text-muted-foreground">
           Active Module: <b className="text-foreground">{mod}</b> · Ready to optimize emulator
         </span>
