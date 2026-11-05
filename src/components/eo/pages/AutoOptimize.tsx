@@ -70,7 +70,7 @@ export function AutoOptimizePage() {
   const s = useAutoOptimize();
   const now = useNow();
   const navigate = useNavigate();
-  const [draft, setDraft] = useState<AutoConfig>(() => { (globalThis as any).__aoI = [...((globalThis as any).__aoI ?? []), !!pendingDraft]; return pendingDraft ?? s.config; });
+  const [draft, setDraft] = useState<AutoConfig>(() => pendingDraft ?? s.config);
   const dirty = comparable(draft) !== comparable(s.config);
   const dirtyRef = useRef(dirty);
   dirtyRef.current = dirty;
@@ -82,8 +82,9 @@ export function AutoOptimizePage() {
   }, [s.config]);
   useEffect(
     () => () => {
-      pendingDraft = dirtyRef.current ? draftRef.current : null;
-      (window as any).__aoU = [...((window as any).__aoU ?? []), dirtyRef.current];
+      // Only a dirty instance records its draft; clean instances never clear it (save and
+      // discard do), so a second mounted copy cannot drop your edits.
+      if (dirtyRef.current) pendingDraft = draftRef.current;
     },
     [],
   );
