@@ -3,6 +3,7 @@ import { Circle, PanelLeftClose, PanelLeftOpen, Zap } from "lucide-react";
 import { ICONS } from "./icons";
 import { Fragment, useCallback, useEffect, useRef, useState, type ReactNode } from "react";
 import { cn } from "@/lib/utils";
+import { Btn } from "./kit";
 import { AutoChip } from "./AutoChip";
 import { useAutoOptimizeBoot } from "./autoOptimizeStore";
 import { PAGES, V4_TABS, hrefFor, pageBySlug } from "@/lib/eo/registry";
