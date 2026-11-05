@@ -36,3 +36,11 @@
 - [x] Optimization dialogs (run, review, detail, confirm) and toasts redesigned.
 - [x] Motion: page transitions, hover, press, dialog enter/exit, expand/collapse, reduced motion.
 - [x] Verify all 34 destinations at 1280×820 / 1024×768 and run tests.
+
+# Selection, V4 navigation & quick actions (prompt-9)
+- [ ] Global default selection: every eligible optimization pre-selected (per page/profile), user changes persisted; protected, high-risk, destructive, done and unsupported items never auto-selected.
+- [ ] V4 navigation bar, logo and V3/V4 switcher premium upgrade.
+- [ ] V4 Maximum Performance and Emulator Optimization compact redesign.
+- [ ] Module Hub: Back to Emulator Optimization, state preserved.
+- [ ] Dashboard Quick Actions run in place (only One-Click navigates), no duplicate runs.
+- [ ] Verify all 34 destinations at 1280×820 / 1024×768, tests.
