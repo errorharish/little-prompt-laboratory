@@ -86,7 +86,7 @@ export function V4MaxPerformancePage() {
             <Badge tone="warning">SIMULATED</Badge>
           </>
         }
-        sub="Hardware-aware system latency reduction, resource management, and workload protection."
+        sub="Simulated host scheduling, memory refresh and background reduction."
         actions={
           <Btn variant="ghost" onClick={() => setGuide(true)}>
             Guide
@@ -95,23 +95,33 @@ export function V4MaxPerformancePage() {
       />
       <div className="eo-v4-banner flex flex-wrap items-center gap-3" role="status">
         <span aria-hidden="true" className="eo-pulse-dot h-2 w-2 rounded-full bg-warning" />
-        <div className="min-w-0 flex-1">
-          <div className="text-[12.5px] font-bold">Optimization service is currently offline</div>
-          <div className="text-[11px] text-muted-foreground">
-            Live system metrics and optimizations require the background service. Showing simulated
-            values.
-          </div>
+        <div className="min-w-0 flex-1 text-[12px]">
+          <span className="font-bold">Optimization service offline</span>
+          <span className="text-muted-foreground">
+            {" "}
+            · showing sample metrics and simulated actions
+          </span>
         </div>
         <Btn size="sm" onClick={() => simulate("Retry service")}>
           Retry service
         </Btn>
       </div>
 
+      <StatTiles
+        items={[
+          { label: "BACKGROUND PROCESSES", value: procs, sub: "Sample" },
+          { label: "SERVICE · SIMULATED", value: "Offline", tone: "warning" },
+          { label: "CPU USAGE", value: "12%", sub: "Sample" },
+          { label: "GPU USAGE", value: "9%", sub: "Sample" },
+          { label: "RAM USAGE", value: "36%", sub: "Sample" },
+        ]}
+      />
+
       <div
-        className="eo-engine-layout grid gap-4"
-        style={{ gridTemplateColumns: "minmax(0,1fr) 320px" }}
+        className="eo-engine-layout grid items-start gap-3.5"
+        style={{ gridTemplateColumns: "minmax(0,1fr) 300px" }}
       >
-        <div className="eo-stagger space-y-4">
+        <div className="eo-stagger space-y-3.5">
           {/* Primary action workspace */}
           <Card className="eo-hero eo-v4-hero">
             <div className="flex flex-wrap items-start justify-between gap-4">
@@ -136,7 +146,7 @@ export function V4MaxPerformancePage() {
               </Btn>
             </div>
 
-            <ol aria-label="Workflow scope" className="mt-4 grid grid-cols-2 gap-2">
+            <ol aria-label="Workflow scope" className="mt-3.5 grid grid-cols-2 gap-2">
               {MP_SCOPE.map((s, i) => {
                 const state = !r.running
                   ? last
@@ -174,7 +184,19 @@ export function V4MaxPerformancePage() {
               })}
             </ol>
 
-            <div className="mt-4 flex flex-wrap items-center gap-3">
+            <ul aria-label="Protection" className="mt-3 flex flex-wrap gap-x-4 gap-y-1.5">
+              {MP_SAFEGUARDS.map((x) => (
+                <li
+                  key={x}
+                  className="flex items-center gap-1.5 text-[11px] font-semibold text-success"
+                >
+                  <ShieldCheck aria-hidden="true" className="h-3.5 w-3.5 shrink-0" />
+                  {x}
+                </li>
+              ))}
+            </ul>
+
+            <div className="mt-3.5 flex flex-wrap items-center gap-3 border-t border-border pt-3.5">
               <div className="min-w-0 flex-1" aria-live="polite">
                 {r.running ? (
                   <>
@@ -205,45 +227,6 @@ export function V4MaxPerformancePage() {
             </div>
           </Card>
 
-          {/* System status */}
-          <section aria-labelledby="mp-status-title">
-            <SectionTitle
-              id="mp-status-title"
-              title="SYSTEM STATUS"
-              badge={<DemoBadge label="SIMULATED VALUES" />}
-            />
-            <StatTiles
-              items={[
-                { label: "BACKGROUND PROCESSES", value: procs, sub: "Active procs" },
-                { label: "SERVICE STATUS", value: "Sim", tone: "warning" },
-                { label: "CPU USAGE", value: "12%", sub: "Utilization" },
-                { label: "GPU USAGE", value: "9%" },
-                { label: "RAM USAGE", value: "36%", sub: "Physical memory" },
-              ]}
-            />
-          </section>
-
-          {/* Protection */}
-          <Card className="border-success/30">
-            <div className="flex gap-3.5">
-              <ShieldCheck aria-hidden="true" className="h-6 w-6 shrink-0 text-success" />
-              <div>
-                <h2 className="text-[13px] font-bold">Protected System Optimization · Simulated</h2>
-                <p className="text-xs text-muted-foreground">
-                  Maximum Performance safely reduces unnecessary background CPU overhead without
-                  touching core Windows, drivers or your active apps.
-                </p>
-              </div>
-            </div>
-            <ul className="mt-3 grid grid-cols-3 gap-2">
-              {MP_SAFEGUARDS.map((x) => (
-                <li key={x} className="eo-v4-guard">
-                  <CheckCircle2 aria-hidden="true" className="h-3.5 w-3.5 shrink-0" />
-                  {x}
-                </li>
-              ))}
-            </ul>
-          </Card>
           <SimNotice />
         </div>
 
@@ -255,7 +238,6 @@ export function V4MaxPerformancePage() {
             </Label>
             <KV k="Service" v={<span className="text-warning">Offline · simulated</span>} />
             <KV k="Profile" v="Maximum Performance" />
-            <KV k="Background processes" v={<span className="tabular-nums">{procs}</span>} />
             <KV k="Last run" v={last ? last.at : "Not run"} />
           </Card>
           <Card className="eo-v4-rail">
@@ -302,12 +284,7 @@ export function V4MaxPerformancePage() {
                 </div>
               </div>
             </Card>
-          ) : (
-            <EmptyState
-              title="No simulated run yet"
-              sub="Results of a confirmed simulated run appear here."
-            />
-          )}
+          ) : null}
         </aside>
       </div>
 
