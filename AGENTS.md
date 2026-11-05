@@ -42,3 +42,5 @@ use the editor.
 - The 1-Click page owns `useOptimizeWorkflow` and `ReviewSelectionModal`. Why: Analyze → Review → Confirm is a different flow from scheduled maintenance.
 - The large live telemetry chart belongs on System Telemetry (`Telemetry.tsx`); the Dashboard shows only compact overview tiles. Why: user-directed hierarchy change.
 - `Modal` portals to `document.body`; cards use transform/backdrop-filter, which would trap a fixed overlay inside the card.
+- Page layout primitives are shared: `PageHeader` (optional `back` slot with `BackLink`), `StatTiles` renders one metric-strip panel, `Details inline` hides secondary settings, and run dialogs use `OpProgress` from `RunModal.tsx`; section spacing comes from `--section-gap` in `src/styles.css`. Why: keeps every destination aligned and uncluttered without per-page spacing rules.
+- Auto Optimize unsaved edits live in a module-level draft (`pendingDraft`) set only by a dirty page instance and cleared only by save/discard. Why: more than one page instance can mount, and a clean copy must never drop the user's edits.

@@ -36,7 +36,6 @@ import {
   StatTiles,
   Toggle,
   Details,
-  DemoBadge,
   KV,
   simulate,
   useSimRun,
@@ -86,7 +85,7 @@ export function V4MaxPerformancePage() {
             <Badge tone="warning">SIMULATED</Badge>
           </>
         }
-        sub="Hardware-aware system latency reduction, resource management, and workload protection."
+        sub="Simulated host scheduling, memory refresh and background reduction."
         actions={
           <Btn variant="ghost" onClick={() => setGuide(true)}>
             Guide
@@ -95,23 +94,33 @@ export function V4MaxPerformancePage() {
       />
       <div className="eo-v4-banner flex flex-wrap items-center gap-3" role="status">
         <span aria-hidden="true" className="eo-pulse-dot h-2 w-2 rounded-full bg-warning" />
-        <div className="min-w-0 flex-1">
-          <div className="text-[12.5px] font-bold">Optimization service is currently offline</div>
-          <div className="text-[11px] text-muted-foreground">
-            Live system metrics and optimizations require the background service. Showing simulated
-            values.
-          </div>
+        <div className="min-w-0 flex-1 text-[12px]">
+          <span className="font-bold">Optimization service offline</span>
+          <span className="text-muted-foreground">
+            {" "}
+            · showing sample metrics and simulated actions
+          </span>
         </div>
         <Btn size="sm" onClick={() => simulate("Retry service")}>
           Retry service
         </Btn>
       </div>
 
+      <StatTiles
+        items={[
+          { label: "BACKGROUND PROCESSES", value: procs, sub: "Sample" },
+          { label: "SERVICE · SIMULATED", value: "Offline", tone: "warning" },
+          { label: "CPU USAGE", value: "12%", sub: "Sample" },
+          { label: "GPU USAGE", value: "9%", sub: "Sample" },
+          { label: "RAM USAGE", value: "36%", sub: "Sample" },
+        ]}
+      />
+
       <div
-        className="eo-engine-layout grid gap-4"
-        style={{ gridTemplateColumns: "minmax(0,1fr) 320px" }}
+        className="eo-engine-layout grid items-start gap-3.5"
+        style={{ gridTemplateColumns: "minmax(0,1fr) 300px" }}
       >
-        <div className="eo-stagger space-y-4">
+        <div className="eo-stagger space-y-3.5">
           {/* Primary action workspace */}
           <Card className="eo-hero eo-v4-hero">
             <div className="flex flex-wrap items-start justify-between gap-4">
@@ -136,7 +145,7 @@ export function V4MaxPerformancePage() {
               </Btn>
             </div>
 
-            <ol aria-label="Workflow scope" className="mt-4 grid grid-cols-2 gap-2">
+            <ol aria-label="Workflow scope" className="mt-3.5 grid grid-cols-2 gap-2">
               {MP_SCOPE.map((s, i) => {
                 const state = !r.running
                   ? last
@@ -174,7 +183,19 @@ export function V4MaxPerformancePage() {
               })}
             </ol>
 
-            <div className="mt-4 flex flex-wrap items-center gap-3">
+            <ul aria-label="Protection" className="mt-3 flex flex-wrap gap-x-4 gap-y-1.5">
+              {MP_SAFEGUARDS.map((x) => (
+                <li
+                  key={x}
+                  className="flex items-center gap-1.5 text-[11px] font-semibold text-success"
+                >
+                  <ShieldCheck aria-hidden="true" className="h-3.5 w-3.5 shrink-0" />
+                  {x}
+                </li>
+              ))}
+            </ul>
+
+            <div className="mt-3.5 flex flex-wrap items-center gap-3 border-t border-border pt-3.5">
               <div className="min-w-0 flex-1" aria-live="polite">
                 {r.running ? (
                   <>
@@ -205,45 +226,6 @@ export function V4MaxPerformancePage() {
             </div>
           </Card>
 
-          {/* System status */}
-          <section aria-labelledby="mp-status-title">
-            <SectionTitle
-              id="mp-status-title"
-              title="SYSTEM STATUS"
-              badge={<DemoBadge label="SIMULATED VALUES" />}
-            />
-            <StatTiles
-              items={[
-                { label: "BACKGROUND PROCESSES", value: procs, sub: "Active procs" },
-                { label: "SERVICE STATUS", value: "Sim", tone: "warning" },
-                { label: "CPU USAGE", value: "12%", sub: "Utilization" },
-                { label: "GPU USAGE", value: "9%" },
-                { label: "RAM USAGE", value: "36%", sub: "Physical memory" },
-              ]}
-            />
-          </section>
-
-          {/* Protection */}
-          <Card className="border-success/30">
-            <div className="flex gap-3.5">
-              <ShieldCheck aria-hidden="true" className="h-6 w-6 shrink-0 text-success" />
-              <div>
-                <h2 className="text-[13px] font-bold">Protected System Optimization · Simulated</h2>
-                <p className="text-xs text-muted-foreground">
-                  Maximum Performance safely reduces unnecessary background CPU overhead without
-                  touching core Windows, drivers or your active apps.
-                </p>
-              </div>
-            </div>
-            <ul className="mt-3 grid grid-cols-3 gap-2">
-              {MP_SAFEGUARDS.map((x) => (
-                <li key={x} className="eo-v4-guard">
-                  <CheckCircle2 aria-hidden="true" className="h-3.5 w-3.5 shrink-0" />
-                  {x}
-                </li>
-              ))}
-            </ul>
-          </Card>
           <SimNotice />
         </div>
 
@@ -255,7 +237,6 @@ export function V4MaxPerformancePage() {
             </Label>
             <KV k="Service" v={<span className="text-warning">Offline · simulated</span>} />
             <KV k="Profile" v="Maximum Performance" />
-            <KV k="Background processes" v={<span className="tabular-nums">{procs}</span>} />
             <KV k="Last run" v={last ? last.at : "Not run"} />
           </Card>
           <Card className="eo-v4-rail">
@@ -290,24 +271,19 @@ export function V4MaxPerformancePage() {
                   <div className="text-lg font-bold tabular-nums">
                     {last.before} → {last.after}
                   </div>
-                  <div className="text-[8.5px] font-bold text-muted-foreground">
+                  <div className="text-[10px] font-bold text-muted-foreground">
                     SAMPLE PROCESSES
                   </div>
                 </div>
                 <div className="rounded-lg border border-border bg-window p-2">
                   <div className="text-lg font-bold tabular-nums">0</div>
-                  <div className="text-[8.5px] font-bold text-muted-foreground">
+                  <div className="text-[10px] font-bold text-muted-foreground">
                     CHANGES ON THIS PC
                   </div>
                 </div>
               </div>
             </Card>
-          ) : (
-            <EmptyState
-              title="No simulated run yet"
-              sub="Results of a confirmed simulated run appear here."
-            />
-          )}
+          ) : null}
         </aside>
       </div>
 
@@ -529,7 +505,7 @@ export function EmulatorOptimizationPage() {
             <Badge tone="warning">SIMULATED</Badge>
           </>
         }
-        sub="Unified MSI App Player 5 & Free Fire performance engine: host scheduling, guest debloat and graphics pipeline."
+        sub="Simulated host scheduling, guest debloat and graphics tuning for MSI App Player 5."
         actions={
           <>
             <Btn variant="ghost" onClick={() => setGuide(true)}>
@@ -559,7 +535,7 @@ export function EmulatorOptimizationPage() {
           <div key={c.k} className="flex items-center gap-2.5">
             <span aria-hidden="true" className="eo-v4-dot" data-ok={c.ok ? "true" : undefined} />
             <div className="min-w-0">
-              <Label className="text-[9px]">{c.k}</Label>
+              <Label className="text-[10px]">{c.k}</Label>
               <div
                 className={cn(
                   "truncate text-[12.5px] font-bold",
@@ -583,7 +559,7 @@ export function EmulatorOptimizationPage() {
       </Card>
 
       <div
-        className="eo-engine-layout grid gap-4"
+        className="eo-engine-layout grid items-start gap-3.5"
         style={{ gridTemplateColumns: "minmax(0,1fr) 320px" }}
       >
         <ol aria-label="Engine pipeline" className="eo-pipeline eo-stagger space-y-3">
@@ -699,7 +675,7 @@ export function EmulatorOptimizationPage() {
               ).map(([k, v, c]) => (
                 <div key={k} className="rounded-lg border border-border bg-window py-2">
                   <div className={cn("text-lg font-bold tabular-nums", c)}>{v}</div>
-                  <div className="text-[8.5px] font-bold text-muted-foreground">{k}</div>
+                  <div className="text-[10px] font-bold text-muted-foreground">{k}</div>
                 </div>
               ))}
             </div>
@@ -913,7 +889,7 @@ export function EmulatorModulesPage() {
       <div className="space-y-4">
         <PageHeader
           title="Emulator Optimization"
-          sub="Hardware-aware performance tuning, component debloater, and low-end hardware relief for MSI App Player 5."
+          sub="Simulated MSI App Player 5 tuning, component cleanup and low-spec profiles."
           actions={
             <Btn variant="ghost" onClick={() => setGuide(true)}>
               Guide
@@ -1082,7 +1058,7 @@ export function EmulatorModulesPage() {
                   ["RECOMMENDED PROFILE", "Balanced"],
                 ].map(([k, v]) => (
                   <div key={k}>
-                    <Label className="text-[9px]">{k}</Label>
+                    <Label className="text-[10px]">{k}</Label>
                     <div className="font-semibold">{v}</div>
                   </div>
                 ))}
@@ -1389,7 +1365,7 @@ export function EmulatorModulesPage() {
           ].map(([k, v]) => (
             <div key={k} className="rounded-lg border border-border bg-window p-3 text-center">
               <div className="text-xl font-bold">{v}</div>
-              <div className="text-[9px] font-bold tracking-widest text-subtle">{k}</div>
+              <div className="text-[10px] font-bold tracking-widest text-subtle">{k}</div>
             </div>
           ))}
         </div>
@@ -1478,7 +1454,7 @@ export function V4CoreOptimizerPage() {
       <PageHeader
         title="V4 Core Optimizer"
         badges={<Badge tone="cyan">MAXIMUM PERFORMANCE</Badge>}
-        sub="Automated safe background reduction and gaming & editing performance tuning."
+        sub="Simulated background reduction with Windows and active workloads preserved."
         actions={<Btn onClick={() => simulate("Scan")}>Scan</Btn>}
       />
       <Card glow>
@@ -1530,7 +1506,7 @@ export function V4CoreOptimizerPage() {
         </div>
         <div className="overflow-hidden rounded-lg border border-border">
           <div
-            className="grid bg-window px-3 py-2 eo-label text-[9px] text-subtle"
+            className="grid bg-window px-3 py-2 eo-label text-[10px] text-subtle"
             style={{ gridTemplateColumns: "2fr 2fr 1.5fr 1.5fr" }}
           >
             <span>PROCESS / SERVICE</span>
@@ -1681,7 +1657,7 @@ export function LowEndSteamPage() {
       <PageHeader
         title="Low End Steam"
         badges={<Badge tone="cyan">LOW-SPEC HARDWARE CALIBRATED</Badge>}
-        sub="Conservative, hardware-calibrated emulator optimizations for Dual-Core and Quad-Core systems."
+        sub="Simulated emulator tuning for dual-core, quad-core and integrated graphics."
         actions={
           <>
             <Btn variant="ghost" onClick={() => setGuide(true)}>

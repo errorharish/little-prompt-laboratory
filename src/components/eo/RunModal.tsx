@@ -1,7 +1,8 @@
 // Mirrors Controls/UniversalOptimizationModal.xaml: Approve → Restore point → staged run → summary.
 // Every phase is simulated. The summary reports only what the prototype did (nothing on this PC).
 import { useEffect, useRef, useState } from "react";
-import { Badge, Bar, Btn, Chips, KV, Modal, RiskBadge, Stepper } from "./kit";
+import { CheckCircle2, ShieldCheck, Square, Zap } from "lucide-react";
+import { Badge, Bar, Btn, Chips, Details, KV, Modal, RiskBadge, StatTiles, Stepper } from "./kit";
 import type { Risk } from "@/lib/eo/data";
 import { simulatedRunSummary, type SimulatedRunSummary } from "@/lib/eo/selection";
 import { cn } from "@/lib/utils";
@@ -83,6 +84,18 @@ export function RunModal({
       title={`${profile} — Optimization`}
       sub="Simulated run. Nothing on this computer is changed."
       width="max-w-xl"
+      icon={
+        phase === "done" ? (
+          <CheckCircle2 className="h-4 w-4" />
+        ) : phase === "cancelled" ? (
+          <Square className="h-4 w-4" />
+        ) : phase === "approve" || phase === "restore" ? (
+          <ShieldCheck className="h-4 w-4" />
+        ) : (
+          <Zap className="h-4 w-4" />
+        )
+      }
+      tone={phase === "done" ? "success" : phase === "cancelled" ? "warning" : "cyan"}
       footer={
         phase === "approve" ? (
           <>
@@ -164,19 +177,23 @@ export function RunModal({
       )}
       {(phase === "running" || phase === "cancelled") && (
         <div className="space-y-4">
-          <div className="flex items-center justify-between">
-            <Badge tone="cyan">Cooperative engine · simulated</Badge>
-            <span aria-hidden="true" className="font-mono text-2xl font-bold tabular-nums">
-              {p.toFixed(0)}%
-            </span>
-          </div>
+          <OpProgress
+            value={p}
+            title={phase === "running" ? `${STAGES[stageIdx]}…` : "Simulation stopped"}
+            detail={
+              phase === "running"
+                ? `Stage ${stageIdx + 1} of ${STAGES.length} · ${Math.round((p / 100) * count)} of ${count} items walked through`
+                : `${Math.round((p / 100) * count)} of ${count} items reached · nothing to revert`
+            }
+            active={phase === "running"}
+          />
           <ol aria-label="Run stages" className="grid grid-cols-5 gap-1.5">
             {STAGES.map((s, i) => (
               <li
                 key={s}
                 aria-current={i === stageIdx && phase === "running" ? "step" : undefined}
                 className={cn(
-                  "rounded-md border py-1.5 text-center text-[9px] font-bold",
+                  "rounded-md border py-1.5 text-center text-[10px] font-bold",
                   i < stageIdx
                     ? "border-success/40 text-success"
                     : i === stageIdx && phase === "running"
@@ -188,22 +205,17 @@ export function RunModal({
               </li>
             ))}
           </ol>
-          <Bar value={p} />
           <p role="status" aria-live="polite" className="sr-only">
             {phase === "running"
               ? `${STAGES[stageIdx]} ${Math.round(p / 10) * 10}%`
               : "Simulation stopped"}
           </p>
-          <div className="grid grid-cols-2 gap-3 text-xs">
-            <KV k="Snapshot" v="Simulated" />
-            <KV k="Rollback engine" v="Simulated" />
-          </div>
           {phase === "cancelled" && (
             <div
               role="alert"
               className="rounded-lg border border-warning/40 bg-warning/10 p-3 text-xs text-warning"
             >
-              SIMULATION STOPPED at {p.toFixed(0)}%. Nothing was changed, so there is nothing to
+              Simulation stopped at {p.toFixed(0)}%. Nothing was changed, so there is nothing to
               revert.
             </div>
           )}
@@ -211,21 +223,18 @@ export function RunModal({
       )}
       {phase === "done" && summary && (
         <div className="space-y-4" role="status" aria-live="polite">
-          <div className="grid grid-cols-4 gap-2">
-            {(
-              [
-                ["SELECTED", summary.selected, "text-foreground"],
-                ["SIMULATED", summary.simulatedSteps, "text-cyan"],
-                ["RESTART NOTED", items ? summary.restartNoted : "—", "text-warning"],
-                ["CHANGES ON THIS PC", summary.realChanges, "text-success"],
-              ] as const
-            ).map(([k, v, c]) => (
-              <div key={k} className="rounded-lg border border-border bg-window p-2.5 text-center">
-                <div className={cn("text-xl font-bold tabular-nums", c)}>{v}</div>
-                <div className="text-[9px] font-bold text-muted-foreground">{k}</div>
-              </div>
-            ))}
-          </div>
+          <StatTiles
+            items={[
+              { label: "SELECTED", value: summary.selected },
+              { label: "SIMULATED", value: summary.simulatedSteps, tone: "cyan" },
+              {
+                label: "RESTART NOTED",
+                value: items ? summary.restartNoted : "—",
+                tone: "warning",
+              },
+              { label: "CHANGES ON THIS PC", value: summary.realChanges, tone: "success" },
+            ]}
+          />
           <KV k="Simulation time" v={`${(summary.elapsedMs / 1000).toFixed(1)} s`} />
           <KV k="Restore point" v={`“${rpName}” (simulated)`} />
           <KV k="Verification" v={summary.verification} />
@@ -245,19 +254,73 @@ export function RunModal({
               ))}
             </ul>
           )}
-          <div className="eo-label text-muted-foreground">Advanced details · 4 subsystems</div>
-          <Chips
-            label="Advanced details subsystem"
-            options={["Kernel", "Network", "Interrupts", "Protected"]}
-            value={tab}
-            onChange={setTab}
-          />
-          <div className="rounded-lg border border-border bg-window p-3 text-xs text-muted-foreground">
-            The native app lists real {tab.toLowerCase()} results here. The prototype has none to
-            show, and raw keys stay behind this view.
-          </div>
+          <Details inline title="ADVANCED DETAILS" hint="4 subsystems">
+            <Chips
+              label="Advanced details subsystem"
+              options={["Kernel", "Network", "Interrupts", "Protected"]}
+              value={tab}
+              onChange={setTab}
+            />
+            <div className="mt-2 rounded-lg border border-border bg-window p-3 text-xs text-muted-foreground">
+              The native app lists real {tab.toLowerCase()} results here. The prototype has none to
+              show, and raw keys stay behind this view.
+            </div>
+          </Details>
         </div>
       )}
     </Modal>
+  );
+}
+
+/** Shared optimization progress block: ring, current operation, detail line and bar. */
+export function OpProgress({
+  value,
+  title,
+  detail,
+  active,
+}: {
+  value: number;
+  title: string;
+  detail: string;
+  active?: boolean | undefined;
+}) {
+  const r = 24;
+  const len = 2 * Math.PI * r;
+  const v = Math.max(0, Math.min(100, value));
+  return (
+    <div className="eo-op">
+      <div className="eo-op-head">
+        <div className="eo-op-ring" aria-hidden="true">
+          <svg viewBox="0 0 56 56" width="56" height="56">
+            <defs>
+              <linearGradient id="eo-op-grad" x1="0" x2="1" y1="0" y2="1">
+                <stop offset="0%" stopColor="var(--cyan)" />
+                <stop offset="100%" stopColor="var(--primary)" />
+              </linearGradient>
+            </defs>
+            <circle className="eo-op-track" cx="28" cy="28" r={r} />
+            <circle
+              className="eo-op-arc"
+              cx="28"
+              cy="28"
+              r={r}
+              strokeDasharray={len.toFixed(2)}
+              strokeDashoffset={(len * (1 - v / 100)).toFixed(2)}
+            />
+          </svg>
+          <span>{Math.round(v)}%</span>
+        </div>
+        <div className="min-w-0 flex-1">
+          <div className="eo-op-current">
+            <span key={title}>{title}</span>
+          </div>
+          <div className="mt-0.5 text-[11.5px] text-muted-foreground">{detail}</div>
+          <Badge tone="cyan" className="mt-1.5">
+            SIMULATED
+          </Badge>
+        </div>
+      </div>
+      <Bar value={v} active={active} />
+    </div>
   );
 }

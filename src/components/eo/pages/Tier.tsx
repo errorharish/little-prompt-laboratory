@@ -17,6 +17,8 @@ import {
   EmptyState,
   Details,
   KV,
+  PageHeader,
+  StatTiles,
 } from "../kit";
 import { RunModal } from "../RunModal";
 import { CATALOG, HW, TIERS, type Risk, type TierInfo } from "@/lib/eo/data";
@@ -145,94 +147,53 @@ function TierView({ slug, t }: { slug: string; t: TierInfo }) {
 
   return (
     <div className="space-y-4 pb-16">
-      {/* Header cols=Auto,*,Auto */}
-      <div className="flex flex-wrap items-start justify-between gap-4">
-        <div className="flex gap-3">
-          <span className={cn("mt-1 h-10 w-1 rounded-full", accent)} />
-          <div>
-            <div className="flex items-center gap-2">
-              <h1 className="text-[22px] font-bold tracking-[0.04em] uppercase">{t.name}</h1>
-              <Badge tone="cyan">TIER PROFILE</Badge>
-              {t.extendsFrom && <Badge>EXTENDS {t.extendsFrom.toUpperCase()}</Badge>}
-            </div>
-            <p className="mt-1 max-w-3xl text-[13px] text-muted-foreground">{t.desc}</p>
-          </div>
-        </div>
-        <div className="flex gap-2">
-          <Btn variant="ghost" onClick={() => simulate("Refresh")}>
-            Refresh
-          </Btn>
-          <Btn onClick={() => simulate("Scan system")}>Scan system</Btn>
-          <Btn variant="ghost" onClick={() => simulate("Restore backup")}>
-            Restore backup
-          </Btn>
-        </div>
-      </div>
+      <PageHeader
+        title={t.name}
+        accent={accent}
+        badges={
+          <>
+            <Badge tone="cyan">TIER PROFILE</Badge>
+            {t.extendsFrom && <Badge>EXTENDS {t.extendsFrom.toUpperCase()}</Badge>}
+          </>
+        }
+        sub={t.desc.split(". ")[0]?.replace(/\.?$/, ".")}
+        actions={
+          <>
+            <Btn variant="ghost" onClick={() => simulate("Refresh")}>
+              Refresh
+            </Btn>
+            <Btn onClick={() => simulate("Scan system")}>Scan system</Btn>
+            <Btn variant="ghost" onClick={() => simulate("Restore backup")}>
+              Restore backup
+            </Btn>
+          </>
+        }
+      />
 
-      {/* Hero cols=1.1*,10,1.35*,10,0.95* */}
-      <div
-        className="eo-profile-overview grid gap-2.5"
-        style={{ gridTemplateColumns: "1.1fr 1.35fr 0.95fr" }}
-      >
-        <Card>
-          <Label className="mb-3 text-foreground">
-            SYSTEM SPECIFICATION <Badge tone="warning">DEMO DATA</Badge>
-          </Label>
-          <div className="grid grid-cols-2 gap-3 text-[12.5px]">
-            {[
-              ["PROCESSOR", HW.cpu],
-              ["GRAPHICS", HW.gpu],
-              ["MEMORY", HW.ram],
-              ["OPERATING SYSTEM", HW.os],
-            ].map(([k, v]) => (
-              <div key={k}>
-                <Label className="text-[9px]">{k}</Label>
-                <div className="mt-0.5 font-semibold">{v}</div>
-              </div>
-            ))}
-          </div>
-        </Card>
-        <Card>
-          <Label className="mb-3 text-foreground">OPTIMIZATION STATUS</Label>
-          <div className="grid gap-2" style={{ gridTemplateColumns: "1fr 1fr 1.1fr 1fr 1fr" }}>
-            {[
-              ["TOTAL", t.entries, ""],
-              ["APPLICABLE", items.length, "text-cyan"],
-              ["HIGHLY REC.", counts.safe, "text-primary-hover"],
-              ["OPTIMIZED", items.length - pending.length, "text-success"],
-              ["PENDING", pending.length, "text-warning"],
-            ].map(([k, v, c]) => (
-              <div
-                key={k as string}
-                className="rounded-lg border border-border bg-window p-2.5 text-center"
-              >
-                <div className={cn("text-xl font-bold", c as string)}>{v}</div>
-                <div className="text-[8.5px] font-bold tracking-widest text-subtle">{k}</div>
-              </div>
-            ))}
-          </div>
-          <p className="mt-2 text-[10.5px] text-subtle">
-            TOTAL = raw profile entries (manifest). Inherited entries are not deduplicated.
-          </p>
-        </Card>
-        <Card>
-          <Label className="mb-3 text-foreground">RISK & SAFETY</Label>
-          <div className="grid grid-cols-3 gap-2">
-            {[
-              ["SAFE", counts.safe, "text-success"],
-              ["MEDIUM", counts.med, "text-warning"],
-              ["HIGH", counts.high, "text-destructive"],
-            ].map(([k, v, c]) => (
-              <div
-                key={k as string}
-                className="rounded-lg border border-border bg-window p-2.5 text-center"
-              >
-                <div className={cn("text-xl font-bold", c as string)}>{v}</div>
-                <div className="text-[9px] font-bold tracking-widest text-subtle">{k}</div>
-              </div>
-            ))}
-          </div>
-        </Card>
+      <div className="space-y-2">
+        <StatTiles
+          items={[
+            { label: "PROFILE ENTRIES", value: t.entries, sub: "Raw manifest count" },
+            { label: "APPLICABLE", value: items.length, tone: "cyan" },
+            { label: "HIGHLY RECOMMENDED", value: counts.safe, tone: "primary" },
+            { label: "OPTIMIZED", value: items.length - pending.length, tone: "success" },
+            { label: "PENDING", value: pending.length, tone: "warning" },
+            {
+              label: "SAFE · MEDIUM · HIGH",
+              value: `${counts.safe} · ${counts.med} · ${counts.high}`,
+            },
+          ]}
+        />
+        <p className="flex flex-wrap items-center gap-x-3 gap-y-1 px-1 text-[11px] text-subtle">
+          <Badge tone="warning">DEMO HARDWARE</Badge>
+          <span>{HW.cpu}</span>
+          <span aria-hidden="true">·</span>
+          <span>{HW.gpu}</span>
+          <span aria-hidden="true">·</span>
+          <span>{HW.ram}</span>
+          <span aria-hidden="true">·</span>
+          <span>{HW.os}</span>
+        </p>
       </div>
 
       <Card>
@@ -244,12 +205,12 @@ function TierView({ slug, t }: { slug: string; t: TierInfo }) {
         ) : (
           <div className="grid grid-cols-3 gap-2.5">
             {pending.slice(0, 3).map((i) => (
-              <div key={i.id} className="rounded-xl border border-border bg-window p-3.5">
+              <div key={i.id} className="rounded-lg border border-border bg-window px-3 py-2.5">
                 <div className="flex items-center justify-between">
                   <Badge tone="cyan">{i.cat}</Badge>
                   <RiskBadge risk={i.risk} />
                 </div>
-                <div className="mt-2 text-[13px] font-semibold">{i.name}</div>
+                <div className="mt-1.5 text-[12.5px] font-semibold">{i.name}</div>
               </div>
             ))}
           </div>

@@ -131,9 +131,6 @@ export function Shell({ children }: { children: ReactNode }) {
               </Btn>
             ))}
           </div>
-          <span className="hidden text-[10px] font-semibold text-subtle xl:inline">
-            PERFORMANCE ENGINEERING SUITE
-          </span>
         </div>
         <div className="flex items-center gap-2">
           <AutoChip />
@@ -142,20 +139,21 @@ export function Shell({ children }: { children: ReactNode }) {
             title="Design and WPF handoff documentation"
             aria-current={isBlueprint ? "page" : undefined}
             className={cn(
-              "rounded-md border px-2.5 py-1 text-[10px] font-bold tracking-widest",
+              "eo-chip",
               isBlueprint
                 ? "border-cyan/60 bg-cyan/15 text-cyan"
-                : "border-border text-muted-foreground hover:border-border-strong hover:text-foreground",
+                : "hover:border-border-strong hover:text-foreground",
             )}
           >
             BLUEPRINT
           </Link>
-          <span className="rounded-md border border-warning/40 bg-warning/10 px-2.5 py-1 text-[10px] font-bold tracking-widest text-warning">
-            DEMO DATA
-          </span>
-          <span className="eo-service-label flex items-center gap-1.5 rounded-md border border-success/30 bg-success/10 px-2.5 py-1 text-[10px] font-bold text-success">
-            <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-success" /> SIMULATED
-            SERVICES
+          <span
+            className="eo-chip eo-service-label"
+            data-tone="warning"
+            title="Browser prototype: demo data, simulated services, no changes to this PC"
+          >
+            <span aria-hidden="true" className="h-1.5 w-1.5 rounded-full bg-warning" />
+            SIMULATED · DEMO DATA
           </span>
         </div>
       </header>
@@ -209,9 +207,7 @@ export function Shell({ children }: { children: ReactNode }) {
               );
             })}
           </nav>
-          <span className="rounded border border-cyan/30 bg-cyan/10 px-2 py-1 text-[9.5px] font-bold tracking-widest text-cyan">
-            INDEPENDENT FROM V3 1-CLICK
-          </span>
+          <span className="text-[10px] font-semibold text-subtle">Independent from V3 1-Click</span>
         </div>
       )}
 
@@ -303,7 +299,7 @@ export function Shell({ children }: { children: ReactNode }) {
           <span className="text-cyan">⚡</span> ERROR OPTIMIZER {isV4 ? "V4" : "V3"} ·{" "}
           {(page?.routeKey ?? (isBlueprint ? "BLUEPRINT" : "")).toUpperCase()} · BROWSER PROTOTYPE
         </span>
-        <span>RESOLUTION: 1280 × 820 BASE · UNIVERSAL OPTIMIZATION SUITE</span>
+        <span>SIMULATED · NO CHANGES ARE MADE TO THIS PC</span>
       </footer>
     </div>
   );

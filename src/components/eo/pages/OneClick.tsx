@@ -1,9 +1,8 @@
 // OneClickOptimizationView.xaml — dedicated full-page workflow (not a modal).
 // Flow: Analyze → Review → Confirm → Simulated result. All results are simulated.
 import { useEffect, useMemo, useRef, useState } from "react";
-import { Link } from "@tanstack/react-router";
+import { useNavigate } from "@tanstack/react-router";
 import {
-  ArrowLeft,
   ShieldCheck,
   ChevronDown,
   ScanSearch,
@@ -13,6 +12,8 @@ import {
   SlidersHorizontal,
 } from "lucide-react";
 import {
+  BackLink,
+  PageHeader,
   Badge,
   Btn,
   Card,
@@ -74,6 +75,7 @@ const STEPS = ["Analyze", "Review", "Confirm", "Simulated result"];
 export function OneClickPage() {
   const wf = useOptimizeWorkflow(1400);
   const { scan, analyzed, sel, setSel, summary, selectedItems, lastRun, toggle } = wf;
+  const navigate = useNavigate();
   const [query, setQuery] = useState("");
   const [area, setArea] = useState<string | null>(null);
   const [filterOpen, setFilterOpen] = useState(false);
@@ -118,56 +120,46 @@ export function OneClickPage() {
 
   return (
     <div className="space-y-4 pb-20">
-      {/* Header: cols=*,16,Auto */}
-      <div className="flex flex-wrap items-start justify-between gap-4">
-        <div>
-          <Link
-            to="/"
-            className="mb-3 inline-flex items-center gap-1.5 text-[10.5px] font-bold tracking-widest text-muted-foreground hover:text-cyan"
-            title="Return to main Dashboard"
-          >
-            <ArrowLeft aria-hidden="true" className="h-3.5 w-3.5" /> BACK TO DASHBOARD
-          </Link>
-          <Label className="text-cyan">DEDICATED 1-CLICK WORKFLOW</Label>
-          <h1 className="mt-1 text-[26px] font-black tracking-[0.04em]">1-CLICK OPTIMIZATION</h1>
-          <p className="mt-1 max-w-2xl text-[13px] text-muted-foreground">
-            Analyze sample recommendations, review your choices, and confirm a simulated
-            optimization. No Windows settings are changed.
-          </p>
-        </div>
-        <div className="flex gap-2">
-          <Btn
-            variant="ghost"
-            onClick={() => setGuide(true)}
-            title="How 1-Click Optimization works"
-          >
-            Guide
-          </Btn>
-          <Btn disabled={scan.running} onClick={analyze} title="Analyze sample recommendations">
-            {scan.running ? (
-              <>Analyzing…</>
-            ) : analyzed ? (
-              <>
-                <RotateCcw aria-hidden="true" className="h-3.5 w-3.5" />
-                Rescan
-              </>
-            ) : (
-              <>
-                <ScanSearch aria-hidden="true" className="h-3.5 w-3.5" />
-                Analyze
-              </>
-            )}
-          </Btn>
-          <Btn
-            variant="primary"
-            size="lg"
-            disabled={scan.running || !analyzed || !sel.size}
-            onClick={() => setReview(true)}
-          >
-            Review selection
-          </Btn>
-        </div>
-      </div>
+      <PageHeader
+        back={<BackLink onClick={() => navigate({ to: "/" })} />}
+        title="1-Click Optimization"
+        badges={<Badge tone="warning">SIMULATED</Badge>}
+        sub="Analyze sample recommendations, review your choices, confirm a simulated run."
+        actions={
+          <div className="flex gap-2">
+            <Btn
+              variant="ghost"
+              onClick={() => setGuide(true)}
+              title="How 1-Click Optimization works"
+            >
+              Guide
+            </Btn>
+            <Btn disabled={scan.running} onClick={analyze} title="Analyze sample recommendations">
+              {scan.running ? (
+                <>Analyzing…</>
+              ) : analyzed ? (
+                <>
+                  <RotateCcw aria-hidden="true" className="h-3.5 w-3.5" />
+                  Rescan
+                </>
+              ) : (
+                <>
+                  <ScanSearch aria-hidden="true" className="h-3.5 w-3.5" />
+                  Analyze
+                </>
+              )}
+            </Btn>
+            <Btn
+              variant="primary"
+              size="lg"
+              disabled={scan.running || !analyzed || !sel.size}
+              onClick={() => setReview(true)}
+            >
+              Review selection
+            </Btn>
+          </div>
+        }
+      />
 
       <Stepper steps={STEPS} current={step} label="1-Click workflow" />
 

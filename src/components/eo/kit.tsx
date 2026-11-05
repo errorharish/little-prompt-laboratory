@@ -3,7 +3,15 @@ import { createPortal } from "react-dom";
 import type React from "react";
 import { cn } from "@/lib/utils";
 import type { Risk } from "@/lib/eo/data";
-import { X, ChevronDown, FlaskConical, Search, Check as CheckIcon, Loader2 } from "lucide-react";
+import {
+  X,
+  ArrowLeft,
+  ChevronDown,
+  FlaskConical,
+  Search,
+  Check as CheckIcon,
+  Loader2,
+} from "lucide-react";
 import { toast } from "sonner";
 
 /* ── Card (FigmaCardStyle / GlassCard) ──
@@ -222,7 +230,7 @@ export function Btn({
         size === "sm"
           ? "h-7 px-2.5 text-[10px]"
           : size === "lg"
-            ? "h-10 px-4.5 text-xs"
+            ? "h-9 px-4 text-[11px]"
             : "h-8 px-3 text-[10.5px]",
         btnCls[variant],
         className,
@@ -234,6 +242,22 @@ export function Btn({
   );
 }
 
+/* ── Back link (secondary pages return to their parent, e.g. Auto Optimize → Dashboard) ── */
+export function BackLink({
+  label = "Back to Dashboard",
+  onClick,
+}: {
+  label?: string | undefined;
+  onClick: () => void;
+}) {
+  return (
+    <button type="button" onClick={onClick} className="eo-back">
+      <ArrowLeft aria-hidden="true" className="h-3.5 w-3.5" />
+      {label}
+    </button>
+  );
+}
+
 /* ── Page header (every View starts with Grid cols=*,Auto: title block + actions) ── */
 export function PageHeader({
   title,
@@ -241,23 +265,27 @@ export function PageHeader({
   badges,
   actions,
   accent = "bg-cyan",
+  back,
 }: {
   title: string;
   sub?: string | undefined;
   badges?: ReactNode | undefined;
   actions?: ReactNode | undefined;
   accent?: string | undefined;
+  /** Rendered before the title block — used by pages reached from another page. */
+  back?: ReactNode | undefined;
 }) {
   return (
-    <div className="eo-page-header mb-4 flex flex-wrap items-start justify-between gap-3">
-      <div className="flex gap-3">
-        <span className={cn("eo-accent-bar mt-0.5 h-8 w-1 rounded-full", accent)} />
-        <div>
+    <div className="eo-page-header flex flex-wrap items-center justify-between gap-3">
+      <div className="flex min-w-0 items-center gap-3">
+        {back}
+        <span className={cn("eo-accent-bar h-7 w-1 shrink-0 rounded-full", accent)} />
+        <div className="min-w-0">
           <div className="flex flex-wrap items-center gap-2">
-            <h1 className="font-bold tracking-[0.04em] uppercase">{title}</h1>
+            <h1 className="font-bold uppercase">{title}</h1>
             {badges}
           </div>
-          {sub && <p className="mt-0.5 max-w-2xl text-[12.5px] text-muted-foreground">{sub}</p>}
+          {sub && <p className="max-w-3xl text-muted-foreground">{sub}</p>}
         </div>
       </div>
       {actions && <div className="flex flex-wrap items-center gap-2">{actions}</div>}
@@ -265,12 +293,12 @@ export function PageHeader({
   );
 }
 
-/* ── Stat strip (UniformGrid / cols=*,10,* tile rows) ── */
+/* ── Metric strip: one panel divided into cells (replaces rows of separate stat cards) ── */
 export function StatTiles({
   items,
-  cols,
 }: {
   items: { label: string; value: ReactNode; sub?: string | undefined; tone?: Tone | undefined }[];
+  /** Kept for call-site compatibility; the strip wraps by available width. */
   cols?: number | undefined;
 }) {
   const tc: Record<Tone, string> = {
@@ -282,25 +310,21 @@ export function StatTiles({
     muted: "text-foreground",
   };
   return (
-    <div
-      className="eo-stat-grid grid gap-2.5"
-      style={{ gridTemplateColumns: `repeat(${cols ?? items.length}, minmax(0,1fr))` }}
-    >
-      {items.map((s) => (
-        <div key={s.label} className="eo-card eo-stat px-3 py-2.5">
-          <Label className="text-[9.5px]">{s.label}</Label>
-          <div
-            key={typeof s.value === "string" || typeof s.value === "number" ? s.value : undefined}
-            className={cn(
-              "eo-stat-value mt-1 text-2xl font-bold tabular-nums",
-              tc[s.tone ?? "muted"],
-            )}
-          >
-            {s.value}
+    <div className="eo-metrics">
+      <dl className="eo-metrics-inner">
+        {items.map((s) => (
+          <div key={s.label} className="eo-metric" data-tone={s.tone ?? "muted"}>
+            <dt className="eo-label text-[9.5px] text-muted-foreground">{s.label}</dt>
+            <dd
+              key={typeof s.value === "string" || typeof s.value === "number" ? s.value : undefined}
+              className={cn("eo-stat-value tabular-nums", tc[s.tone ?? "muted"])}
+            >
+              {s.value}
+            </dd>
+            {s.sub && <dd className="eo-metric-sub">{s.sub}</dd>}
           </div>
-          {s.sub && <div className="mt-0.5 text-[11px] text-subtle">{s.sub}</div>}
-        </div>
-      ))}
+        ))}
+      </dl>
     </div>
   );
 }
@@ -422,17 +446,11 @@ export function Toggle({
       aria-checked={on}
       aria-label={label}
       onClick={() => onChange(!on)}
-      className={cn(
-        "relative h-5 w-9 shrink-0 rounded-full border",
-        on ? "border-cyan/60 bg-cyan/30" : "border-border-strong bg-window hover:border-subtle",
-      )}
+      className="eo-switch relative h-5 w-9 shrink-0 rounded-full border"
     >
       <span
         aria-hidden="true"
-        className={cn(
-          "eo-toggle-thumb absolute top-0.5 left-0.5 h-3.5 w-3.5 rounded-full",
-          on ? "bg-cyan" : "bg-subtle",
-        )}
+        className="eo-toggle-thumb absolute top-0.5 left-0.5 h-3.5 w-3.5 rounded-full"
       />
     </button>
   );
@@ -487,33 +505,51 @@ export function KV({
 export function Details({
   title = "ADVANCED DETAILS",
   children,
+  inline,
+  hint,
+  defaultOpen = false,
 }: {
   title?: string | undefined;
   children: ReactNode;
+  /** Renders inside an existing panel (no own card surface). */
+  inline?: boolean | undefined;
+  /** Short text shown beside the title while collapsed. */
+  hint?: string | undefined;
+  defaultOpen?: boolean | undefined;
 }) {
-  const [open, setOpen] = useState(false);
+  const [open, setOpen] = useState(defaultOpen);
   const panelId = useId();
   return (
-    <div className="eo-card overflow-hidden">
+    <div className={cn(inline ? "eo-disclosure" : "eo-card overflow-hidden")} data-open={open}>
       <button
         type="button"
         aria-expanded={open}
         aria-controls={panelId}
         onClick={() => setOpen(!open)}
-        className="flex w-full items-center justify-between px-4 py-3 text-left hover:bg-highlight/40"
+        className={cn(
+          "eo-disclosure-btn flex w-full items-center justify-between gap-3 text-left",
+          inline ? "py-2.5" : "px-4 py-3 hover:bg-highlight/40",
+        )}
       >
         <span className="eo-label text-muted-foreground">{title}</span>
-        <ChevronDown
-          aria-hidden="true"
-          className={cn(
-            "h-4 w-4 text-muted-foreground transition-transform duration-200",
-            open && "rotate-180 text-cyan",
+        <span className="flex min-w-0 items-center gap-2">
+          {hint && !open && (
+            <span className="truncate text-[11px] font-semibold text-subtle">{hint}</span>
           )}
-        />
+          <ChevronDown
+            aria-hidden="true"
+            className={cn(
+              "eo-chevron h-4 w-4 shrink-0 text-muted-foreground",
+              open && "rotate-180 text-cyan",
+            )}
+          />
+        </span>
       </button>
       <div id={panelId} className="eo-expand" data-open={open} inert={!open}>
         <div>
-          <div className="border-t border-border px-4 py-3.5">{children}</div>
+          <div className={cn(inline ? "pb-1" : "border-t border-border px-4 py-3.5")}>
+            {children}
+          </div>
         </div>
       </div>
     </div>
@@ -529,6 +565,8 @@ export function Modal({
   children,
   footer,
   width = "max-w-2xl",
+  icon,
+  tone = "cyan",
 }: {
   open: boolean;
   onClose: () => void;
@@ -537,6 +575,9 @@ export function Modal({
   children: ReactNode;
   footer?: ReactNode | undefined;
   width?: string | undefined;
+  /** Small glyph shown in a tinted tile beside the title. */
+  icon?: ReactNode | undefined;
+  tone?: "cyan" | "success" | "warning" | "danger" | undefined;
 }) {
   const dialog = useRef<HTMLDivElement>(null);
   const closeRef = useRef(onClose);
@@ -549,7 +590,7 @@ export function Modal({
       setVisible(true);
       return;
     }
-    const timer = setTimeout(() => setVisible(false), 150);
+    const timer = setTimeout(() => setVisible(false), 200);
     return () => clearTimeout(timer);
   }, [open]);
   useEffect(() => {
@@ -606,15 +647,22 @@ export function Modal({
         onClick={(e) => e.stopPropagation()}
       >
         <div className="eo-modal-head flex items-start justify-between gap-4 border-b border-border px-5 py-3.5">
-          <div className="min-w-0">
-            <h2 id={titleId} className="text-base font-bold uppercase">
-              {title}
-            </h2>
-            {sub && (
-              <p id={subId} className="mt-1 text-xs text-muted-foreground">
-                {sub}
-              </p>
+          <div className="flex min-w-0 items-start gap-3">
+            {icon && (
+              <span aria-hidden="true" className="eo-modal-icon" data-tone={tone}>
+                {icon}
+              </span>
             )}
+            <div className="min-w-0">
+              <h2 id={titleId} className="text-[15px] font-bold uppercase">
+                {title}
+              </h2>
+              {sub && (
+                <p id={subId} className="mt-0.5 text-xs text-muted-foreground">
+                  {sub}
+                </p>
+              )}
+            </div>
           </div>
           <Btn
             onClick={onClose}
