@@ -20,3 +20,11 @@
 - [x] Premium RAM Limiter (slider + synced number field, reset/revert, simulated enforce) and shared Segmented/slider controls.
 - [x] V4 Maximum Performance and Emulator Optimization redesigned; fake live logs removed.
 - [x] Blueprint updated; all 34 destinations at 1280 / 1024, flows, and 22 tests verified.
+
+# Final master transformation (prompt-6)
+- [x] Auto Optimize restored as a recurring maintenance engine: user-selected tasks (temp files, standby list, per-browser cache, Recycle Bin, system caches), 1/5/10/30/60 min + custom up to 24 h, pause/resume, run now, cancel, overlap policy.
+- [x] Launch / close / Windows startup / shutdown behaviour represented as simulated events; native architecture documented in Blueprint.
+- [x] Dashboard: score + Auto Optimize control centre; Optimization Status and Recent Activity removed; one-row System Information strip.
+- [x] Maintenance history with per-task outcomes; title-bar countdown chip.
+- [x] 35 tests, all 34 destinations at 1280 / 1024 verified.
+- [ ] Per-page layout redesign of the remaining manager pages beyond the shared components. Blocked: needs the WPF reference files to avoid guessing layouts.

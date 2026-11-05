@@ -3,11 +3,13 @@ import type { ReactNode } from "react";
 import { Badge, Card, Label, PageHeader, SectionTitle } from "@/components/eo/kit";
 import { MISSING_REFERENCES, PAGES, hrefFor } from "@/lib/eo/registry";
 import {
+  AUTO_OPTIMIZE_SPEC,
   COMPONENT_MAP,
   DEPTH,
   LAYOUT_RULES,
   MODAL_SPEC,
   MOTION,
+  NATIVE_AUTO_ARCHITECTURE,
   NAVIGATION,
   REDUCED_MOTION,
   SLIDER_SPEC,
@@ -53,6 +55,7 @@ const SECTIONS = [
   ["reduced", "Reduced motion"],
   ["components", "Components"],
   ["layout", "Layout & sliders"],
+  ["auto", "Auto Optimize"],
   ["patterns", "Patterns"],
   ["missing", "Missing references"],
 ] as const;
@@ -367,6 +370,28 @@ function Blueprint() {
           </Card>
         </section>
       </div>
+
+      <Section id="auto">
+        <SectionTitle
+          id="auto-title"
+          title="AUTO OPTIMIZE — MAINTENANCE ENGINE"
+          badge={<Badge tone="warning">PROTOTYPE SIMULATION</Badge>}
+          sub="UI and workflow as built in the prototype, then the intended native architecture."
+        />
+        <Table
+          head={["AREA", "BEHAVIOUR"]}
+          cols="160px 1fr"
+          rows={AUTO_OPTIMIZE_SPEC.map((a) => [a.area, a.detail])}
+        />
+        <h3 className="eo-label mt-4 mb-2 text-[10px] text-foreground">
+          NATIVE WPF ARCHITECTURE (NOT IMPLEMENTED IN THE BROWSER)
+        </h3>
+        <Table
+          head={["AREA", "INTENDED IMPLEMENTATION"]}
+          cols="160px 1fr"
+          rows={NATIVE_AUTO_ARCHITECTURE.map((a) => [a.area, a.detail])}
+        />
+      </Section>
 
       <Section id="patterns">
         <SectionTitle id="patterns-title" title="REUSABLE PATTERNS" />

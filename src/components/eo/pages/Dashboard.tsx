@@ -1,6 +1,6 @@
 // Dashboard — premium control centre. Hierarchy (user-directed, see MISSING_REFERENCES):
-// 1. Overall Optimization Score · 2. Auto Optimize panel · 3. compact system overview ·
-// 4. optimization status + recent activity · 5. quick actions.
+// 1. Overall Optimization Score · 2. Auto Optimize maintenance panel · 3. compact system
+// overview · 4. system information strip · 5. quick actions. Optimization Status was removed.
 // The full System Performance Telemetry chart lives on the System Telemetry page.
 import { memo, useState, type CSSProperties } from "react";
 import { Link } from "@tanstack/react-router";
@@ -20,7 +20,6 @@ import {
   Btn,
   Card,
   DemoBadge,
-  EmptyState,
   KV,
   Label,
   Modal,
@@ -30,7 +29,8 @@ import {
   simulate,
 } from "../kit";
 import { CountUp, ScoreRing } from "../controls";
-import { AutoOptimizePanel, MODE_TEXT } from "../AutoOptimizePanel";
+import { AutoOptimizePanel } from "../AutoOptimizePanel";
+import { HW } from "@/lib/eo/data";
 import { SCORE_CATEGORIES, overallScore, scoreStatus } from "@/lib/eo/score";
 import { cn } from "@/lib/utils";
 
@@ -128,161 +128,64 @@ const QUICK = [
   },
 ];
 
-type Log = [time: string, title: string, cat: string, detail: string, status: string];
-const LOGS: Log[] = [
-  [
-    "10:42:01",
-    "System dashboard initialized",
-    "SYSTEM",
-    "V3 telemetry engine started with low-overhead sampling node",
-    "SUCCESS",
-  ],
-  [
-    "10:42:03",
-    "Hardware status sample loaded",
-    "AUDIT",
-    "Identified Ryzen 7 7800X3D, RTX 4080 Super, 32GB DDR5-6000",
-    "DEMO DATA",
-  ],
-  [
-    "10:42:08",
-    "Performance profile status checked",
-    "PROFILE",
-    "V3 Normal profile active with conservative latency bias",
-    "ACTIVE",
-  ],
-  [
-    "10:42:15",
-    "Optimization readiness displayed",
-    "READINESS",
-    "Sample readiness entry · compatibility not assessed in prototype",
-    "SAMPLE",
-  ],
-  [
-    "10:42:22",
-    "Timer resolution benchmark simulated",
-    "TIMING",
-    "Global multimedia timer lock confirmed at 0.5 ms resolution",
-    "0.5 ms LOCKED",
-  ],
+const SYS_INFO: [string, string][] = [
+  ["Operating system", HW.os],
+  ["Performance profile", "V3 Normal"],
+  ["Timer resolution", "0.5 ms (locked)"],
+  ["Power plan", "Balanced"],
+  ["Restore point", "None created"],
 ];
 
 export function DashboardPage() {
-  const [logs, setLogs] = useState(LOGS);
-  const [mode, setMode] = useState("NORMAL");
   return (
     <div className="space-y-3.5">
       <PageHeader
         title="Dashboard"
         badges={<Badge tone="cyan">V3</Badge>}
-        sub="System overview and optimization status"
+        sub="System overview, optimization score and automatic maintenance"
         actions={
-          <>
-            <Badge tone="success">{mode} MODE · CONFIGURATION ACTIVE</Badge>
-            <Badge tone="muted">TIMER: 0.5 ms (LOCKED)</Badge>
-            <Btn
-              onClick={() => {
-                setLogs((l) => [
-                  [
-                    new Date().toLocaleTimeString([], { hour12: false }),
-                    "Sample dashboard refreshed",
-                    "SYSTEM",
-                    "Sample values redrawn · no hardware was read",
-                    "SAMPLE",
-                  ],
-                  ...(l.length ? l : LOGS),
-                ]);
-                simulate("Refresh sample scan");
-              }}
-            >
-              <RefreshCw aria-hidden="true" className="h-3.5 w-3.5" /> Refresh
-            </Btn>
-          </>
+          <Btn onClick={() => simulate("Refresh sample values")}>
+            <RefreshCw aria-hidden="true" className="h-3.5 w-3.5" /> Refresh
+          </Btn>
         }
       />
 
-      {/* 1 + 2: score (left) and Auto Optimize (right) carry the strongest emphasis */}
+      {/* 1 + 2: score (left) and Auto Optimize maintenance engine (right) */}
       <div
         className="eo-dash-hero grid gap-3"
         style={{ gridTemplateColumns: "minmax(272px, 312px) minmax(0, 1fr)" }}
       >
         <ScoreCard />
-        <AutoOptimizePanel mode={mode} onMode={setMode} />
+        <AutoOptimizePanel />
       </div>
 
       <SystemOverview />
-
-      {/* 4: status + activity */}
-      <div
-        className="eo-telemetry-split grid gap-3"
-        style={{ gridTemplateColumns: "minmax(0,1fr) minmax(0,1fr)" }}
-      >
-        <Card>
-          <SectionTitle
-            title="OPTIMIZATION STATUS"
-            sub="Current system tuning profile & kernel health"
-            badge={<Badge tone="cyan">V3 ENGINE</Badge>}
-          />
-          <p className="text-[12px] text-muted-foreground">{MODE_TEXT[mode]}</p>
-          <div className="mt-3 grid grid-cols-2 gap-2">
-            {[
-              ["Timer Resolution", "0.5 ms (Lock)"],
-              ["DPC Latency", "< 22 µs"],
-              ["Core Parking", "Disabled"],
-              ["Compatibility", "Not assessed"],
-            ].map(([k, v]) => (
-              <div key={k} className="rounded-lg border border-border bg-window px-3 py-2">
-                <div className="text-[10.5px] text-muted-foreground">{k}</div>
-                <div className="text-[13px] font-bold">{v}</div>
-              </div>
-            ))}
-          </div>
-          <div className="mt-3 flex items-center justify-between">
-            <Badge tone="success">{mode} MODE · CONFIGURATION ACTIVE</Badge>
-            <span className="text-[10px] font-bold text-success">HEALTH 98.4% · SAMPLE</span>
-          </div>
-        </Card>
-        <Card>
-          <SectionTitle
-            title="RECENT ACTIVITY"
-            badge={<DemoBadge label="SAMPLE ACTIVITY" />}
-            sub="Initialization and readiness entries"
-            right={
-              <Btn size="sm" variant="ghost" disabled={!logs.length} onClick={() => setLogs([])}>
-                Clear
-              </Btn>
-            }
-          />
-          <div className="eo-activity divide-y divide-border">
-            {!logs.length && (
-              <EmptyState
-                title="No sample activity"
-                sub="Activity appears after refreshing the sample dashboard."
-              />
-            )}
-            {logs.slice(0, 8).map((l, i) => (
-              <div
-                key={`${logs.length - i}-${l[0]}`}
-                className="grid items-center gap-3 py-2"
-                style={{ gridTemplateColumns: "auto minmax(0,1fr) auto" }}
-              >
-                <span className="font-mono text-[10.5px] text-subtle">{l[0]}</span>
-                <div className="min-w-0">
-                  <div className="truncate text-[12.5px] font-semibold">{l[1]}</div>
-                  <div className="truncate text-[11px] text-muted-foreground">{l[3]}</div>
-                </div>
-                <Badge tone={l[4] === "DEMO DATA" ? "warning" : "success"}>{l[4]}</Badge>
-              </div>
-            ))}
-          </div>
-        </Card>
-      </div>
-
+      <SystemInfo />
       <QuickActions />
       <SimNotice />
     </div>
   );
 }
+
+/* ── 4. Important system information — one compact strip, sample values ── */
+const SystemInfo = memo(function SystemInfo() {
+  return (
+    <section aria-labelledby="eo-sysinfo-title" className="eo-card eo-sysinfo px-4 py-2.5">
+      <h2 id="eo-sysinfo-title" className="sr-only">
+        System information
+      </h2>
+      <dl className="eo-sysinfo-list">
+        {SYS_INFO.map(([k, v]) => (
+          <div key={k}>
+            <dt>{k}</dt>
+            <dd>{v}</dd>
+          </div>
+        ))}
+      </dl>
+      <DemoBadge label="SAMPLE" />
+    </section>
+  );
+});
 
 /* ── 1. Overall Optimization Score (illustrative — no scoring engine exists in the source) ── */
 const ScoreCard = memo(function ScoreCard() {

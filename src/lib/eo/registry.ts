@@ -452,6 +452,11 @@ export const V4_TABS = ["v4-max-performance", "emulator-optimization"] as const;
 /** References that could not be fully determined from the uploads. */
 export const MISSING_REFERENCES: { area: string; detail: string }[] = [
   {
+    area: "Auto Optimize task list",
+    detail:
+      "AutoOptimizeView.xaml only defines Clean Temp Files and Free Standby Memory. The other tasks (crash dumps, browser caches per browser, Recycle Bin, DirectX shader cache, DNS flush) are operations that already exist on the Storage and Tools pages. Per-browser cache cleanup and the 1-minute–24-hour schedule follow the user's brief; their native engine support must be confirmed in the C# source.",
+  },
+  {
     area: "Overall Optimization Score",
     detail:
       "No scoring logic exists in the supplied source. The score (weighted average of four categories in src/lib/eo/score.ts) is illustrative demo data, labelled as such, and is never changed by a simulated run.",
@@ -479,7 +484,7 @@ export const MISSING_REFERENCES: { area: string; detail: string }[] = [
   {
     area: "Dashboard layout",
     detail:
-      "DashboardView.xaml contains 5 telemetry tiles, a telemetry chart + Optimization Status, Hardware Information table, Quick Actions and Recent Activity; the build report describes a HealthGauge + 1-Click hero card. By explicit user direction the prototype now leads with an Overall Optimization Score + Auto Optimize panel, keeps compact tiles, and moves the telemetry chart to System Telemetry. The hardware table's content remains in the tiles and on System Telemetry.",
+      "DashboardView.xaml contains 5 telemetry tiles, a telemetry chart + Optimization Status, Hardware Information table, Quick Actions and Recent Activity; the build report describes a HealthGauge + 1-Click hero card. By explicit user direction the prototype now leads with an Overall Optimization Score + the Auto Optimize maintenance panel, keeps compact tiles plus a one-row System Information strip, removes Optimization Status and Recent Activity, and moves the telemetry chart to System Telemetry. The hardware table's content remains in the tiles and on System Telemetry.",
   },
   {
     area: "EmulatorDeepOptimizeTab",

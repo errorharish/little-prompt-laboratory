@@ -4,6 +4,8 @@ import { ICONS } from "./icons";
 import { Fragment, useCallback, useEffect, useRef, useState, type ReactNode } from "react";
 import { cn } from "@/lib/utils";
 import { Btn } from "./kit";
+import { AutoChip } from "./AutoChip";
+import { useAutoOptimizeBoot } from "./autoOptimizeStore";
 import { PAGES, V4_TABS, hrefFor, pageBySlug } from "@/lib/eo/registry";
 
 function Icon({ name, className }: { name: string; className?: string }) {
@@ -65,6 +67,7 @@ function useActiveBox(deps: unknown[]) {
 export function Shell({ children }: { children: ReactNode }) {
   const loc = useLocation();
   const navigate = useNavigate();
+  useAutoOptimizeBoot();
   const slug = loc.pathname.replace(/^\//, "");
   const page = pageBySlug(slug);
   const isBlueprint = slug === "blueprint";
@@ -133,6 +136,7 @@ export function Shell({ children }: { children: ReactNode }) {
           </span>
         </div>
         <div className="flex items-center gap-2">
+          <AutoChip />
           <Link
             to="/blueprint"
             title="Design and WPF handoff documentation"
