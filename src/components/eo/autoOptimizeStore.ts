@@ -376,11 +376,15 @@ export function useAutoOptimize(): AutoState {
 /* ── 1-second clock for countdowns (only subscribed components re-render) ── */
 const clockListeners = new Set<() => void>();
 let clock: ReturnType<typeof setInterval> | null = null;
-let nowSec = 0;
+let nowSec = typeof window === "undefined" ? 0 : Math.floor(Date.now() / 1000);
 function subscribeClock(l: () => void) {
   clockListeners.add(l);
   if (!clock) {
-    nowSec = Math.floor(Date.now() / 1000);
+    const fresh = Math.floor(Date.now() / 1000);
+    if (fresh !== nowSec) {
+      nowSec = fresh;
+      queueMicrotask(l);
+    }
     clock = setInterval(() => {
       nowSec = Math.floor(Date.now() / 1000);
       clockListeners.forEach((f) => f());
@@ -398,11 +402,9 @@ function subscribeClock(l: () => void) {
 export function useNow() {
   const s = useSyncExternalStore(
     subscribeClock,
-    () => nowSec || Math.floor(Date.now() / 1000),
+    () => nowSec,
     () => 0,
   );
   return s * 1000;
 }
 
-// Exposed for tests only.
-export const __test = { get state() { return state; }, reset() { if (stepTimer) clearTimeout(stepTimer); if (ticker) clearInterval(ticker); state = INITIAL; } };
