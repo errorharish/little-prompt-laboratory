@@ -40,12 +40,24 @@ export interface RegistryGroup {
   note?: string;
 }
 
+export interface RegistryHardware {
+  ramGb: number;
+  logicalCores: number;
+  laptop: boolean;
+  gpuVendor: "NVIDIA" | "AMD" | "Intel";
+  gpuName: string;
+  gpuCount: number;
+  supportsHags: boolean;
+  /** Optimization profile the GPU engine scans with (source default: Normal). */
+  profile: string;
+}
+
 /** Sample hardware the targets below are computed for (matches `HW` in data.ts). */
-export const SAMPLE_REGISTRY_HW = {
+export const SAMPLE_REGISTRY_HW: RegistryHardware = {
   ramGb: 32,
   logicalCores: 16,
   laptop: false,
-  gpuVendor: "NVIDIA" as const,
+  gpuVendor: "NVIDIA",
   gpuName: HW.gpu,
   gpuCount: 1,
   supportsHags: true,
