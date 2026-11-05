@@ -33,3 +33,6 @@ use the editor.
 - ERROR OPTIMIZER is a browser visual prototype of a WPF app: every action is simulated (`simulate`, `useSimRun`) and must stay labeled as such — never call real system APIs. Why: the user wants a blueprint, not real optimizations.
 - Page registry lives in `src/lib/eo/registry.ts` (route key, XAML view, ViewModel, dock group); `src/routes/$page.tsx` renders `PAGE_COMPONENTS` from `src/components/eo/pageMap.tsx`. Why: one place maps original WPF routes to prototype pages.
 - Uploaded XAML is the layout source of truth over the build report; conflicts go in `MISSING_REFERENCES`, not silent guesses.
+- Selection toggles, default selections and simulated-run summaries go through `src/lib/eo/selection.ts`: PROTECTED items are never auto-selected and run summaries always report 0 real changes. Why: the prototype must never fabricate optimization results.
+- WPF handoff data (tokens, type, spacing, depth, motion, states, component map) lives in `src/lib/eo/blueprint.ts`; every motion/depth `css` value must exist in `src/styles.css` (enforced by `src/test/blueprint-sync.test.ts`). Why: the blueprint must describe the running prototype, not invented values.
+- Registry icons resolve through the explicit map in `src/components/eo/icons.ts`, never `import * as` lucide. Why: keeps the icon bundle small; a test checks every page has an icon.
