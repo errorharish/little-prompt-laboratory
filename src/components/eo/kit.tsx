@@ -1,4 +1,5 @@
 import { useEffect, useRef, useId, useState, type ReactNode } from "react";
+import { createPortal } from "react-dom";
 import type React from "react";
 import { cn } from "@/lib/utils";
 import type { Risk } from "@/lib/eo/data";
@@ -584,8 +585,10 @@ export function Modal({
       previous?.focus();
     };
   }, [open, visible]);
-  if (!visible) return null;
-  return (
+  if (!visible || typeof document === "undefined") return null;
+  // Portal to <body>: cards use transform / backdrop-filter, which would otherwise trap a
+  // position:fixed overlay inside the card.
+  return createPortal(
     <div
       className={cn(
         "eo-overlay fixed inset-0 z-50 flex items-center justify-center bg-background/75 p-6 backdrop-blur-sm",
@@ -630,7 +633,8 @@ export function Modal({
           </div>
         )}
       </div>
-    </div>
+    </div>,
+    document.body,
   );
 }
 
