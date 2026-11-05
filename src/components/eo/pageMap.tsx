@@ -10,8 +10,8 @@ import {
   RegistryValuesRamPage,
   SystemInfoPage,
 } from "./pages/SystemPages";
+import { AutoOptimizePage } from "./pages/AutoOptimize";
 import {
-  AutoOptimizePage,
   NetworkPage,
   ProcessReductionPage,
   ServiceManagerPage,
