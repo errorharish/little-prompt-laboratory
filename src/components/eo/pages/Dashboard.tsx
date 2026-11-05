@@ -2,7 +2,8 @@
 // 1. Overall Optimization Score · 2. Auto Optimize maintenance panel · 3. compact system
 // overview · 4. system information strip · 5. quick actions. Optimization Status was removed.
 // The full System Performance Telemetry chart lives on the System Telemetry page.
-import { memo, useState, type CSSProperties } from "react";
+import { memo, useRef, useState, type CSSProperties } from "react";
+import { toast } from "sonner";
 import { Link, useNavigate } from "@tanstack/react-router";
 import {
   Activity,
@@ -310,6 +311,8 @@ const QuickActions = memo(function QuickActions() {
   const [activeId, setActiveId] = useState<string | null>(null);
   const [doneId, setDoneId] = useState<string | null>(null);
   const [open, setOpen] = useState(false);
+  const openRef = useRef(open);
+  openRef.current = open;
   const runningId = sim.running ? activeId : null;
   const action = QUICK_ACTIONS.find((a) => a.id === activeId) ?? null;
   const progress = sim.progress ?? 0;
@@ -330,7 +333,16 @@ const QuickActions = memo(function QuickActions() {
     setActiveId(a.id);
     setDoneId(null);
     setOpen(true);
-    sim.start(() => setDoneId(a.id));
+    sim.start(() => {
+      setDoneId(a.id);
+      // Popup was dismissed while running: confirm completion with a compact toast instead.
+      if (!openRef.current) {
+        const r = quickResult(a);
+        toast.success(`${a.title} finished — simulated`, {
+          description: `${r.completed} completed · ${r.skipped} skipped · 0 changes on this PC`,
+        });
+      }
+    });
   };
 
   const result = action && phase === "done" ? quickResult(action) : null;
