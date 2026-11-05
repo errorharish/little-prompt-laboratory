@@ -113,7 +113,8 @@ export interface RestoreFlow {
   setName: (v: string) => void;
   send: (e: RestoreEvent) => void;
   start: () => void;
-  reset: () => void;
+  /** Back to the name step; optionally with a new default name. */
+  reset: (name?: string) => void;
 }
 
 const DELAY: Partial<Record<RestoreStage, number>> = {
@@ -175,10 +176,10 @@ export function useRestorePointFlow(defaultName: string): RestoreFlow {
       setResult(null);
       send({ type: "start" });
     },
-    reset: () => {
+    reset: (next) => {
       setStage("idle");
       setResult(null);
-      setName(defaultName);
+      setName(next ?? defaultName);
     },
   };
 }
@@ -218,7 +219,7 @@ export function RestorePointBody({
         <h3 className="flex items-center gap-2 text-[13.5px] font-bold" data-tone={meta.tone}>
           <meta.Icon
             aria-hidden="true"
-            className={stage === "checking" || value % 100 ? "eo-spin h-4 w-4" : "h-4 w-4"}
+            className={meta.Icon === Loader2 ? "eo-spin h-4 w-4" : "h-4 w-4"}
           />
           {meta.title}
         </h3>

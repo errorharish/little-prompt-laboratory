@@ -6,6 +6,12 @@ import { Badge, Bar, Btn, Chips, Details, KV, Modal, RiskBadge, StatTiles, Stepp
 import type { Risk } from "@/lib/eo/data";
 import { simulatedRunSummary, type SimulatedRunSummary } from "@/lib/eo/selection";
 import { cn } from "@/lib/utils";
+import {
+  RestoreNameField,
+  RestorePointActions,
+  RestorePointBody,
+  useRestorePointFlow,
+} from "./RestorePoint";
 
 const STAGES = ["ANALYZING", "PREPARING", "APPLYING", "VERIFYING", "FINALIZING"];
 const FLOW = ["Approve", "Restore point", "Simulated run", "Summary"];
@@ -35,7 +41,9 @@ export function RunModal({
 }) {
   const [phase, setPhase] = useState<Phase>("approve");
   const [p, setP] = useState(0);
-  const [rpName, setRpName] = useState(`Before ${profile} optimization`);
+  const rp = useRestorePointFlow(`Before ${profile} optimization`);
+  const resetRp = rp.reset;
+  const [rpCreated, setRpCreated] = useState(false);
   const [tab, setTab] = useState("Kernel");
   const [summary, setSummary] = useState<SimulatedRunSummary | null>(null);
   const started = useRef(0);
@@ -48,8 +56,10 @@ export function RunModal({
       setPhase("approve");
       setP(0);
       setSummary(null);
-      setRpName(`Before ${profile} optimization`);
+      setRpCreated(false);
+      resetRp(`Before ${profile} optimization`);
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [open, profile]);
 
   useEffect(() => {
@@ -106,15 +116,36 @@ export function RunModal({
               Approve & proceed
             </Btn>
           </>
-        ) : phase === "restore" ? (
+        ) : phase === "restore" && rp.stage === "idle" ? (
           <>
             <Btn variant="ghost" onClick={() => setPhase("approve")}>
               Back
             </Btn>
-            <Btn variant="primary" disabled={!rpName.trim()} onClick={() => setPhase("running")}>
+            <Btn variant="primary" disabled={!rp.name.trim()} onClick={rp.start}>
               Create & continue
             </Btn>
           </>
+        ) : phase === "restore" ? (
+          <RestorePointActions
+            flow={rp}
+            onCancel={() => resetRp(rp.name)}
+            onDone={() => {
+              setRpCreated(true);
+              setPhase("running");
+            }}
+            doneLabel="Continue to run"
+            extra={
+              <Btn
+                variant="ghost"
+                onClick={() => {
+                  setRpCreated(false);
+                  setPhase("running");
+                }}
+              >
+                Continue without
+              </Btn>
+            }
+          />
         ) : phase === "running" ? (
           <Btn variant="danger" onClick={() => setPhase("cancelled")}>
             Stop simulation
@@ -159,22 +190,8 @@ export function RunModal({
           <KV k="Rollback" v="Per-operation support in native app" />
         </div>
       )}
-      {phase === "restore" && (
-        <div className="space-y-3">
-          <label htmlFor="eo-restore-name" className="eo-label block text-foreground">
-            Create restore point
-          </label>
-          <p className="text-xs text-muted-foreground">
-            Name the simulated restore point. No actual restore point is created.
-          </p>
-          <input
-            id="eo-restore-name"
-            value={rpName}
-            onChange={(e) => setRpName(e.target.value)}
-            className="h-9 w-full rounded-lg border border-border bg-window px-3 text-sm outline-none focus:border-cyan/60"
-          />
-        </div>
-      )}
+      {phase === "restore" &&
+        (rp.stage === "idle" ? <RestoreNameField flow={rp} /> : <RestorePointBody flow={rp} heading />)}
       {(phase === "running" || phase === "cancelled") && (
         <div className="space-y-4">
           <OpProgress
@@ -236,7 +253,10 @@ export function RunModal({
             ]}
           />
           <KV k="Simulation time" v={`${(summary.elapsedMs / 1000).toFixed(1)} s`} />
-          <KV k="Restore point" v={`“${rpName}” (simulated)`} />
+          <KV
+            k="Restore point"
+            v={rpCreated && rp.result ? `“${rp.result.name}” (simulated)` : "Not created"}
+          />
           <KV k="Verification" v={summary.verification} />
           {items && items.length > 0 && (
             <ul
