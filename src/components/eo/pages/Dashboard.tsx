@@ -2,6 +2,7 @@
 // 1. Overall Optimization Score · 2. Auto Optimize maintenance panel · 3. compact system
 // overview · 4. system information strip · 5. quick actions. Optimization Status was removed.
 // The full System Performance Telemetry chart lives on the System Telemetry page.
+import { SAMPLE_HEALTH_INPUT, computeHealth } from "@/lib/eo/health";
 import { memo, useRef, useState, type CSSProperties } from "react";
 import { toast } from "sonner";
 import { Link } from "@tanstack/react-router";
@@ -296,12 +297,16 @@ const SystemOverview = memo(function SystemOverview() {
               <HeartPulse aria-hidden="true" className="h-3.5 w-3.5 text-success" />
               <Label className="text-[9.5px]">HEALTH</Label>
             </span>
-            <span className="text-[17px] font-bold text-success tabular-nums">98.4</span>
+            <span className="text-[17px] font-bold text-success tabular-nums">
+              {HEALTH.overall ?? "—"}
+            </span>
           </div>
-          <div className="mt-1.5 truncate text-[12px] font-semibold">Optimal responsiveness</div>
-          <div className="truncate text-[10.5px] text-subtle">DPC &lt; 22 µs · Timer 0.5 ms</div>
-          <Bar value={98.4} tone="success" className="mt-2" />
-          <div className="mt-1.5 text-[9px] font-bold text-success">V3 PROFILE · SAMPLE</div>
+          <div className="mt-1.5 truncate text-[12px] font-semibold">System health · {HEALTH.status}</div>
+          <div className="truncate text-[10.5px] text-subtle">
+            {HEALTH.attention.length} areas to review on Telemetry
+          </div>
+          <Bar value={HEALTH.overall ?? 0} tone="success" className="mt-2" />
+          <div className="mt-1.5 text-[9px] font-bold text-success">SAMPLE SCORE</div>
         </div>
       </div>
     </section>
@@ -309,6 +314,8 @@ const SystemOverview = memo(function SystemOverview() {
 });
 
 /* ── 5. Navigation shortcuts (open a page) + Quick Optimize (runs here, never navigates) ── */
+const HEALTH = computeHealth(SAMPLE_HEALTH_INPUT);
+
 const NAV_ICONS: Record<string, LucideIcon> = {
   telemetry: Activity,
   startup: Rocket,
