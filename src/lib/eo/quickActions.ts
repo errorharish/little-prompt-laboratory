@@ -99,7 +99,11 @@ export const QUICK_ACTIONS: QuickAction[] = [
     desc: "Disable high-impact third-party startup apps",
     source: "Startup Manager",
     steps: [
-      { t: "Steam Client Bootstrapper", detail: "Startup disabled · HIGH impact", outcome: "Completed" },
+      {
+        t: "Steam Client Bootstrapper",
+        detail: "Startup disabled · HIGH impact",
+        outcome: "Completed",
+      },
       { t: "Discord", detail: "Startup disabled · HIGH impact", outcome: "Completed" },
       { t: "Adobe Creative Cloud", detail: "Startup disabled · HIGH impact", outcome: "Completed" },
       {
@@ -149,7 +153,11 @@ export const QUICK_ACTIONS: QuickAction[] = [
     desc: "Snapshot registry hives and service configuration before tuning",
     source: "Backup & Restore",
     steps: [
-      { t: "Registry hives snapshot", detail: "HKLM\\SYSTEM, HKLM\\SOFTWARE", outcome: "Completed" },
+      {
+        t: "Registry hives snapshot",
+        detail: "HKLM\\SYSTEM, HKLM\\SOFTWARE",
+        outcome: "Completed",
+      },
       { t: "Service configuration snapshot", detail: "Startup types saved", outcome: "Completed" },
       {
         t: "Register restore point",
