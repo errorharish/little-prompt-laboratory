@@ -47,22 +47,6 @@ const FILTERS = {
   CATEGORY: ["System Performance", "Background Workload", "Memory", "Power / Performance"],
   "ACTION REQUIREMENTS": ["Can Optimize Now", "Background-Safe", "Requires Restart"],
 };
-const GUIDE: [string, string][] = [
-  ["CHECK", "ERROR OPTIMIZER scans your PC and finds relevant optimization opportunities."],
-  [
-    "REVIEW",
-    "You can see what can be improved, why it was selected, and which apps are protected.",
-  ],
-  ["CHOOSE", "Keep the recommended changes or customize the selection for your specific needs."],
-  [
-    "OPTIMIZE",
-    "ERROR OPTIMIZER applies only the selected safe changes. System files, drivers and active apps are protected.",
-  ],
-  [
-    "VERIFY",
-    "Every applied change is checked. If a change cannot be safely verified it is rolled back.",
-  ],
-];
 const PROTECTED = [
   "Windows core binaries",
   "Display & audio drivers",
@@ -81,7 +65,6 @@ export function OneClickPage() {
   const [area, setArea] = useState<string | null>(null);
   const [filterOpen, setFilterOpen] = useState(false);
   const [filter, setFilter] = useState("All Optimizations");
-  const [guide, setGuide] = useState(false);
   const [review, setReview] = useState(false);
   const [detail, setDetail] = useState<string | null>(null);
   const [run, setRun] = useState(false);
@@ -128,7 +111,6 @@ export function OneClickPage() {
         sub="Analyze sample recommendations, review your choices, confirm a simulated run."
         actions={
           <div className="flex gap-2">
-            <GuideButton onClick={() => setGuide(true)} />
             <Btn disabled={scan.running} onClick={analyze} title="Analyze sample recommendations">
               {scan.running ? (
                 <>Analyzing…</>
@@ -506,22 +488,6 @@ export function OneClickPage() {
         </div>
       </div>
 
-      <Modal
-        open={guide}
-        onClose={() => setGuide(false)}
-        title="How 1-Click Optimization works"
-        sub="Optimize your PC safely in a few simple steps."
-        footer={
-          <Btn variant="primary" onClick={() => setGuide(false)}>
-            Got it
-          </Btn>
-        }
-      >
-        <GuideSteps
-          steps={GUIDE}
-          note="Protected apps, drivers and critical Windows components are never treated as targets."
-        />
-      </Modal>
 
       <ReviewSelectionModal
         open={review}

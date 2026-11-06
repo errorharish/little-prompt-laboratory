@@ -1262,7 +1262,6 @@ export function AboutPage() {
 
 /* ───────── PERFORMANCE TUNING ───────── */
 export function PerformanceTuningPage() {
-  const [guide, setGuide] = useState(false);
   const [active, setActive] = useState<string | null>(null);
   return (
     <div className="space-y-4">
@@ -1274,7 +1273,6 @@ export function PerformanceTuningPage() {
             <Btn variant="ghost" onClick={() => simulate("Revert to stock")}>
               Revert to stock
             </Btn>
-            <GuideButton onClick={() => setGuide(true)} />
             <Btn onClick={() => simulate("Rescan")}>Rescan</Btn>
           </>
         }
@@ -1346,31 +1344,6 @@ export function PerformanceTuningPage() {
         </p>
       </Details>
       <SimNotice />
-      <Modal
-        open={guide}
-        onClose={() => setGuide(false)}
-        title="How Performance Tuning works"
-        sub="ERROR OPTIMIZER only uses safe hardware controls supported by your CPU and GPU."
-        footer={
-          <Btn variant="primary" onClick={() => setGuide(false)}>
-            Got it
-          </Btn>
-        }
-      >
-        <GuideSteps
-          steps={[
-            ["CHECK", "Checks whether your CPU or GPU supports safe tuning controls."],
-            ["TEST", "Measures your current baseline performance and temperature."],
-            ["TUNE", "Applies one controlled change."],
-            ["VERIFY", "Checks stability, temperature and real performance."],
-            [
-              "DECIDE",
-              "Keeps the change only if it improves stable performance. Otherwise it is reverted.",
-            ],
-          ]}
-          note="In this prototype nothing is measured or tuned."
-        />
-      </Modal>
     </div>
   );
 }
