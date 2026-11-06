@@ -47,7 +47,7 @@ export const GUIDES = {
     limits:
       "Readings and the score are illustrative sample values. Quick Optimize runs a fixed set of steps — use the full pages to choose items.",
     restart: "Not required",
-    reversible: "Cleanup removes files permanently; other actions can be restored",
+    reversible: "No for cleanup — deleted temporary and cache files can't be brought back",
   },
   "one-click": {
     title: "1-Click Optimization",
@@ -771,12 +771,223 @@ export const GUIDES = {
 
 export type GuideId = keyof typeof GUIDES;
 
-/** Registry pages without an optimization purpose (overview, telemetry, settings, info). */
-export const NO_PAGE_GUIDE = ["", "system-info", "settings", "about", "v4-dashboard"] as const;
+/** Registry pages without an optimization purpose (telemetry, settings, info, V4 launcher). */
+export const NO_PAGE_GUIDE = ["system-info", "settings", "about", "v4-dashboard"] as const;
+
+/** The Dashboard lives at "/" (empty slug). */
+const PAGE_GUIDE_ALIAS: Record<string, GuideId> = { "": "dashboard" };
 
 export function pageGuide(slug: string): GuideId | null {
-  return slug in GUIDES && !slug.includes(".") ? (slug as GuideId) : null;
+  if (slug in PAGE_GUIDE_ALIAS) return PAGE_GUIDE_ALIAS[slug] ?? null;
+  return slug in GUIDES && !slug.includes(".") && slug !== "dashboard" ? (slug as GuideId) : null;
 }
+
+/* ───── Full page guides (the GUIDE button dialog) ─────
+ * Every page uses the same dialog: title, subtitle, numbered sections, Got it.
+ * Pages that already had a written V3/V4 guide keep it word for word (PRESERVED);
+ * every other page builds its sections from its guide record, in this fixed order,
+ * skipping sections the record has nothing for. */
+
+export interface GuideStep {
+  title: string;
+  text: string;
+  /** Small label beside the section title (e.g. engine name, risk level). */
+  tag?: string;
+  /** Optional technical points. */
+  points?: readonly string[];
+}
+
+export interface StepGuide {
+  title: string;
+  sub: string;
+  steps: readonly GuideStep[];
+  note?: string;
+}
+
+export const GUIDE_SECTION_TITLES = [
+  "What This Feature Does",
+  "How It Works",
+  "Expected Benefits",
+  "Safety & Compatibility",
+  "When to Use It",
+  "Risks & Limitations",
+  "Reversibility",
+] as const;
+
+const steps = (rows: readonly (readonly [string, string, string?])[]): GuideStep[] =>
+  rows.map(([title, text, tag]) => (tag ? { title, text, tag } : { title, text }));
+
+/** Guides written for the original V3/V4 dialogs — kept verbatim. */
+export const PRESERVED_STEP_GUIDES: Partial<Record<GuideId, StepGuide>> = {
+  "one-click": {
+    title: "How 1-Click Optimization works",
+    sub: "Optimize your PC safely in a few simple steps.",
+    steps: steps([
+      ["CHECK", "ERROR OPTIMIZER scans your PC and finds relevant optimization opportunities."],
+      [
+        "REVIEW",
+        "You can see what can be improved, why it was selected, and which apps are protected.",
+      ],
+      [
+        "CHOOSE",
+        "Keep the recommended changes or customize the selection for your specific needs.",
+      ],
+      [
+        "OPTIMIZE",
+        "ERROR OPTIMIZER applies only the selected safe changes. System files, drivers and active apps are protected.",
+      ],
+      [
+        "VERIFY",
+        "Every applied change is checked. If a change cannot be safely verified it is rolled back.",
+      ],
+    ]),
+    note: "Protected apps, drivers and critical Windows components are never treated as targets.",
+  },
+  "performance-tuning": {
+    title: "How Performance Tuning works",
+    sub: "ERROR OPTIMIZER only uses safe hardware controls supported by your CPU and GPU.",
+    steps: steps([
+      ["CHECK", "Checks whether your CPU or GPU supports safe tuning controls."],
+      ["TEST", "Measures your current baseline performance and temperature."],
+      ["TUNE", "Applies one controlled change."],
+      ["VERIFY", "Checks stability, temperature and real performance."],
+      [
+        "DECIDE",
+        "Keeps the change only if it improves stable performance. Otherwise it is reverted.",
+      ],
+    ]),
+    note: "In this prototype nothing is measured or tuned.",
+  },
+  "v4-max-performance": {
+    title: "Maximum Performance guide",
+    sub: "Safe, non-destructive Windows performance optimization.",
+    steps: steps([
+      [
+        "What Maximum Performance optimizes",
+        "Reduces background CPU contention, releases idle process working sets, and balances priorities.",
+      ],
+      [
+        "What remains safeguarded",
+        "Core Windows OS binaries, display drivers, audio engines, network controllers and your active apps are never touched.",
+      ],
+      [
+        "Reversibility via local rollback journal",
+        "Every applied modification is recorded in a transactional journal before execution.",
+      ],
+      [
+        "Built for gaming, editing, streaming & daily use",
+        "Designed for workload-specific review; no compatibility or performance tests run in this prototype.",
+      ],
+    ]),
+  },
+  "emulator-optimization": {
+    title: "Error Optimizer V4 — Architecture & optimization guide",
+    sub: "Technical reference for host & guest optimization engines",
+    steps: steps([
+      [
+        "Getting Started",
+        "Recommended sequence: 1) Host Maximum Performance, 2) Launch MSI App Player 5 & verify ADB, 3) Engine 1, 4) Engine 2, 5) Engine 3.",
+        "Architecture & sequence",
+      ],
+      [
+        "Maximum Performance",
+        "Transforms the Windows host: MMCSS scheduling, 0.5 ms timer clamp, safe process intelligence with zero arbitrary killing, accurate process counting.",
+        "Host Windows tuning suite",
+      ],
+      [
+        "Emulator Optimization",
+        "Host process elevation (HD-Player.exe), frame-rate unlock and pre-launch vs live modes.",
+        "Engine 1: MMCSS & 240Hz cap",
+      ],
+      [
+        "Deep Debloater",
+        "Authentic guest discovery via ADB, ironclad essential component protection, safe disabling instead of deleting APKs.",
+        "Engine 2: Real ADB inventory",
+      ],
+      [
+        "Advanced Optimization",
+        "Latch-unsignaled rendering, HWUI render pipeline tuning and Dalvik heap compaction. Never edits emulator config files.",
+        "Engine 3: SurfaceFlinger & Dalvik",
+      ],
+      [
+        "MSI & ADB Setup",
+        "Open MSI App Player Settings → Preferences → toggle Android Debug Bridge ON → authorize the USB debugging prompt.",
+        "Port 5555 & authorization",
+      ],
+      [
+        "One-Time State",
+        "One-time optimization with preflight idempotency verification; card states NOT RUN / APPLIED / VERIFIED.",
+        "Persistent store & idempotency",
+      ],
+      [
+        "Restore & Rollback",
+        "Unified rollback from the header, per-engine restore and diagnostic troubleshooting.",
+        "Reversible operations & fixes",
+      ],
+    ]),
+  },
+  "emulator-modules": {
+    title: "Module Hub guide",
+    sub: "How ERROR OPTIMIZER tunes MSI App Player 5 safely",
+    steps: steps([
+      [
+        "Three dedicated modules",
+        "Emulator Optimization for balanced daily tuning, Deep Debloater for cleanup, Low-End Extreme for weak hardware.",
+      ],
+      [
+        "Everything eligible is pre-selected",
+        "Protected packages and advanced risky tweaks are never selected for you. Each profile keeps its own selection.",
+      ],
+      ["Review before applying", "Review & apply lists exactly the selected changes."],
+      ["Reversibility & rollback", "Every applied change can be rolled back at any time."],
+    ]),
+  },
+  "low-end-steam": {
+    title: "Low End Steam guide",
+    sub: "Simulated low-spec emulator review.",
+    steps: steps([
+      ["Connect", "The original operations need MSI App Player running with ADB turned on."],
+      [
+        "Review",
+        "Check the compositor (SurfaceFlinger) timing and guest memory (Dalvik) options for your hardware.",
+      ],
+      [
+        "Optimize",
+        "Apply the eligible items; advanced risky tweaks stay off unless you allow them.",
+      ],
+      ["Restore", "Restore returns every item to its previous value."],
+    ]),
+    note: "This prototype does not connect to an emulator or measure performance.",
+  },
+};
+
+/** Builds the standard sections from a guide record. */
+export function derivedStepGuide(id: GuideId): StepGuide {
+  const g: Guide = GUIDES[id];
+  const [what, how, benefit, safety, when, limits, reversible] = GUIDE_SECTION_TITLES;
+  const rows: (GuideStep | null)[] = [
+    { title: what, text: g.what },
+    { title: how, text: g.how, ...(g.details ? { points: g.details } : {}) },
+    { title: benefit, text: g.benefit },
+    g.safety ? { title: safety, text: g.safety } : null,
+    { title: when, text: g.when },
+    {
+      title: limits,
+      text: g.restart ? `${g.limits} Restart: ${g.restart}.` : g.limits,
+      tag: RISK_LABEL[g.risk],
+    },
+    g.reversible ? { title: reversible, text: g.reversible } : null,
+  ];
+  return {
+    title: `${g.title} guide`,
+    sub: g.why,
+    steps: rows.filter((r): r is GuideStep => r !== null),
+  };
+}
+
+/** The GUIDE dialog content for a page (preserved original, or built from its guide record). */
+export const stepGuide = (id: GuideId): StepGuide =>
+  PRESERVED_STEP_GUIDES[id] ?? derivedStepGuide(id);
 
 export const getGuide = (id: GuideId): Guide => GUIDES[id];
 
