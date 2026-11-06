@@ -14,8 +14,8 @@ import {
   Lock,
 } from "lucide-react";
 import { toast } from "sonner";
-import { GuideTip, usePageGuide } from "./Guide";
-import type { GuideId } from "@/lib/eo/guides";
+import { GuideButton, GuideSteps, GuideTip, usePageGuide } from "./Guide";
+import { stepGuide, type GuideId } from "@/lib/eo/guides";
 
 /* ── Card (FigmaCardStyle / GlassCard) ──
  * Pointer light follows the mouse on every card; the gentle tilt (max ±0.8°) is limited to
