@@ -12,7 +12,7 @@ import {
 import { createPortal } from "react-dom";
 import { BookOpen, ChevronDown, CircleHelp, FlaskConical, ShieldAlert, X } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { getGuide, RISK_LABEL, type GuideId } from "@/lib/eo/guides";
+import { getGuide, RISK_LABEL, type GuideId, type GuideStep } from "@/lib/eo/guides";
 
 /* ── Contextual guide popover ──
  * One help icon + popover used everywhere a setting or optimization needs explaining.
@@ -225,39 +225,65 @@ export function GuideTip({
 export const PageGuideContext = createContext<GuideId | null>(null);
 export const usePageGuide = () => useContext(PageGuideContext);
 
-/* ── Full step-by-step guides (the existing "Guide" dialogs) share one button and step list ── */
-export function GuideButton({ onClick, label = "Guide" }: { onClick: () => void; label?: string }) {
+/* ── Page GUIDE button + numbered sections (the V4 Maximum Performance guide is the reference).
+ * Rendered only through PageGuide in kit.tsx so every page uses the same dialog. ── */
+export function GuideButton({
+  onClick,
+  open = false,
+  topic,
+}: {
+  onClick: () => void;
+  open?: boolean;
+  /** Guide title, used for the accessible label. */
+  topic: string;
+}) {
   return (
-    <button type="button" onClick={onClick} className="eo-guide-btn eo-btn" title={`Open ${label}`}>
+    <button
+      type="button"
+      onClick={onClick}
+      className="eo-guide-btn eo-btn"
+      aria-haspopup="dialog"
+      aria-expanded={open}
+      aria-label={`Open guide: ${topic}`}
+      title={`Open guide: ${topic}`}
+    >
       <BookOpen aria-hidden="true" />
-      {label}
+      Guide
     </button>
   );
 }
 
-export function GuideSteps({
-  steps,
-  note,
-}: {
-  steps: readonly (readonly [string, string])[];
-  note?: ReactNode;
-}) {
+export function GuideSteps({ steps, note }: { steps: readonly GuideStep[]; note?: ReactNode }) {
   return (
     <>
       <ol className="eo-guide-steps">
-        {steps.map(([t, d], i) => (
-          <li key={t}>
+        {steps.map((s, i) => (
+          <li key={s.title} style={{ animationDelay: `${Math.min(i, 8) * 30}ms` }}>
             <span aria-hidden="true" className="eo-guide-num">
               {i + 1}
             </span>
-            <div>
-              <div className="eo-guide-step-title">{t.replace(/^\d+\.\s*/, "")}</div>
-              <p>{d}</p>
+            <div className="min-w-0">
+              <h3 className="eo-guide-step-title">
+                {s.title}
+                {s.tag && <span className="eo-guide-step-tag">{s.tag}</span>}
+              </h3>
+              <p>{s.text}</p>
+              {s.points && (
+                <ul className="eo-guide-points">
+                  {s.points.map((p) => (
+                    <li key={p}>{p}</li>
+                  ))}
+                </ul>
+              )}
             </div>
           </li>
         ))}
       </ol>
       {note && <p className="eo-guide-note">{note}</p>}
+      <p className="eo-guide-sim">
+        <FlaskConical aria-hidden="true" />
+        Simulated in this prototype · 0 changes on this PC
+      </p>
     </>
   );
 }

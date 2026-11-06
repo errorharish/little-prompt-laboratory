@@ -287,6 +287,7 @@ export function PageHeader({
 }) {
   const pageGuide = usePageGuide();
   const g = guide === undefined ? pageGuide : guide;
+  const guideAction = g ? <PageGuide id={g} /> : null;
   return (
     <div className="eo-page-header flex flex-wrap items-center justify-between gap-3">
       <div className="flex min-w-0 items-center gap-3">
@@ -295,14 +296,44 @@ export function PageHeader({
         <div className="min-w-0">
           <div className="flex flex-wrap items-center gap-2">
             <h1 className="font-bold uppercase">{title}</h1>
-            {g && <GuideTip id={g} size="md" />}
             {badges}
           </div>
           {sub && <p className="max-w-3xl text-muted-foreground">{sub}</p>}
         </div>
       </div>
-      {actions && <div className="flex flex-wrap items-center gap-2">{actions}</div>}
+      {(guideAction || actions) && (
+        <div className="flex flex-wrap items-center gap-2">
+          {guideAction}
+          {actions}
+        </div>
+      )}
     </div>
+  );
+}
+
+/* ── Page GUIDE button + dialog: one implementation for every page (V4 Maximum Performance style).
+ * PageHeader renders it from the registry page's guide, so pages never add their own. ── */
+export function PageGuide({ id }: { id: GuideId }) {
+  const [open, setOpen] = useState(false);
+  const g = stepGuide(id);
+  return (
+    <>
+      <GuideButton topic={g.title} open={open} onClick={() => setOpen(true)} />
+      <Modal
+        open={open}
+        onClose={() => setOpen(false)}
+        title={g.title}
+        sub={g.sub}
+        width="max-w-2xl eo-guide-modal"
+        footer={
+          <Btn variant="primary" onClick={() => setOpen(false)}>
+            Got it
+          </Btn>
+        }
+      >
+        <GuideSteps steps={g.steps} note={g.note} />
+      </Modal>
+    </>
   );
 }
 
