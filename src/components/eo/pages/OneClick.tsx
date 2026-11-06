@@ -28,7 +28,6 @@ import {
   LoadingState,
   Stepper,
 } from "../kit";
-import { GuideButton, GuideSteps } from "../Guide";
 import { RunModal } from "../RunModal";
 import { ReviewSelectionModal } from "../ReviewSelectionModal";
 import { useOptimizeWorkflow } from "../useOptimizeWorkflow";
