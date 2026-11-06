@@ -20,6 +20,8 @@ export interface Guide {
   risk: GuideRisk;
   /** Important risks or limitations. */
   limits: string;
+  /** What is protected and which compatibility conditions apply (page guides). */
+  safety?: string;
   /** Restart requirement, when the question applies. */
   restart?: string;
   /** Reversibility, when the question applies. */
@@ -31,7 +33,22 @@ export interface Guide {
 const VARIES = "Varies by hardware and workload; no specific gain is promised.";
 
 export const GUIDES = {
-  /* ───── Page guides (key = registry slug) ───── */
+  /* ───── Page guides (key = registry slug; the Dashboard "/" uses "dashboard") ───── */
+  dashboard: {
+    title: "Dashboard",
+    what: "Overview of the optimization score, sample system readings and automatic maintenance, with shortcuts and Quick Optimize actions.",
+    why: "One place to see the state of the PC and start the most common tasks.",
+    how: "Navigation Shortcuts only open a page. Quick Optimize actions run in place, one at a time, and each runs only its own steps.",
+    when: "Whenever you open the app, or for a quick cleanup without opening a full page.",
+    benefit: "Common tasks are one click away; the score shows what still needs attention.",
+    risk: "low",
+    safety:
+      "A second Quick Optimize action can't start while one is running. Create Restore Point checks System Protection first.",
+    limits:
+      "Readings and the score are illustrative sample values. Quick Optimize runs a fixed set of steps — use the full pages to choose items.",
+    restart: "Not required",
+    reversible: "No for cleanup — deleted temporary and cache files can't be brought back",
+  },
   "one-click": {
     title: "1-Click Optimization",
     what: "Finds recommended optimizations for your PC and applies only the ones you keep selected.",
@@ -52,6 +69,8 @@ export const GUIDES = {
     how: "Pick tasks and an interval. Each run does the tasks one at a time; if a run is still going when the next is due, the overlap rule decides what happens.",
     when: "After you've set up your PC and only want light upkeep.",
     benefit: "Keeps disk space and standby memory tidy between manual cleanups.",
+    safety:
+      "Browser cleanup removes cache only — never passwords, cookies, logins or history. Emptying the Recycle Bin is off by default and asks first.",
     risk: "low",
     limits:
       "Browser cleanup removes cache only — never passwords, cookies, logins or history. Emptying the Recycle Bin is permanent, so it is off by default and asks first.",
@@ -66,6 +85,8 @@ export const GUIDES = {
     how: "Normal presets change standard Windows pointer and keyboard settings. Advanced items change input queue, timer and USB settings.",
     when: "If aiming feels inconsistent or key repeat feels slow.",
     benefit: `More consistent input feel. ${VARIES}`,
+    safety:
+      "Normal and Advanced include only applicable, recommended items — high-risk, not-applicable and already-applied items are left out. Only Custom lets you choose items yourself.",
     risk: "low",
     limits:
       "Pointer precision changes how the mouse feels; you may need to re-adjust sensitivity in games.",
@@ -79,9 +100,10 @@ export const GUIDES = {
     how: "Each change is checked against your hardware, the current value is backed up, then the new value is written and read back.",
     when: "After the Normal profile, if you want finer control.",
     benefit: `Small scheduling and responsiveness improvements on some systems. ${VARIES}`,
+    safety:
+      "Each change is checked against your hardware first, and high-risk changes are never pre-selected.",
     risk: "medium",
-    limits:
-      "High-risk changes are never pre-selected. Wrong registry values can cause instability.",
+    limits: "Wrong registry values can cause instability.",
     restart: "Many registry changes need a restart",
     reversible: "Yes — the original value is backed up first",
   },
@@ -89,12 +111,13 @@ export const GUIDES = {
     title: "Registry Values",
     what: "Overview of every RAM and GPU registry value the optimizer supports, with the value it would set for your hardware.",
     why: "These values depend on your RAM size, CPU and graphics card, so each one is matched to the detected hardware.",
-    how: "Each row shows the target value above the current one. Click a row for the registry path, type and why it applies. Values that don't fit your hardware are marked N/A.",
+    how: "Each row shows the target value above the current one. Click a row for the registry path, type and why it applies.",
     when: "When you want to see what would change before opening the RAM or GPU page.",
     benefit: "Values matched to your hardware instead of one-size-fits-all.",
+    safety:
+      "Values that don't fit your hardware or profile are marked N/A. Diagnostic values are reference only and never applied.",
     risk: "info",
-    limits:
-      "This page only shows values; applying happens on the RAM and GPU pages. Diagnostic values are reference only and never applied.",
+    limits: "This page only shows values; applying happens on the RAM and GPU pages.",
   },
   "registry-values-ram": {
     title: "RAM Registry Values",
@@ -103,6 +126,8 @@ export const GUIDES = {
     how: "Choose your RAM size; the matching threshold is written to SvcHostSplitThresholdInKB.",
     when: "After adding or removing RAM, or to match the value to your system.",
     benefit: "Fewer separate service processes on systems with more RAM.",
+    safety:
+      "The value comes from the original app's fixed table of RAM sizes (4–128 GB); only this one value changes.",
     risk: "low",
     limits:
       "Grouping services means one failing service can affect the others in its group. Task Manager will show fewer processes, which is expected.",
@@ -113,11 +138,13 @@ export const GUIDES = {
     title: "GPU Registry Values",
     what: "Applies graphics registry settings grouped by GPU feature.",
     why: "Some graphics behaviours, like scheduling, are only exposed in the registry.",
-    how: "Each group is checked against your GPU and driver before it is offered, then the change is verified by reading it back.",
+    how: "Pick the groups you want; each change is verified by reading it back.",
     when: "When you have a supported GPU and want to review its scheduling options.",
     benefit: `Possible smoother frame delivery on supported cards. ${VARIES}`,
+    safety:
+      "Each group is checked against your GPU and driver before it is offered, and unsupported groups are hidden.",
     risk: "medium",
-    limits: "Unsupported groups are hidden. A driver update can reset these values.",
+    limits: "A driver update can reset these values.",
     restart: "Required for scheduling changes",
     reversible: "Yes",
   },
@@ -128,9 +155,9 @@ export const GUIDES = {
     how: "Each entry shows its boot impact. Turning one off stops it starting automatically; the app itself stays installed.",
     when: "When sign-in feels slow or the system tray is crowded.",
     benefit: "Faster sign-in and less background activity.",
+    safety: "System entries ask for confirmation. Turning an entry off never uninstalls the app.",
     risk: "low",
-    limits:
-      "System entries ask for confirmation. Apps you turn off won't auto-start until you turn them back on.",
+    limits: "Apps you turn off won't auto-start until you turn them back on.",
     restart: "Takes effect at next sign-in",
     reversible: "Yes — switch the entry back on",
   },
@@ -138,12 +165,13 @@ export const GUIDES = {
     title: "Service Manager",
     what: "Shows Windows background services and lets you change how they start.",
     why: "Services you never use still take memory and CPU time.",
-    how: "Each service shows its startup mode and a safety rating. Changes to important services ask for explicit confirmation.",
+    how: "Each service shows its startup mode and a safety rating; you choose the new startup mode.",
     when: "When you know which features you don't use, such as printing or Xbox services.",
     benefit: "Less background memory and CPU use.",
+    safety:
+      "Protected services cannot be changed, and important services ask for explicit confirmation.",
     risk: "medium",
-    limits:
-      "Disabling the wrong service can break a Windows feature. Protected services cannot be changed.",
+    limits: "Disabling the wrong service can break a Windows feature.",
     restart: "Some services need a restart",
     reversible: "Yes — set the startup mode back",
   },
@@ -151,9 +179,11 @@ export const GUIDES = {
     title: "Process Intelligence",
     what: "Ends selected background processes to free memory.",
     why: "Idle helper apps hold memory you could use for a game or project.",
-    how: "Only processes rated Safe to Terminate can be selected. System and protected processes are locked.",
+    how: "Each running process gets a safety rating; you pick which of the safe ones to end.",
     when: "Right before a game or heavy task.",
     benefit: "More free memory for the app you're using.",
+    safety:
+      "Only processes rated Safe to Terminate can be selected. System and protected processes are locked.",
     risk: "low",
     limits: "Ended apps may restart on their own. Save your work in any app first.",
     restart: "Not required",
@@ -163,9 +193,10 @@ export const GUIDES = {
     title: "Network Boost",
     what: "Adjusts the Windows network stack for lower latency.",
     why: "Default network settings favour throughput over quick response.",
-    how: "Persistent targets are backed up, applied and read back. One-time actions such as flushing DNS run once.",
+    how: "Persistent targets are applied and read back. One-time actions such as flushing DNS run once.",
     when: "For online gaming or calls, or after network problems.",
     benefit: `Possibly lower and steadier latency. ${VARIES}`,
+    safety: "Persistent targets are backed up before they change.",
     risk: "low",
     limits:
       "It cannot fix your internet provider or Wi-Fi signal. Some actions reset the connection for a moment.",
@@ -176,11 +207,13 @@ export const GUIDES = {
     title: "Storage Optimizer",
     what: "Finds temporary files, caches and large files, then cleans the ones you pick.",
     why: "Junk files take space and slow down searches and backups.",
-    how: "A scan groups files by type. Safe cleanup items are pre-selected; your own large files never are.",
+    how: "A scan groups files by type, then only the groups you keep selected are cleaned.",
     when: "When the drive is getting full.",
     benefit: "More free disk space.",
+    safety:
+      "Safe cleanup items are pre-selected; your own large files never are. Files in use are skipped.",
     risk: "low",
-    limits: "Deleted files cannot be restored. Files in use are skipped.",
+    limits: "Deleted files cannot be restored.",
     restart: "Not required",
     reversible: "No — cleaned files are permanently removed",
   },
@@ -191,6 +224,7 @@ export const GUIDES = {
     how: "Each tool runs a standard Windows utility, such as a system file check, and logs the result below.",
     when: "When something is broken, or for routine checks.",
     benefit: "Quick access to repairs Windows already includes.",
+    safety: "Diagnostics only read and report; repairs use Windows' own built-in utilities.",
     risk: "low",
     limits: "Repair tools can take several minutes. They fix Windows files, not hardware faults.",
     restart: "Some repairs ask for a restart",
@@ -203,6 +237,8 @@ export const GUIDES = {
     how: "Each target is checked against your hardware and its dependencies before it is offered.",
     when: "On any PC, as the first profile to apply.",
     benefit: "Fewer background services and processes.",
+    safety:
+      "Each target is checked against your hardware and its dependencies before it is offered.",
     risk: "low",
     limits: "Items already applied or not applicable are skipped.",
     restart: "Recommended after applying",
@@ -215,6 +251,7 @@ export const GUIDES = {
     how: "Applies Normal first, then extra hardware-checked targets.",
     when: "After Normal, if you understand which features you use.",
     benefit: "Further reduction of background workload.",
+    safety: "Targets are hardware-checked, and high-risk items are never pre-selected.",
     risk: "medium",
     limits: "Some Windows features you rarely use may stop working until restored.",
     restart: "Required",
@@ -224,9 +261,10 @@ export const GUIDES = {
     title: "Ultimate Optimization",
     what: "Builds on Pro with more services, Windows features, scheduled tasks and visual effects.",
     why: "For dedicated gaming or work machines.",
-    how: "Applies Pro, then the deepest set of targets. High-risk items are never pre-selected.",
+    how: "Applies Pro, then the deepest set of targets.",
     when: "Only on a PC used for a few specific tasks.",
     benefit: "The smallest background footprint of the V3 profiles.",
+    safety: "High-risk items are never pre-selected.",
     risk: "high",
     limits: "More Windows features may be turned off. Make sure a restore point exists first.",
     restart: "Required",
@@ -236,9 +274,10 @@ export const GUIDES = {
     title: "Debloat",
     what: "Removes telemetry, diagnostic tracking and pre-installed Windows apps.",
     why: "Pre-installed apps and tracking run in the background without being used.",
-    how: "Uses a blocklist you can customize. Apps on it are removed for the current user.",
+    how: "Uses a blocklist you can customize; the apps on it are removed.",
     when: "On a fresh Windows install or a PC with many unused apps.",
     benefit: "Fewer background apps and less tracking.",
+    safety: "You decide what is on the blocklist, and apps are removed for the current user only.",
     risk: "medium",
     limits: "Removed apps must be reinstalled from the Microsoft Store if you want them back.",
     restart: "Recommended",
@@ -251,8 +290,9 @@ export const GUIDES = {
     how: "Windows-side items can be applied. Firmware items are only explained — you change them yourself in UEFI setup.",
     when: "When building or tuning a desktop PC.",
     benefit: "Clear guidance on firmware settings that Windows can't change.",
+    safety: "It never writes to firmware — firmware items are only explained.",
     risk: "low",
-    limits: "It never writes to firmware. Wrong UEFI settings can stop a PC booting.",
+    limits: "Wrong UEFI settings can stop a PC booting.",
     restart: "Firmware changes require entering UEFI setup",
     reversible: "Windows items yes; UEFI changes are undone in UEFI setup",
   },
@@ -263,6 +303,7 @@ export const GUIDES = {
     how: "Applies Ultimate, then machine-specific performance targets.",
     when: "For dedicated gaming or rendering, on a desktop with good cooling.",
     benefit: `Highest performance focus of the V3 profiles. ${VARIES}`,
+    safety: "Targets are matched to this machine, and high-risk items are never pre-selected.",
     risk: "high",
     limits: "Uses more power and heat. Not ideal for laptops on battery.",
     restart: "Required",
@@ -272,11 +313,13 @@ export const GUIDES = {
     title: "AI Optimization",
     what: "Sets per-app RAM limits, workload profiles and power plan recommendations.",
     why: "Stops one app using too much memory and matches power settings to what you're doing.",
-    how: "Choose an app and a limit; when the app goes over, memory is moved to standby instead of the app being closed.",
+    how: "Choose an app and a limit; the limit is watched while the app runs.",
     when: "When a browser or launcher grows large in the background.",
     benefit: "More memory left for your main app.",
+    safety:
+      "An app that goes over its limit is never closed — its memory is moved to standby instead. Changes need your confirmation.",
     risk: "low",
-    limits: "Limits that are too low can make an app slower. Changes need your confirmation.",
+    limits: "Limits that are too low can make an app slower.",
     restart: "Not required",
     reversible: "Yes — remove the limit or switch power plan",
   },
@@ -287,6 +330,8 @@ export const GUIDES = {
     how: "Before each change, the old value is saved as a transaction. Restore writes that value back.",
     when: "Before big profiles, or if something stops working after optimizing.",
     benefit: "A safe way back.",
+    safety:
+      "A restore point is only created after System Protection on C: has been checked — and, if it was off, turned on with your confirmation and verified.",
     risk: "info",
     limits: "Deleted files and removed apps are not stored here.",
     restart: "Restoring some items needs a restart",
@@ -346,9 +391,10 @@ export const GUIDES = {
     title: "V4 Core Optimizer",
     what: "Repeatedly trims safe background processes until the footprint stops shrinking.",
     why: "Some background apps restart; repeated passes catch them.",
-    how: "Each pass reduces background work, keeping Windows and your active workload untouched.",
+    how: "Each pass reduces background work; passes stop once the footprint stops shrinking.",
     when: "Before a long game or render.",
     benefit: "A smaller background footprint.",
+    safety: "Windows and your active workload are never touched.",
     risk: "low",
     limits: "Apps that are needed will restart on their own.",
     restart: "Not required",
@@ -358,12 +404,12 @@ export const GUIDES = {
     title: "Emulator Deployer & Debloater",
     what: "Sets up an emulator and turns off unneeded Android components inside it.",
     why: "Fewer guest apps means more resources for the game.",
-    how: "Shows a debloat preview audit first; components are disabled, not deleted.",
+    how: "A debloat preview audit lists what would change before anything is applied.",
     when: "When setting up a new emulator instance.",
     benefit: "A leaner emulator.",
+    safety: "Essential Android components are protected, and components are disabled, not deleted.",
     risk: "medium",
-    limits:
-      "Essential Android components are protected. Disabling a needed app can break a feature.",
+    limits: "Disabling a needed app can break a feature.",
     restart: "Restart the emulator",
     reversible: "Yes — disabled components can be enabled again",
   },
@@ -737,12 +783,223 @@ export const GUIDES = {
 
 export type GuideId = keyof typeof GUIDES;
 
-/** Registry pages without an optimization purpose (overview, telemetry, settings, info). */
-export const NO_PAGE_GUIDE = ["", "system-info", "settings", "about", "v4-dashboard"] as const;
+/** Registry pages without an optimization purpose (telemetry, settings, info, V4 launcher). */
+export const NO_PAGE_GUIDE = ["system-info", "settings", "about", "v4-dashboard"] as const;
+
+/** The Dashboard lives at "/" (empty slug). */
+const PAGE_GUIDE_ALIAS: Record<string, GuideId> = { "": "dashboard" };
 
 export function pageGuide(slug: string): GuideId | null {
-  return slug in GUIDES && !slug.includes(".") ? (slug as GuideId) : null;
+  if (slug in PAGE_GUIDE_ALIAS) return PAGE_GUIDE_ALIAS[slug] ?? null;
+  return slug in GUIDES && !slug.includes(".") && slug !== "dashboard" ? (slug as GuideId) : null;
 }
+
+/* ───── Full page guides (the GUIDE button dialog) ─────
+ * Every page uses the same dialog: title, subtitle, numbered sections, Got it.
+ * Pages that already had a written V3/V4 guide keep it word for word (PRESERVED);
+ * every other page builds its sections from its guide record, in this fixed order,
+ * skipping sections the record has nothing for. */
+
+export interface GuideStep {
+  title: string;
+  text: string;
+  /** Small label beside the section title (e.g. engine name, risk level). */
+  tag?: string;
+  /** Optional technical points. */
+  points?: readonly string[];
+}
+
+export interface StepGuide {
+  title: string;
+  sub: string;
+  steps: readonly GuideStep[];
+  note?: string;
+}
+
+export const GUIDE_SECTION_TITLES = [
+  "What This Feature Does",
+  "How It Works",
+  "Expected Benefits",
+  "Safety & Compatibility",
+  "When to Use It",
+  "Risks & Limitations",
+  "Reversibility",
+] as const;
+
+const steps = (rows: readonly (readonly [string, string, string?])[]): GuideStep[] =>
+  rows.map(([title, text, tag]) => (tag ? { title, text, tag } : { title, text }));
+
+/** Guides written for the original V3/V4 dialogs — kept verbatim. */
+export const PRESERVED_STEP_GUIDES: Partial<Record<GuideId, StepGuide>> = {
+  "one-click": {
+    title: "How 1-Click Optimization works",
+    sub: "Optimize your PC safely in a few simple steps.",
+    steps: steps([
+      ["CHECK", "ERROR OPTIMIZER scans your PC and finds relevant optimization opportunities."],
+      [
+        "REVIEW",
+        "You can see what can be improved, why it was selected, and which apps are protected.",
+      ],
+      [
+        "CHOOSE",
+        "Keep the recommended changes or customize the selection for your specific needs.",
+      ],
+      [
+        "OPTIMIZE",
+        "ERROR OPTIMIZER applies only the selected safe changes. System files, drivers and active apps are protected.",
+      ],
+      [
+        "VERIFY",
+        "Every applied change is checked. If a change cannot be safely verified it is rolled back.",
+      ],
+    ]),
+    note: "Protected apps, drivers and critical Windows components are never treated as targets.",
+  },
+  "performance-tuning": {
+    title: "How Performance Tuning works",
+    sub: "ERROR OPTIMIZER only uses safe hardware controls supported by your CPU and GPU.",
+    steps: steps([
+      ["CHECK", "Checks whether your CPU or GPU supports safe tuning controls."],
+      ["TEST", "Measures your current baseline performance and temperature."],
+      ["TUNE", "Applies one controlled change."],
+      ["VERIFY", "Checks stability, temperature and real performance."],
+      [
+        "DECIDE",
+        "Keeps the change only if it improves stable performance. Otherwise it is reverted.",
+      ],
+    ]),
+    note: "In this prototype nothing is measured or tuned.",
+  },
+  "v4-max-performance": {
+    title: "Maximum Performance guide",
+    sub: "Safe, non-destructive Windows performance optimization.",
+    steps: steps([
+      [
+        "What Maximum Performance optimizes",
+        "Reduces background CPU contention, releases idle process working sets, and balances priorities.",
+      ],
+      [
+        "What remains safeguarded",
+        "Core Windows OS binaries, display drivers, audio engines, network controllers and your active apps are never touched.",
+      ],
+      [
+        "Reversibility via local rollback journal",
+        "Every applied modification is recorded in a transactional journal before execution.",
+      ],
+      [
+        "Built for gaming, editing, streaming & daily use",
+        "Designed for workload-specific review; no compatibility or performance tests run in this prototype.",
+      ],
+    ]),
+  },
+  "emulator-optimization": {
+    title: "Error Optimizer V4 — Architecture & optimization guide",
+    sub: "Technical reference for host & guest optimization engines",
+    steps: steps([
+      [
+        "Getting Started",
+        "Recommended sequence: 1) Host Maximum Performance, 2) Launch MSI App Player 5 & verify ADB, 3) Engine 1, 4) Engine 2, 5) Engine 3.",
+        "Architecture & sequence",
+      ],
+      [
+        "Maximum Performance",
+        "Transforms the Windows host: MMCSS scheduling, 0.5 ms timer clamp, safe process intelligence with zero arbitrary killing, accurate process counting.",
+        "Host Windows tuning suite",
+      ],
+      [
+        "Emulator Optimization",
+        "Host process elevation (HD-Player.exe), frame-rate unlock and pre-launch vs live modes.",
+        "Engine 1: MMCSS & 240Hz cap",
+      ],
+      [
+        "Deep Debloater",
+        "Authentic guest discovery via ADB, ironclad essential component protection, safe disabling instead of deleting APKs.",
+        "Engine 2: Real ADB inventory",
+      ],
+      [
+        "Advanced Optimization",
+        "Latch-unsignaled rendering, HWUI render pipeline tuning and Dalvik heap compaction. Never edits emulator config files.",
+        "Engine 3: SurfaceFlinger & Dalvik",
+      ],
+      [
+        "MSI & ADB Setup",
+        "Open MSI App Player Settings → Preferences → toggle Android Debug Bridge ON → authorize the USB debugging prompt.",
+        "Port 5555 & authorization",
+      ],
+      [
+        "One-Time State",
+        "One-time optimization with preflight idempotency verification; card states NOT RUN / APPLIED / VERIFIED.",
+        "Persistent store & idempotency",
+      ],
+      [
+        "Restore & Rollback",
+        "Unified rollback from the header, per-engine restore and diagnostic troubleshooting.",
+        "Reversible operations & fixes",
+      ],
+    ]),
+  },
+  "emulator-modules": {
+    title: "Module Hub guide",
+    sub: "How ERROR OPTIMIZER tunes MSI App Player 5 safely",
+    steps: steps([
+      [
+        "Three dedicated modules",
+        "Emulator Optimization for balanced daily tuning, Deep Debloater for cleanup, Low-End Extreme for weak hardware.",
+      ],
+      [
+        "Everything eligible is pre-selected",
+        "Protected packages and advanced risky tweaks are never selected for you. Each profile keeps its own selection.",
+      ],
+      ["Review before applying", "Review & apply lists exactly the selected changes."],
+      ["Reversibility & rollback", "Every applied change can be rolled back at any time."],
+    ]),
+  },
+  "low-end-steam": {
+    title: "Low End Steam guide",
+    sub: "Simulated low-spec emulator review.",
+    steps: steps([
+      ["Connect", "The original operations need MSI App Player running with ADB turned on."],
+      [
+        "Review",
+        "Check the compositor (SurfaceFlinger) timing and guest memory (Dalvik) options for your hardware.",
+      ],
+      [
+        "Optimize",
+        "Apply the eligible items; advanced risky tweaks stay off unless you allow them.",
+      ],
+      ["Restore", "Restore returns every item to its previous value."],
+    ]),
+    note: "This prototype does not connect to an emulator or measure performance.",
+  },
+};
+
+/** Builds the standard sections from a guide record. */
+export function derivedStepGuide(id: GuideId): StepGuide {
+  const g: Guide = GUIDES[id];
+  const [what, how, benefit, safety, when, limits, reversible] = GUIDE_SECTION_TITLES;
+  const rows: (GuideStep | null)[] = [
+    { title: what, text: g.what },
+    { title: how, text: g.how, ...(g.details ? { points: g.details } : {}) },
+    { title: benefit, text: g.benefit },
+    g.safety ? { title: safety, text: g.safety } : null,
+    { title: when, text: g.when },
+    {
+      title: limits,
+      text: g.restart ? `${g.limits} Restart: ${g.restart}.` : g.limits,
+      tag: RISK_LABEL[g.risk],
+    },
+    g.reversible ? { title: reversible, text: g.reversible } : null,
+  ];
+  return {
+    title: `${g.title} guide`,
+    sub: g.why,
+    steps: rows.filter((r): r is GuideStep => r !== null),
+  };
+}
+
+/** The GUIDE dialog content for a page (preserved original, or built from its guide record). */
+export const stepGuide = (id: GuideId): StepGuide =>
+  PRESERVED_STEP_GUIDES[id] ?? derivedStepGuide(id);
 
 export const getGuide = (id: GuideId): Guide => GUIDES[id];
 

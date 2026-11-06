@@ -106,6 +106,7 @@ export function DashboardPage() {
     <div className="space-y-3.5">
       <PageHeader
         title="Dashboard"
+        guide="dashboard"
         badges={<Badge tone="cyan">V3</Badge>}
         sub="System overview, optimization score and automatic maintenance"
         actions={

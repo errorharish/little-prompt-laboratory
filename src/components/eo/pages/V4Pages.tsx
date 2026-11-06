@@ -40,7 +40,7 @@ import {
   simulate,
   useSimRun,
 } from "../kit";
-import { GuideButton, GuideSteps, GuideTip } from "../Guide";
+import { GuideTip } from "../Guide";
 import type { GuideId } from "@/lib/eo/guides";
 import { cn } from "@/lib/utils";
 import { HW } from "@/lib/eo/data";
@@ -88,7 +88,6 @@ const MP_SAFEGUARDS = [
 ];
 
 export function V4MaxPerformancePage() {
-  const [guide, setGuide] = useState(false);
   const [procs, setProcs] = useState(142);
   const [last, setLast] = useState<{ at: string; before: number; after: number; n: number } | null>(
     null,
@@ -125,7 +124,6 @@ export function V4MaxPerformancePage() {
         sub="Host latency reduction for gaming and focused work — simulated."
         actions={
           <>
-            <GuideButton onClick={() => setGuide(true)} />
             <Btn
               variant="ghost"
               disabled={!last || r.running}
@@ -339,38 +337,6 @@ export function V4MaxPerformancePage() {
           ))}
         </ul>
       </Modal>
-      <Modal
-        open={guide}
-        onClose={() => setGuide(false)}
-        title="Maximum Performance guide"
-        sub="Safe, non-destructive Windows performance optimization."
-        footer={
-          <Btn variant="primary" onClick={() => setGuide(false)}>
-            Got it
-          </Btn>
-        }
-      >
-        <GuideSteps
-          steps={[
-            [
-              "What Maximum Performance optimizes",
-              "Reduces background CPU contention, releases idle process working sets, and balances priorities.",
-            ],
-            [
-              "What remains safeguarded",
-              "Core Windows OS binaries, display drivers, audio engines, network controllers and your active apps are never touched.",
-            ],
-            [
-              "Reversibility via local rollback journal",
-              "Every applied modification is recorded in a transactional journal before execution.",
-            ],
-            [
-              "Built for gaming, editing, streaming & daily use",
-              "Designed for workload-specific review; no compatibility or performance tests run in this prototype.",
-            ],
-          ]}
-        />
-      </Modal>
     </div>
   );
 }
@@ -424,16 +390,6 @@ const MODULE_GUIDE: Record<string, GuideId> = {
   "DEEP DEBLOATER": "hub.debloater",
   "LOW-END EXTREME": "hub.lowend",
 };
-const GUIDE_SECTIONS = [
-  ["1. Getting Started", "Architecture & sequence"],
-  ["2. Maximum Performance", "Host Windows tuning suite"],
-  ["3. Emulator Optimization", "Engine 1: MMCSS & 240Hz cap"],
-  ["4. Deep Debloater", "Engine 2: Real ADB inventory"],
-  ["5. Advanced Optimization", "Engine 3: SurfaceFlinger & Dalvik"],
-  ["6. MSI & ADB Setup", "Port 5555 & authorization"],
-  ["7. One-Time State", "Persistent store & idempotency"],
-  ["8. Restore & Rollback", "Reversible operations & fixes"],
-];
 type EngineState = "NOT RUN" | "APPLYING" | "APPLIED" | "NEEDS ADB";
 
 export function EmulatorOptimizationPage() {
@@ -449,8 +405,6 @@ export function EmulatorOptimizationPage() {
   const [pendingEngine, setPendingEngine] = useState<number | null>(null);
   const { adb } = emu;
   const applied = new Set(emu.applied);
-  const [guide, setGuide] = useState(false);
-  const [gs, setGs] = useState(0);
   const [running, setRunning] = useState<number | null>(null);
   const [p, setP] = useState(0);
   const runEngine = (i: number) => {
@@ -517,7 +471,6 @@ export function EmulatorOptimizationPage() {
         sub="MSI App Player 5 scheduling, guest debloat and graphics tuning — simulated."
         actions={
           <>
-            <GuideButton onClick={() => setGuide(true)} />
             <Btn
               variant="ghost"
               disabled={!applied.size || running !== null}
@@ -754,80 +707,6 @@ export function EmulatorOptimizationPage() {
           </div>
         )}
       </Modal>
-      <Modal
-        open={guide}
-        onClose={() => setGuide(false)}
-        title="Error Optimizer V4 — Architecture & optimization guide"
-        sub="Technical reference for host & guest optimization engines"
-        width="max-w-5xl"
-        footer={
-          <>
-            <Btn variant="ghost" disabled={gs === 0} onClick={() => setGs(gs - 1)}>
-              Previous section
-            </Btn>
-            <Btn variant="ghost" disabled={gs === 7} onClick={() => setGs(gs + 1)}>
-              Next section
-            </Btn>
-            <Btn variant="primary" onClick={() => setGuide(false)}>
-              Close guide
-            </Btn>
-          </>
-        }
-      >
-        <div className="grid gap-5" style={{ gridTemplateColumns: "240px 1fr" }}>
-          <div className="space-y-1">
-            <Label className="mb-2">GUIDE SECTIONS</Label>
-            {GUIDE_SECTIONS.map(([t, s], i) => (
-              <button
-                key={t}
-                type="button"
-                aria-current={gs === i ? "step" : undefined}
-                onClick={() => setGs(i)}
-                className={cn(
-                  "block w-full rounded-lg border-l-[3px] px-3 py-2 text-left",
-                  gs === i ? "border-cyan bg-cyan/10" : "border-transparent hover:bg-elevated",
-                )}
-              >
-                <span className="flex items-center gap-2.5">
-                  <span aria-hidden="true" className="eo-guide-num eo-guide-num-sm">
-                    {i + 1}
-                  </span>
-                  <span className="min-w-0">
-                    <span className="eo-guide-step-title block">
-                      {(t ?? "").replace(/^\d+\.\s*/, "")}
-                    </span>
-                    <span className="block text-[10.5px] text-subtle">{s}</span>
-                  </span>
-                </span>
-              </button>
-            ))}
-          </div>
-          <div className="rounded-xl border border-border bg-window p-5">
-            <div className="flex items-center gap-3">
-              <span aria-hidden="true" className="eo-guide-num">
-                {gs + 1}
-              </span>
-              <div className="text-[15px] font-bold uppercase">
-                {GUIDE_SECTIONS[gs]?.[0]?.replace(/^\d+\.\s*/, "")}
-              </div>
-            </div>
-            <p className="mt-3 text-[12.5px] leading-relaxed text-muted-foreground">
-              {
-                [
-                  "Recommended sequence: 1) Host Maximum Performance, 2) Launch MSI App Player 5 & verify ADB, 3) Engine 1, 4) Engine 2, 5) Engine 3.",
-                  "Transforms the Windows host: MMCSS scheduling, 0.5 ms timer clamp, safe process intelligence with zero arbitrary killing, accurate process counting.",
-                  "Host process elevation (HD-Player.exe), frame-rate unlock and pre-launch vs live modes.",
-                  "Authentic guest discovery via ADB, ironclad essential component protection, safe disabling instead of deleting APKs.",
-                  "Latch-unsignaled rendering, HWUI render pipeline tuning and Dalvik heap compaction. Never edits emulator config files.",
-                  "Open MSI App Player Settings → Preferences → toggle Android Debug Bridge ON → authorize the USB debugging prompt.",
-                  "One-time optimization with preflight idempotency verification; card states NOT RUN / APPLIED / VERIFIED.",
-                  "Unified rollback from the header, per-engine restore and diagnostic troubleshooting.",
-                ][gs]
-              }
-            </p>
-          </div>
-        </div>
-      </Modal>
     </div>
   );
 }
@@ -933,7 +812,6 @@ export function EmulatorModulesPage() {
   const [risky, setRisky] = useState(false);
   const [review, setReview] = useState(false);
   const [bench, setBench] = useState(false);
-  const [guide, setGuide] = useState(false);
   const scan = useSimRun(2000);
   const setMod = (m: string | null) => setEmu({ mod: m });
   const active = MODULES.find((m) => m.k === mod);
@@ -958,7 +836,6 @@ export function EmulatorModulesPage() {
         }
         actions={
           <>
-            <GuideButton onClick={() => setGuide(true)} />
             {active && (
               <Btn size="sm" onClick={() => simulate("Rescan")}>
                 Rescan
@@ -1351,32 +1228,6 @@ export function EmulatorModulesPage() {
           Simulation only: instance files and emulator configuration files are not touched.
         </p>
       </Modal>
-      <Modal
-        open={guide}
-        onClose={() => setGuide(false)}
-        title="Module Hub guide"
-        sub="How ERROR OPTIMIZER tunes MSI App Player 5 safely"
-        footer={
-          <Btn variant="primary" onClick={() => setGuide(false)}>
-            Got it
-          </Btn>
-        }
-      >
-        <GuideSteps
-          steps={[
-            [
-              "Three dedicated modules",
-              "Emulator Optimization for balanced daily tuning, Deep Debloater for cleanup, Low-End Extreme for weak hardware.",
-            ],
-            [
-              "Everything eligible is pre-selected",
-              "Protected packages and advanced risky tweaks are never selected for you. Each profile keeps its own selection.",
-            ],
-            ["Review before applying", "Review & apply lists exactly the selected changes."],
-            ["Reversibility & rollback", "Every applied change can be rolled back at any time."],
-          ]}
-        />
-      </Modal>
     </div>
   );
 }
@@ -1650,7 +1501,6 @@ export function EmulatorDeployerPage() {
 
 /* ───────── LOW END STEAM (LowEndSteamPage) ───────── */
 export function LowEndSteamPage() {
-  const [guide, setGuide] = useState(false);
   const [subsystem, setSubsystem] = useState("All");
   const [risky, setRisky] = useState(false);
   return (
@@ -1661,7 +1511,6 @@ export function LowEndSteamPage() {
         sub="Simulated emulator tuning for dual-core, quad-core and integrated graphics."
         actions={
           <>
-            <GuideButton onClick={() => setGuide(true)} />
             <Btn onClick={() => simulate("Scan candidates")}>Scan candidates</Btn>
           </>
         }
@@ -1724,33 +1573,6 @@ export function LowEndSteamPage() {
         </div>
       </Card>
       <SimNotice />
-      <Modal
-        open={guide}
-        onClose={() => setGuide(false)}
-        title="Low End Steam guide"
-        sub="Simulated low-spec emulator review."
-        footer={
-          <Btn variant="primary" onClick={() => setGuide(false)}>
-            Got it
-          </Btn>
-        }
-      >
-        <GuideSteps
-          steps={[
-            ["Connect", "The original operations need MSI App Player running with ADB turned on."],
-            [
-              "Review",
-              "Check the compositor (SurfaceFlinger) timing and guest memory (Dalvik) options for your hardware.",
-            ],
-            [
-              "Optimize",
-              "Apply the eligible items; advanced risky tweaks stay off unless you allow them.",
-            ],
-            ["Restore", "Restore returns every item to its previous value."],
-          ]}
-          note="This prototype does not connect to an emulator or measure performance."
-        />
-      </Modal>
     </div>
   );
 }

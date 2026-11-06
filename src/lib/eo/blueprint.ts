@@ -400,14 +400,14 @@ export const COMPONENT_MAP: { web: string; wpf: string; note: string }[] = [
     note: "Two tabs; sub-pages (Module Hub, Deployer, Low End Steam) keep their parent tab active and show a breadcrumb.",
   },
   {
-    web: "GuideTip (contextual guide popover)",
+    web: "GuideTip (section help popover)",
     wpf: "Help glyph Button + Popup (StaysOpen=False) bound to a Guide resource",
-    note: "One registry of guides. What / why / when / benefit / restart / reversible, risk line, 'How it works' expander. Esc and outside click close; one open at a time.",
+    note: "Section-level help only (the page header uses the GUIDE button). What / why / when / benefit / restart / reversible, risk line, 'How it works' expander. Esc and outside click close; one open at a time.",
   },
   {
-    web: "GuideButton + GuideSteps (full guide dialog)",
-    wpf: "Ghost Button opening the overlay dialog with a numbered ItemsControl",
-    note: "Step-by-step guides on 1-Click, Performance Tuning and the V4 pages share one numbered style.",
+    web: "PageGuide (GUIDE button + guide dialog)",
+    wpf: "PageHeader GUIDE Button (book glyph) opening one GuideDialog bound to the page's StepGuide resource",
+    note: "Every optimization page, V3 and V4, uses the V4 Maximum Performance design: title, subtitle, numbered sections, close X, Got it. Pages with an original guide keep it verbatim; others show What / How / Benefits / Safety / When / Risks / Reversibility from the guide registry.",
   },
   {
     web: "Hidden scrollbars + edge fade",
