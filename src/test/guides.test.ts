@@ -97,8 +97,14 @@ describe("Global GUIDE dialog", () => {
     for (const id of guided) {
       if (PRESERVED_STEP_GUIDES[id]) continue;
       const order = stepGuide(id).steps.map((s) => GUIDE_SECTION_TITLES.indexOf(s.title as never));
-      expect(order.every((i) => i >= 0), id).toBe(true);
-      expect([...order].sort((a, b) => a - b), id).toEqual(order);
+      expect(
+        order.every((i) => i >= 0),
+        id,
+      ).toBe(true);
+      expect(
+        [...order].sort((a, b) => a - b),
+        id,
+      ).toEqual(order);
       expect(order.slice(0, 3), id).toEqual([0, 1, 2]);
     }
   });

@@ -69,7 +69,8 @@ export const GUIDES = {
     how: "Pick tasks and an interval. Each run does the tasks one at a time; if a run is still going when the next is due, the overlap rule decides what happens.",
     when: "After you've set up your PC and only want light upkeep.",
     benefit: "Keeps disk space and standby memory tidy between manual cleanups.",
-    safety: "Browser cleanup removes cache only — never passwords, cookies, logins or history. Emptying the Recycle Bin is off by default and asks first.",
+    safety:
+      "Browser cleanup removes cache only — never passwords, cookies, logins or history. Emptying the Recycle Bin is off by default and asks first.",
     risk: "low",
     limits:
       "Browser cleanup removes cache only — never passwords, cookies, logins or history. Emptying the Recycle Bin is permanent, so it is off by default and asks first.",
@@ -84,7 +85,8 @@ export const GUIDES = {
     how: "Normal presets change standard Windows pointer and keyboard settings. Advanced items change input queue, timer and USB settings.",
     when: "If aiming feels inconsistent or key repeat feels slow.",
     benefit: `More consistent input feel. ${VARIES}`,
-    safety: "Normal and Advanced include only applicable, recommended items — high-risk, not-applicable and already-applied items are left out. Only Custom lets you choose items yourself.",
+    safety:
+      "Normal and Advanced include only applicable, recommended items — high-risk, not-applicable and already-applied items are left out. Only Custom lets you choose items yourself.",
     risk: "low",
     limits:
       "Pointer precision changes how the mouse feels; you may need to re-adjust sensitivity in games.",
@@ -98,7 +100,8 @@ export const GUIDES = {
     how: "Each change is checked against your hardware, the current value is backed up, then the new value is written and read back.",
     when: "After the Normal profile, if you want finer control.",
     benefit: `Small scheduling and responsiveness improvements on some systems. ${VARIES}`,
-    safety: "Each change is checked against your hardware first, and high-risk changes are never pre-selected.",
+    safety:
+      "Each change is checked against your hardware first, and high-risk changes are never pre-selected.",
     risk: "medium",
     limits: "Wrong registry values can cause instability.",
     restart: "Many registry changes need a restart",
@@ -111,7 +114,8 @@ export const GUIDES = {
     how: "Each row shows the target value above the current one. Click a row for the registry path, type and why it applies.",
     when: "When you want to see what would change before opening the RAM or GPU page.",
     benefit: "Values matched to your hardware instead of one-size-fits-all.",
-    safety: "Values that don't fit your hardware or profile are marked N/A. Diagnostic values are reference only and never applied.",
+    safety:
+      "Values that don't fit your hardware or profile are marked N/A. Diagnostic values are reference only and never applied.",
     risk: "info",
     limits: "This page only shows values; applying happens on the RAM and GPU pages.",
   },
@@ -122,7 +126,8 @@ export const GUIDES = {
     how: "Choose your RAM size; the matching threshold is written to SvcHostSplitThresholdInKB.",
     when: "After adding or removing RAM, or to match the value to your system.",
     benefit: "Fewer separate service processes on systems with more RAM.",
-    safety: "The value comes from the original app's fixed table of RAM sizes (4–128 GB); only this one value changes.",
+    safety:
+      "The value comes from the original app's fixed table of RAM sizes (4–128 GB); only this one value changes.",
     risk: "low",
     limits:
       "Grouping services means one failing service can affect the others in its group. Task Manager will show fewer processes, which is expected.",
@@ -136,7 +141,8 @@ export const GUIDES = {
     how: "Pick the groups you want; each change is verified by reading it back.",
     when: "When you have a supported GPU and want to review its scheduling options.",
     benefit: `Possible smoother frame delivery on supported cards. ${VARIES}`,
-    safety: "Each group is checked against your GPU and driver before it is offered, and unsupported groups are hidden.",
+    safety:
+      "Each group is checked against your GPU and driver before it is offered, and unsupported groups are hidden.",
     risk: "medium",
     limits: "A driver update can reset these values.",
     restart: "Required for scheduling changes",
@@ -162,7 +168,8 @@ export const GUIDES = {
     how: "Each service shows its startup mode and a safety rating; you choose the new startup mode.",
     when: "When you know which features you don't use, such as printing or Xbox services.",
     benefit: "Less background memory and CPU use.",
-    safety: "Protected services cannot be changed, and important services ask for explicit confirmation.",
+    safety:
+      "Protected services cannot be changed, and important services ask for explicit confirmation.",
     risk: "medium",
     limits: "Disabling the wrong service can break a Windows feature.",
     restart: "Some services need a restart",
@@ -175,7 +182,8 @@ export const GUIDES = {
     how: "Each running process gets a safety rating; you pick which of the safe ones to end.",
     when: "Right before a game or heavy task.",
     benefit: "More free memory for the app you're using.",
-    safety: "Only processes rated Safe to Terminate can be selected. System and protected processes are locked.",
+    safety:
+      "Only processes rated Safe to Terminate can be selected. System and protected processes are locked.",
     risk: "low",
     limits: "Ended apps may restart on their own. Save your work in any app first.",
     restart: "Not required",
@@ -202,7 +210,8 @@ export const GUIDES = {
     how: "A scan groups files by type, then only the groups you keep selected are cleaned.",
     when: "When the drive is getting full.",
     benefit: "More free disk space.",
-    safety: "Safe cleanup items are pre-selected; your own large files never are. Files in use are skipped.",
+    safety:
+      "Safe cleanup items are pre-selected; your own large files never are. Files in use are skipped.",
     risk: "low",
     limits: "Deleted files cannot be restored.",
     restart: "Not required",
@@ -228,7 +237,8 @@ export const GUIDES = {
     how: "Each target is checked against your hardware and its dependencies before it is offered.",
     when: "On any PC, as the first profile to apply.",
     benefit: "Fewer background services and processes.",
-    safety: "Each target is checked against your hardware and its dependencies before it is offered.",
+    safety:
+      "Each target is checked against your hardware and its dependencies before it is offered.",
     risk: "low",
     limits: "Items already applied or not applicable are skipped.",
     restart: "Recommended after applying",
@@ -306,7 +316,8 @@ export const GUIDES = {
     how: "Choose an app and a limit; the limit is watched while the app runs.",
     when: "When a browser or launcher grows large in the background.",
     benefit: "More memory left for your main app.",
-    safety: "An app that goes over its limit is never closed — its memory is moved to standby instead. Changes need your confirmation.",
+    safety:
+      "An app that goes over its limit is never closed — its memory is moved to standby instead. Changes need your confirmation.",
     risk: "low",
     limits: "Limits that are too low can make an app slower.",
     restart: "Not required",
@@ -319,7 +330,8 @@ export const GUIDES = {
     how: "Before each change, the old value is saved as a transaction. Restore writes that value back.",
     when: "Before big profiles, or if something stops working after optimizing.",
     benefit: "A safe way back.",
-    safety: "A restore point is only created after System Protection on C: has been checked — and, if it was off, turned on with your confirmation and verified.",
+    safety:
+      "A restore point is only created after System Protection on C: has been checked — and, if it was off, turned on with your confirmation and verified.",
     risk: "info",
     limits: "Deleted files and removed apps are not stored here.",
     restart: "Restoring some items needs a restart",

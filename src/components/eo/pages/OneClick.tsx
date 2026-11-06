@@ -487,7 +487,6 @@ export function OneClickPage() {
         </div>
       </div>
 
-
       <ReviewSelectionModal
         open={review}
         onClose={() => setReview(false)}
