@@ -280,7 +280,7 @@ export function GuideSteps({ steps, note }: { steps: readonly GuideStep[]; note?
         ))}
       </ol>
       {note && <p className="eo-guide-note">{note}</p>}
-      <p className="eo-guide-sim">
+      <p className="eo-guide-foot">
         <FlaskConical aria-hidden="true" />
         Simulated in this prototype · 0 changes on this PC
       </p>
