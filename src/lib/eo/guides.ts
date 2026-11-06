@@ -20,6 +20,8 @@ export interface Guide {
   risk: GuideRisk;
   /** Important risks or limitations. */
   limits: string;
+  /** What is protected and which compatibility conditions apply (page guides). */
+  safety?: string;
   /** Restart requirement, when the question applies. */
   restart?: string;
   /** Reversibility, when the question applies. */
@@ -31,7 +33,22 @@ export interface Guide {
 const VARIES = "Varies by hardware and workload; no specific gain is promised.";
 
 export const GUIDES = {
-  /* ───── Page guides (key = registry slug) ───── */
+  /* ───── Page guides (key = registry slug; the Dashboard "/" uses "dashboard") ───── */
+  dashboard: {
+    title: "Dashboard",
+    what: "Overview of the optimization score, sample system readings and automatic maintenance, with shortcuts and Quick Optimize actions.",
+    why: "One place to see the state of the PC and start the most common tasks.",
+    how: "Navigation Shortcuts only open a page. Quick Optimize actions run in place, one at a time, and each runs only its own steps.",
+    when: "Whenever you open the app, or for a quick cleanup without opening a full page.",
+    benefit: "Common tasks are one click away; the score shows what still needs attention.",
+    risk: "low",
+    safety:
+      "A second Quick Optimize action can't start while one is running. Create Restore Point checks System Protection first.",
+    limits:
+      "Readings and the score are illustrative sample values. Quick Optimize runs a fixed set of steps — use the full pages to choose items.",
+    restart: "Not required",
+    reversible: "Cleanup removes files permanently; other actions can be restored",
+  },
   "one-click": {
     title: "1-Click Optimization",
     what: "Finds recommended optimizations for your PC and applies only the ones you keep selected.",
