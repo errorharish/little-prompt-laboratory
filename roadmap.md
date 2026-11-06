@@ -63,3 +63,8 @@
 - [x] RAM (5) and GPU (25) registry values from the original WPF engines, grouped, with sample current/target, risk, restart and applicability.
 - [x] Two-column layout with RAM tier map and native apply steps; details dialog per value; demo notice at top.
 - [x] Verify at 1280×820, 1163×690, 1024×768; tests.
+
+# Global GUIDE button & dialog (prompt-15)
+- [x] One GUIDE button + dialog (V4 Maximum Performance design) rendered by every optimization page header, V3 and V4; old header help icons and per-page dialogs removed.
+- [x] Page-specific content: original V3/V4 guides kept verbatim; other pages use What / How / Benefits / Safety / When / Risks / Reversibility.
+- [x] Verify all destinations at 1280×820 / 1024×768 (one button, correct guide, closes, fits), tests.
